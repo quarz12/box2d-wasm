@@ -200,6 +200,7 @@ export class CodeGen {
           undefined,
           factory.createFunctionTypeNode(
             [factory.createTypeParameterDeclaration(
+                undefined,
               factory.createIdentifier("TargetClass"),
               factory.createIntersectionTypeNode([
                 factory.createTypeQueryNode(factory.createIdentifier("WrapperObject")),
@@ -306,6 +307,7 @@ export class CodeGen {
           undefined,
           factory.createFunctionTypeNode(
             [factory.createTypeParameterDeclaration(
+                undefined,
               factory.createIdentifier("TargetClass"),
               factory.createIntersectionTypeNode([
                 factory.createTypeQueryNode(factory.createIdentifier("WrapperObject")),
@@ -428,6 +430,7 @@ export class CodeGen {
           undefined,
           factory.createFunctionTypeNode(
             [factory.createTypeParameterDeclaration(
+                undefined,
               factory.createIdentifier("Class"),
               factory.createTypeQueryNode(factory.createIdentifier("WrapperObject")),
               factory.createTypeQueryNode(factory.createIdentifier("WrapperObject"))
@@ -519,6 +522,7 @@ export class CodeGen {
           undefined,
           factory.createFunctionTypeNode(
             [factory.createTypeParameterDeclaration(
+                undefined,
               factory.createIdentifier("Class"),
               factory.createTypeQueryNode(factory.createIdentifier("WrapperObject")),
               undefined
