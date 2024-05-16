@@ -4,7 +4,7 @@ Ensure that you have first run `pnpm i` from the root of the repository (as ment
 
 ```bash
 # Within this directory:
-npm build
+npm run build
 # Or, from root of repository
 pnpm build --filter=webidl-to-ts
 ```

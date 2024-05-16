@@ -51,7 +51,7 @@ const makeW3CCompliant = (emscriptenIdl: string): string => {
   const identifier = /[_-]?[A-Za-z][0-9A-Z_a-z-]*/y;
   const whitespace = /[\t\n\r ]+/y;
   const implementsMatcher = new RegExp(`^(${identifier.source})${whitespace.source}implements${whitespace.source}(${identifier.source});$`, 'mg');
-  const implementsStatementMatches: ImplementsStatement[] = [...(emscriptenIdl.matchAll(implementsMatcher) as IterableIterator<ImplementsStatement>)];
+  const implementsStatementMatches: ImplementsStatement[] = [...(emscriptenIdl.matchAll(implementsMatcher) as unknown as IterableIterator<ImplementsStatement>)];
   const implementsStatementsAsIncludesStatements = content.replace(implementsMatcher, '$1 includes $2;');
 
   const needsToBeInheritedFrom: string[] = [...new Set<string>(implementsStatementMatches.map(([,,implemented]: ImplementsStatement): string => implemented))];
