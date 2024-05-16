@@ -91,7 +91,7 @@ BARE_WASM="$BASENAME.bare.wasm"
 
 >&2 echo -e "${Blue}Building bare WASM${NC}"
 set -x
-emcc "$DIR/glue_stub.cpp" bin/libbox2d.a -I "$DIR/../box2d/include" "${EMCC_OPTS[@]}" --oformat=bare -o "$BARE_WASM"
+emcc "$DIR/glue_stub.cpp" $DIR/../box2d/bin/libbox2d.a -I "$DIR/../box2d/include" "${EMCC_OPTS[@]}" --oformat=bare -o "$BARE_WASM" #TODO bin/libbox2d.a wrong path?
 { set +x; } 2>&-
 >&2 echo -e "${Green}Successfully built $BARE_WASM${NC}\n"
 

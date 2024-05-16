@@ -22,6 +22,8 @@ else
   >&2 echo -e "${Purple}"'export WEBIDL_BINDER="$(realpath "$(dirname "$(realpath "$(which emcc)")")/../libexec/tools/webidl_binder.py")"'"${NC}"
   >&2 echo -e "if you installed emscripten via Nix: set the variable like so:"
   >&2 echo -e "${Purple}"'export WEBIDL_BINDER="$(realpath "$(dirname "$(realpath "$(which emcc)")")/../share/emscripten/tools/webidl_binder.py")"'"${NC}"
+  >&2 echo -e "if you installed emscripten via apt/apt-get: set the variable like so:"
+  >&2 echo -e "${Purple}"'export WEBIDL_BINDER="$(realpath "$(dirname "$(realpath "$(which emcc)")")/../../share/emscripten/tools/webidl_binder.py")"'"${NC}"
 fi
 
 if [[ -f "${PYTHON3-}" && -x "${PYTHON3-}" ]]; then

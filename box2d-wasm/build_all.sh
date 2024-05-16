@@ -18,12 +18,19 @@ fi
 mkdir -p "build/common"
 pushd "build/common"
 
+#set env variables since WSL keeps resetting them
+export PYTHON3=/usr/bin/python3
+export WEBIDL_BINDER=/usr/share/emscripten/tools/webidl_binder.py
+export TARGET_TYPE=Debug
+
 # use Box2D.idl to create ./box2d_glue.{js,cpp} for invoking functionality from libbox2d
+echo -e "${Purple}executing build_idl_bindings.sh${NC}"
 set -x
-"$DIR/build_idl_bindings.sh"
+"$DIR/build_idl_bindings.sh"  # run build_idl_bindings.sh
 { set +x; } 2>&-
 >&2 echo
 
+echo -e "${Purple}executing build_typings.sh${NC}"
 set -x
 "$DIR/build_typings.sh"
 { set +x; } 2>&-
@@ -48,22 +55,26 @@ do
   mkdir -p "$FLAVOUR_DIR"
   pushd "$FLAVOUR_DIR"
 
+  echo -e "${Purple}executing build_makefile.sh${NC}"
   set -x
   FLAVOUR="$FLAVOUR" "$DIR/build_makefile.sh"
   { set +x; } 2>&-
 
-  >&2 echo -e '\nCompiling C++ to LLVM IR (creates ./build/bin/libbox2d.a archive)'
+  >&2 echo -e "${Purple}Compiling C++ to LLVM IR (creates ./box2d/bin/libbox2d.a archive)${NC}"
   set -x
-  emmake make
+  pushd ../../../../box2d
+  emmake make #TODO fix dir
+  popd
   { set +x; } 2>&-
   >&2 echo
 
   # generate Box2D_*.{wasm,js} from glue code + libbox2d.a
+  echo -e "${Purple}executing build_wasm.sh${NC}"
   set -x
   FLAVOUR="$FLAVOUR" "$DIR/build_wasm.sh"
   { set +x; } 2>&-
 
-  >&2 echo -e "Completed '$FLAVOUR' flavour"
+  >&2 echo -e "${Purple}Completed '$FLAVOUR' flavour${NC}"
 
   popd
 done    
