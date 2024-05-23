@@ -58,7 +58,7 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
       const red = color.get_r() | 0;
       const green = color.get_g() | 0;
       const blue = color.get_b() | 0;
-      const alpha = color.get_a() | 0.5;
+      const alpha = (color.get_a()/255);
       return `${red},${green},${blue},${alpha}`;
     }
   };
@@ -99,17 +99,20 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
    * @param {Box2D.b2Vec2} center
    * @param {number} radius
    * @param {Box2D.b2Vec2} axis
-   * @param {boolean} fill
+   * @param {boolean} fill bad for performance
    * @returns {void}
    */
   const drawCircle = (center, radius, axis, fill) => {
-    ctx.beginPath();
-    ctx.arc(center.get_x(), center.get_y(), radius, 0, 2 * Math.PI, false);
-    if (fill) {
-      ctx.fill();
+    try {
+      ctx.beginPath();
+      ctx.arc(center.get_x(), center.get_y(), radius, 0, 2 * Math.PI, false);
+      if (fill) {
+        ctx.fill();
+      }
+      ctx.stroke();
+    }catch (e) {
+      console.log("here");
     }
-    ctx.stroke();
-    
     if (fill) {
       //render axis marker
       const vertex = copyVec2(center);
@@ -185,6 +188,7 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
         wrapPointer(array_p + index * sizeOfElement, ctor)
       );
 
+  const dummy0Vec=new b2Vec2(0, 0);
   const debugDraw = Object.assign(new JSDraw(), {
     /**
      * @param {number} vert1_p pointer to {@link Box2D.b2Vec2}
@@ -235,8 +239,7 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
       const color = wrapPointer(color_p, b2Color);
       setCtxColor(getRgbaStr(color,"b2Color"));
       const center = wrapPointer(center_p, b2Vec2);
-      const dummyAxis = new b2Vec2(0,0);
-      drawCircle(center, radius, dummyAxis, false);
+      drawCircle(center, radius, dummy0Vec, false);
     },
     /**
      * @param {number} center_p pointer to {@link Box2D.b2Vec2}
@@ -288,11 +291,39 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
         const center=centers[i];
         const color=colors[i];
         setCtxColor(getRgbaStr(color,"b2ParticleColor"));
-        drawCircle(center,radius,new b2Vec2(0,0),true);
+        drawCircle(center, radius, dummy0Vec, false);
       }
-
   }
   });
   debugDraw.SetFlags(e_shapeBit | e_particleBit);
   return debugDraw;
 };
+export const vecArrToPointer=(arr,box2D)=>{
+  const {
+    HEAPF32,
+      _malloc,
+      wrapPointer,
+      b2Vec2
+  } = box2D;
+  const buffer = _malloc(arr.length * 8);
+  let offset = 0;
+  for (let i=0; i<arr.length; i++) {
+    HEAPF32[buffer + offset >> 2] = arr[i].get_x();
+    HEAPF32[buffer + (offset + 4) >> 2] = arr[i].get_y();
+    offset += 8;
+  }
+  return wrapPointer(buffer, b2Vec2);
+};
+/**
+ * array of tuples to array of vectors
+ * @param arr
+ * @param box2D
+ * @returns {Box2D.b2Vec2[]}
+ */
+export const arrToVecArr=(arr,box2D)=>{
+  const {
+    b2Vec2
+  }=box2D;
+
+  return arr.map(tuple=>new b2Vec2(tuple[0],tuple[1]));
+}
