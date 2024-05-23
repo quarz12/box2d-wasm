@@ -191,10 +191,12 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
      * @param {number} vert2_p pointer to {@link Box2D.b2Vec2}
      * @param {number} color_p pointer to {@link Box2D.b2Color}
      * @returns {void}
+     * Draws a line
      */
     DrawSegment(vert1_p, vert2_p, color_p) {
       const color = wrapPointer(color_p, b2Color);
       setCtxColor(getRgbaStr(color,"b2Color"));
+      setCtxColor("0,0,0,1")
       const vert1 = wrapPointer(vert1_p, b2Vec2);
       const vert2 = wrapPointer(vert2_p, b2Vec2);
       drawSegment(vert1, vert2);

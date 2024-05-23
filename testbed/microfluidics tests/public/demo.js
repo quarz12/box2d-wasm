@@ -40,7 +40,10 @@ Box2DFactory_().then(box2D => {
     HEAPF32,
     NULL,
       b2ParticleDef,
-    b2ParticleColor
+      wrapPointer,
+    b2ChainShape,
+    b2ParticleColor,
+      _malloc
   } = box2D;
 
   /** @type {HTMLCanvasElement} */
@@ -59,29 +62,44 @@ Box2DFactory_().then(box2D => {
   const bd_ground = new b2BodyDef();
   const ground = world.CreateBody(bd_ground);
 
-  // ramp which boxes fall onto initially
+  //edges
   {
-    const shape = new b2EdgeShape();
-    shape.SetTwoSided(new b2Vec2(3, 4), new b2Vec2(6, 7));
-    ground.CreateFixture(shape, 0);
-  }
-  // floor which boxes rest on
-  {
-    const shape = new b2EdgeShape();
-    shape.SetTwoSided(new b2Vec2(3, 18), new b2Vec2(22, 18));
-    ground.CreateFixture(shape, 0);
-  }
-  //test walls
-  {
-    const shape = new b2EdgeShape();
-    shape.SetTwoSided(new b2Vec2(20,20),new b2Vec2(20,5));
+    {//left
+    const chain = new b2ChainShape();
+    let corners=[new b2Vec2(0,21),new b2Vec2(0,0),new b2Vec2(25,0),new b2Vec2(25,21)];
+
+        const buffer = _malloc(corners.length * 8);
+        let offset = 0;
+        for (let i=0; i<corners.length; i++) {
+          HEAPF32[buffer + offset >> 2] = corners[i].get_x();
+          HEAPF32[buffer + (offset + 4) >> 2] = corners[i].get_y();
+          offset += 8;
+        }
+        const ptr_wrapped = wrapPointer(buffer, b2Vec2);
+        chain.CreateLoop(ptr_wrapped, corners.length);
+
+    ground.CreateFixture(chain,1);
+    /*
+    shape.SetTwoSided(new b2Vec2(0,21),new b2Vec2(0,0));
     ground.CreateFixture(shape,1);
   }
-  {
+
+  {//right
     const shape = new b2EdgeShape();
-    shape.SetTwoSided(new b2Vec2(3,30),new b2Vec2(3,5));
+    shape.SetTwoSided(new b2Vec2(25,0),new b2Vec2(25,21));
     ground.CreateFixture(shape,1);
   }
+  {//floor
+    const shape = new b2EdgeShape();
+    shape.SetTwoSided(new b2Vec2(25,21),new b2Vec2(0,21));
+    ground.CreateFixture(shape,1);
+  }
+  {//ceiling
+    const shape = new b2EdgeShape();
+    shape.SetTwoSided(new b2Vec2(0,0),new b2Vec2(25,0));
+    ground.CreateFixture(shape,1);
+  }*/
+  }}
 
   const sideLengthMetres = 1;
   const square = new b2PolygonShape();
@@ -117,7 +135,7 @@ Box2DFactory_().then(box2D => {
 
   // make particles
   const partSysDef=new b2ParticleSystemDef();
-  partSysDef.radius=0.25;
+  partSysDef.radius=0.05;
   partSysDef.dampingStrength=0.1;
   const particleSystem=world.CreateParticleSystem(partSysDef);
   const amount =1;
@@ -142,7 +160,7 @@ Box2DFactory_().then(box2D => {
     world.Step(clampedDeltaMs/1000, 3, 2, 3);
   };
   const drawCanvas = () => {
-    ctx.fillStyle = 'rgb(105,84,255)';  //set background color
+    ctx.fillStyle = 'rgb(255,255,255)';  //set background color
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.save();
