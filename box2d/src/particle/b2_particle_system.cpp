@@ -2512,7 +2512,7 @@ private:
 	}
 
 	// Receive a fixture and call ReportFixtureAndParticle() for each particle
-	// inside aabb of the fixture.
+	// inside aabb of the fixture. true if fixture is a sensor
 	bool ReportFixture(b2Fixture* fixture)
 	{
 		if (fixture->IsSensor())
@@ -2748,23 +2748,27 @@ bool b2ParticleSystem::BodyContactCompare(const b2ParticleBodyContact &lhs,
 	return lhs.index < rhs.index;
 }
 
-
+// This function detects particles which are crossing boundary of bodies
+// and modifies velocities of them so that they will move just in front of
+// boundary. This function also applies the reaction force to
+// bodies as precisely as the numerical stability is kept.
 void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 {
-	// This function detects particles which are crossing boundary of bodies
-	// and modifies velocities of them so that they will move just in front of
-	// boundary. This function function also applies the reaction force to
-	// bodies as precisely as the numerical stability is kept.
 	b2AABB aabb;
 	aabb.lowerBound.x = +b2_maxFloat;
 	aabb.lowerBound.y = +b2_maxFloat;
 	aabb.upperBound.x = -b2_maxFloat;
 	aabb.upperBound.y = -b2_maxFloat;
+    //for each particle in this system
 	for (int32 i = 0; i < m_count; i++)
 	{
+        //get velocity
 		b2Vec2 v = m_velocityBuffer.data[i];
+        //get position
 		b2Vec2 p1 = m_positionBuffer.data[i];
 		b2Vec2 p2 = p1 + step.dt * v;
+        //corners of area containing possible collisions of all particles
+        //by going x and y velocity separately
 		aabb.lowerBound = b2Min(aabb.lowerBound, b2Min(p1, p2));
 		aabb.upperBound = b2Max(aabb.upperBound, b2Max(p1, p2));
 	}
@@ -2786,19 +2790,24 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 			return true;
 		}
 
+        //handle collision between fixture and particle
 		void ReportFixtureAndParticle(
-								b2Fixture* fixture, int32 childIndex, int32 a)
+								b2Fixture* fixture, int32 childIndex, int32 a) override
 		{
 			if (ShouldCollide(fixture, a)) {
 				b2Body* body = fixture->GetBody();
-				b2Vec2 ap = m_system->m_positionBuffer.data[a];
-				b2Vec2 av = m_system->m_velocityBuffer.data[a];
+				b2Vec2 aPos = m_system->m_positionBuffer.data[a];
+				b2Vec2 aVel = m_system->m_velocityBuffer.data[a];
 				b2RayCastOutput output;
 				b2RayCastInput input;
+                if (fixture->GetShape()->is_pump){
+                    m_system->ParticleApplyForce(a,fixture->GetShape()->pumpForce); //TODO does not stop collision
+                    return;
+                }
 				if (m_system->m_iterationIndex == 0)
 				{
-					// Put 'ap' in the local space of the previous frame
-					b2Vec2 p1 = b2MulT(body->m_xf0, ap);
+					// Put 'aPos' in the local space of the previous frame
+					b2Vec2 p1 = b2MulT(body->m_xf0, aPos);
 					if (fixture->GetShape()->GetType() == b2Shape::e_circle)
 					{
 						// Make relative to the center of the circle
@@ -2816,9 +2825,9 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 				}
 				else
 				{
-					input.p1 = ap;
+					input.p1 = aPos;
 				}
-				input.p2 = ap + m_step.dt * av;
+				input.p2 = aPos + m_step.dt * aVel;
 				input.maxFraction = 1;
 				if (fixture->RayCast(&output, input, childIndex))
 				{
@@ -2827,11 +2836,11 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 						(1 - output.fraction) * input.p1 +
 						output.fraction * input.p2 +
 						b2_linearSlop * n;
-					b2Vec2 v = m_step.inv_dt * (p - ap);
+					b2Vec2 v = m_step.inv_dt * (p - aPos);
 					m_system->m_velocityBuffer.data[a] = v;
 					b2Vec2 f = m_step.inv_dt *
-						m_system->GetParticleMass() * (av - v);
-					m_system->ParticleApplyForce(a, f);
+						m_system->GetParticleMass() * (aVel - v);
+					m_system->ParticleApplyForce(a, f); //velocity change happens here
 				}
 			}
 		}
@@ -2847,7 +2856,9 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 			m_step = step;
 			m_contactFilter = contactFilter;
 		}
-	} callback(this, step, GetFixtureContactFilter());
+	}
+    //callback calls the constructor of SolveCollisionCallback and stores the object?
+    callback(this, step, GetFixtureContactFilter());
 	m_world->QueryAABB(&callback, aabb);
 }
 
@@ -2970,6 +2981,7 @@ void b2ParticleSystem::SolveBarrier(const b2TimeStep& step)
 	}
 }
 
+//run one step for all particles of this system
 void b2ParticleSystem::Solve(const b2TimeStep& step)
 {
 	if (m_count == 0)

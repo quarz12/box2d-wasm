@@ -471,7 +471,7 @@ private:
 	b2World* m_world;
 	b2Body* m_prev;
 	b2Body* m_next;
-
+    ///linked list
 	b2Fixture* m_fixtureList;
 	int32 m_fixtureCount;
 

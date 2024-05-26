@@ -1083,7 +1083,9 @@ void b2World::QueryAABB(b2QueryCallback* callback, const b2AABB& aabb) const
 	b2WorldQueryWrapper wrapper;
 	wrapper.broadPhase = &m_contactManager.m_broadPhase;
 	wrapper.callback = callback;
+    //query fixtures
 	m_contactManager.m_broadPhase.Query(&wrapper, aabb);
+    //query particles
   for (b2ParticleSystem* p = m_particleSystemList; p; p = p->GetNext())
 	{
 		if (callback->ShouldQueryParticleSystem(p))
@@ -1168,7 +1170,7 @@ void b2World::DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color
 			b2Vec2 v2 = b2Mul(xf, edge->m_vertex2);
 			m_debugDraw->DrawSegment(v1, v2, color);
 
-			if (edge->m_oneSided == false)
+			if (!edge->m_oneSided)
 			{
 				m_debugDraw->DrawPoint(v1, 4.0f, color);
 				m_debugDraw->DrawPoint(v2, 4.0f, color);

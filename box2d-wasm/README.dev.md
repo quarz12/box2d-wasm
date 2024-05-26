@@ -28,6 +28,10 @@ export PYTHON3="${EMSDK_PYTHON:-"$(which python3)"}"
 ./build_all.sh
 ```
 
+### how to include new code
+- add .cpp and .h files to the corresponding Set() in CMakeLists.txt
+- update Box2D.idl
+- #include in /include/box2d/box2d.h?
 ### Step-by-step
 
 If you're prefer not to use [`build_all.sh`](build_all.sh), here's each step laid bare.

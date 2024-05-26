@@ -167,7 +167,7 @@ void b2Body::SetType(b2BodyType type)
 b2Fixture* b2Body::CreateFixture(const b2FixtureDef* def)
 {
 	b2Assert(m_world->IsLocked() == false);
-	if (m_world->IsLocked() == true)
+	if (m_world->IsLocked())
 	{
 		return nullptr;
 	}

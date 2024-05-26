@@ -648,7 +648,7 @@ public:
 	void ApplyLinearImpulse(int32 firstIndex, int32 lastIndex,
 							const b2Vec2& impulse);
 
-	/// Apply a force to the center of a particle.
+	/// Apply a force to the center of a particle by adding to its existing force.
 	/// @param index the particle that will be modified.
 	/// @param force the world force vector, usually in Newtons (N).
 	void ParticleApplyForce(int32 index, const b2Vec2& force);
@@ -1078,7 +1078,7 @@ private:
 	float m_particleDiameter;
 	float m_inverseDiameter;
 	float m_squaredDiameter;
-
+    ///amount of particles in system?
 	int32 m_count;
 	int32 m_internalAllocatedCapacity;
 	/// Allocator for b2ParticleHandle instances.

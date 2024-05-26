@@ -29,17 +29,10 @@ Box2DFactory_().then(box2D => {
         b2World,
         b2AABB,
         b2ParticleGroupDef,
-        b2ParticleSystem,
         b2ParticleSystemDef,
-        castObject,
-        destroy,
-        getPointer,
-        HEAPF32,
-        NULL,
-        b2ParticleDef,
-        wrapPointer,
         b2ChainShape,
         b2ParticleColor,
+        b2Pump,
         _malloc
     } = box2D;
 
@@ -64,6 +57,7 @@ Box2DFactory_().then(box2D => {
         let corners = [new b2Vec2(0, 21), new b2Vec2(0, 0), new b2Vec2(25, 0), new b2Vec2(25, 21)];
         chain.CreateLoop(vecArrToPointer(corners, box2D), corners.length);
         ground.CreateFixture(chain, 1);
+        console.log(chain.is_pump);
     }
     //channel
     {
@@ -86,17 +80,27 @@ Box2DFactory_().then(box2D => {
         }
     }
 
+    //make pump
+    {
+        const pump = new b2Pump(new b2Vec2(0,0.2));
+        pump.SetAsBox(1,1,new b2Vec2(12.5,3),0);
+        const bd = new b2BodyDef();
+        bd.set_position(new b2Vec2(0,0));
+        const body = world.CreateBody(bd);
+        body.CreateFixture(pump,1);
+    }
 
     // make particles
     const partSysDef = new b2ParticleSystemDef();
     partSysDef.radius = 0.05;
     partSysDef.dampingStrength = 0;
     const particleSystem = world.CreateParticleSystem(partSysDef);
+    particleSystem.SetGravityScale(1);
     const amount = 1;
     for (let i = 0; i < amount; i++) {
         const pt = new b2ParticleGroupDef();
         const shape = new b2PolygonShape();
-        shape.SetAsBox(5, 1, new b2Vec2(5, 3), 0);
+        shape.SetAsBox(5, 1, new b2Vec2(5, 3), 0);  //particle spawn area
         pt.shape = shape;
         //alpha is divided by 255 to get value between 0-1
         pt.set_color(new b2ParticleColor(100, 0, 255, 255));

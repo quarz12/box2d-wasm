@@ -205,7 +205,7 @@ inline void b2DynamicTree::Query(T* callback, const b2AABB& aabb) const
 			if (node->IsLeaf())
 			{
 				bool proceed = callback->QueryCallback(nodeId);
-				if (proceed == false)
+				if (!proceed)
 				{
 					return;
 				}

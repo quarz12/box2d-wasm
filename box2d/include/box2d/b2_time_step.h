@@ -42,7 +42,7 @@ struct B2_API b2Profile
 /// This is an internal structure.
 struct B2_API b2TimeStep
 {
-	float dt;			// time step
+	float dt;			// time step (delta time)
 	float inv_dt;		// inverse time step (0 if dt == 0).
 	float dtRatio;	// dt * inv_dt0
 	int32 velocityIterations;

@@ -120,6 +120,7 @@ interface b2Shape {
 
   attribute b2ShapeType m_type;
   attribute float m_radius;
+  attribute boolean is_pump;
 };
 
 interface b2FixtureUserData {
@@ -1387,3 +1388,9 @@ interface b2VoronoiDiagram {
 [Prefix="b2VoronoiDiagram::"]
 interface NodeCallback {
 };
+
+[NoDelete] //dont use inline
+interface b2Pump {
+    void b2Pump([Const, Ref] b2Vec2 force);
+};
+b2Pump implements b2PolygonShape;

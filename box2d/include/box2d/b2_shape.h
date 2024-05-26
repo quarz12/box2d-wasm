@@ -105,6 +105,9 @@ public:
 
 	Type m_type;
 
+    bool is_pump = false;
+    b2Vec2 pumpForce=b2Vec2(0,0); //TODO performance?
+
 	/// Radius of a shape. For polygonal shapes this must be b2_polygonRadius. There is no support for
 	/// making rounded polygons.
 	float m_radius;
