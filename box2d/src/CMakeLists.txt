@@ -61,8 +61,7 @@ set(BOX2D_SOURCE_FILES
 	particle/b2_particle.cpp
 	particle/b2_voronoi_diagram.cpp
 	rope/b2_rope.cpp
-		microfluidics/b2_contact_filter.cpp
-		microfluidics/b2_pump.cpp)
+		microfluidics/b2_contact_filter.cpp)
 
 set(BOX2D_HEADER_FILES
 	../include/box2d/b2_api.h

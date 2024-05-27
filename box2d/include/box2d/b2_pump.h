@@ -9,7 +9,10 @@
 
 class b2Pump : public b2PolygonShape {
 public:
-    explicit b2Pump(const b2Vec2&);
+    explicit b2Pump(const b2Vec2& force){
+        is_pump = true;
+        pumpForce = force;
+    };
 
 };
 

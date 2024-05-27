@@ -57,7 +57,6 @@ Box2DFactory_().then(box2D => {
         let corners = [new b2Vec2(0, 21), new b2Vec2(0, 0), new b2Vec2(25, 0), new b2Vec2(25, 21)];
         chain.CreateLoop(vecArrToPointer(corners, box2D), corners.length);
         ground.CreateFixture(chain, 1);
-        console.log(chain.is_pump);
     }
     //channel
     {
@@ -82,12 +81,12 @@ Box2DFactory_().then(box2D => {
 
     //make pump
     {
-        const pump = new b2Pump(new b2Vec2(0,0.2));
+        const pump = new b2Pump(new b2Vec2(1,0));
         pump.SetAsBox(1,1,new b2Vec2(12.5,3),0);
         const bd = new b2BodyDef();
         bd.set_position(new b2Vec2(0,0));
         const body = world.CreateBody(bd);
-        body.CreateFixture(pump,1);
+        const fixture = body.CreateFixture(pump,1);
     }
 
     // make particles

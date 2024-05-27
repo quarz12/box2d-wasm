@@ -28,6 +28,8 @@
 #include "box2d/b2_edge_shape.h"
 #include "box2d/b2_chain_shape.h"
 #include <algorithm>
+#include <stdio.h>
+#include <emscripten/emscripten.h>
 
 // Define LIQUIDFUN_SIMD_TEST_VS_REFERENCE to run both SIMD and reference
 // versions, and assert that the results are identical. This is useful when
@@ -2802,6 +2804,7 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 				b2RayCastInput input;
                 if (fixture->GetShape()->is_pump){
                     m_system->ParticleApplyForce(a,fixture->GetShape()->pumpForce); //TODO does not stop collision
+                    //EM_ASM({ console.log("applied force"); });
                     return;
                 }
 				if (m_system->m_iterationIndex == 0)
@@ -2840,7 +2843,7 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 					m_system->m_velocityBuffer.data[a] = v;
 					b2Vec2 f = m_step.inv_dt *
 						m_system->GetParticleMass() * (aVel - v);
-					m_system->ParticleApplyForce(a, f); //velocity change happens here
+					m_system->ParticleApplyForce(a, f); //force change happens here
 				}
 			}
 		}
@@ -3101,7 +3104,7 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		// The particle positions can be updated only at the end of substep.
 		for (int32 i = 0; i < m_count; i++)
 		{
-			m_positionBuffer.data[i] += subStep.dt * m_velocityBuffer.data[i];
+			m_positionBuffer.data[i] += subStep.dt * m_velocityBuffer.data[i]; //change particle position
 		}
 	}
 }
@@ -3252,7 +3255,17 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep& step)
 		b2Vec2 p = m_positionBuffer.data[a];
 		float h = m_accumulationBuffer[a] + pressurePerWeight * w;
 		b2Vec2 f = velocityPerPressure * w * m * h * n;
-		m_velocityBuffer.data[a] -= GetParticleInvMass() * f;
+
+        //check if all fixtures are pumps
+        bool allPump= true;
+        for (b2Fixture* f = b->GetFixtureList(); f; f = f->GetNext())
+        {
+            allPump=f->GetShape()->is_pump && allPump;
+        }
+        // if all fixtures are pumps, dont apply pressure as pumps dont have collision
+         if (!allPump){
+            m_velocityBuffer.data[a] -= GetParticleInvMass() * f;   //recoil particle
+        }
 		b->ApplyLinearImpulse(f, p, true);
 	}
 	for (int32 k = 0; k < m_contactBuffer.GetCount(); k++)

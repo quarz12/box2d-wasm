@@ -124,7 +124,7 @@ void b2ContactManager::Collide()
 		if (c->m_flags & b2Contact::e_filterFlag)
 		{
 			// Should these bodies collide?
-			if (bodyB->ShouldCollide(bodyA) == false)
+			if (!bodyB->ShouldCollide(bodyA))
 			{
 				b2Contact* cNuke = c;
 				c = cNuke->GetNext();
@@ -133,7 +133,7 @@ void b2ContactManager::Collide()
 			}
 
 			// Check user filtering.
-			if (m_contactFilter && m_contactFilter->ShouldCollide(fixtureA, fixtureB) == false)
+			if (m_contactFilter && !m_contactFilter->ShouldCollide(fixtureA, fixtureB))
 			{
 				b2Contact* cNuke = c;
 				c = cNuke->GetNext();
@@ -149,7 +149,7 @@ void b2ContactManager::Collide()
 		bool activeB = bodyB->IsAwake() && bodyB->m_type != b2_staticBody;
 
 		// At least one body must be awake and it must be dynamic or kinematic.
-		if (activeA == false && activeB == false)
+		if (!activeA && !activeB)
 		{
 			c = c->GetNext();
 			continue;
@@ -160,7 +160,7 @@ void b2ContactManager::Collide()
 		bool overlap = m_broadPhase.TestOverlap(proxyIdA, proxyIdB);
 
 		// Here we destroy contacts that cease to overlap in the broad-phase.
-		if (overlap == false)
+		if (!overlap)
 		{
 			b2Contact* cNuke = c;
 			c = cNuke->GetNext();
@@ -229,13 +229,13 @@ void b2ContactManager::AddPair(void* proxyUserDataA, void* proxyUserDataB)
 	}
 
 	// Does a joint override collision? Is at least one body dynamic?
-	if (bodyB->ShouldCollide(bodyA) == false)
+	if (!bodyB->ShouldCollide(bodyA))
 	{
 		return;
 	}
 
 	// Check user filtering.
-	if (m_contactFilter && m_contactFilter->ShouldCollide(fixtureA, fixtureB) == false)
+	if (m_contactFilter && !m_contactFilter->ShouldCollide(fixtureA, fixtureB))
 	{
 		return;
 	}
