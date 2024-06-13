@@ -82,14 +82,14 @@ bool b2CircleShape::RayCast(b2RayCastOutput* output, const b2RayCastInput& input
 	}
 
 	// Find the point of intersection of the line with the circle.
-	float a = -(c + b2Sqrt(sigma));
+	float fractionOfRayUntilCollision = -(c + b2Sqrt(sigma));
 
 	// Is the intersection point on the segment?
-	if (0.0f <= a && a <= input.maxFraction * rr)
+	if (0.0f <= fractionOfRayUntilCollision && fractionOfRayUntilCollision <= input.maxFraction * rr)
 	{
-		a /= rr;
-		output->fraction = a;
-		output->normal = s + a * r;
+        fractionOfRayUntilCollision /= rr;
+		output->fraction = fractionOfRayUntilCollision;
+		output->normal = s + fractionOfRayUntilCollision * r;
 		output->normal.Normalize();
 		return true;
 	}

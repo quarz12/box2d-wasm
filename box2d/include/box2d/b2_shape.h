@@ -56,7 +56,9 @@ public:
 		e_edge = 1,
 		e_polygon = 2,
 		e_chain = 3,
-		e_typeCount = 4
+        e_arc=4,
+		e_typeCount = 5,
+
 	};
 
 	virtual ~b2Shape() {}
@@ -105,8 +107,9 @@ public:
 
 	Type m_type;
 
-    bool is_pump = false;
-    b2Vec2 pumpForce=b2Vec2(0,0); //TODO performance?
+    bool m_isPump= false;
+    bool m_hasCollision = true;
+    b2Vec2 pumpForce=b2Vec2_zero;
 
 	/// Radius of a shape. For polygonal shapes this must be b2_polygonRadius. There is no support for
 	/// making rounded polygons.

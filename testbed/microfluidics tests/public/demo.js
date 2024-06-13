@@ -33,7 +33,11 @@ Box2DFactory_().then(box2D => {
         b2ChainShape,
         b2ParticleColor,
         b2Pump,
-        _malloc
+        b2_tensileParticle,
+        b2ParticleDef,
+        b2ArcShape,
+        _malloc,
+        b2_adhesiveParticle //enum values are part of the base Box2D object
     } = box2D;
 
     /** @type {HTMLCanvasElement} */
@@ -45,7 +49,29 @@ Box2DFactory_().then(box2D => {
         x: 0,
         y: 0
     };
-
+    const pauseBtn=document.getElementById("pauseBtn");
+    let isPaused=false;
+    pauseBtn.addEventListener("click",()=>{
+        isPaused=!isPaused;
+    })
+    const stepForm=document.getElementById("stepBtn");
+    stepForm.addEventListener("click",()=>{
+        if(isPaused){
+            let stepInt=parseInt(document.getElementById("stepInterval").value);
+            for (let i = 0; i < stepInt; i++) {
+                step(1/60*1000);
+            }
+            drawCanvas();
+        }
+    })
+    const summonPartBtn=document.getElementById("summonPartBtn");
+    summonPartBtn.addEventListener("click",()=>{
+        summonParticles();
+    })
+    const summonParticleBtn=document.getElementById("summonParticleBtn");
+    summonParticleBtn.addEventListener("click",()=>{
+        summonParticle();
+    })
     const gravity = new b2Vec2(0, 0);
     const world = new b2World(gravity);
 
@@ -56,57 +82,97 @@ Box2DFactory_().then(box2D => {
         const chain = new b2ChainShape();
         let corners = [new b2Vec2(0, 21), new b2Vec2(0, 0), new b2Vec2(25, 0), new b2Vec2(25, 21)];
         chain.CreateLoop(vecArrToPointer(corners, box2D), corners.length);
-        ground.CreateFixture(chain, 1);
+        ground.CreateFixture(chain, 0);
     }
     //channel
     {
-        {//left L
+
+        {// U
             const chain = new b2ChainShape();
-            let corners = arrToVecArr([[0, 4], [10, 4], [11, 7]], box2D);
+            let corners = arrToVecArr([[0,4],[24, 4],[24,10.5], [1,10.5]], box2D);
             chain.CreateChain(vecArrToPointer(corners, box2D), corners.length);
-            ground.CreateFixture(chain, 1);
+            ground.CreateFixture(chain, 0);
         }
-        {//right L
-            const chain = new b2ChainShape();
-            let corners = arrToVecArr([[25, 4], [15, 4], [14, 7]], box2D);
-            chain.CreateChain(vecArrToPointer(corners, box2D), corners.length);
-            ground.CreateFixture(chain, 1);
+        {//bot line
+            const line=new b2EdgeShape();
+            line.SetTwoSided(new b2Vec2(0,11),new b2Vec2(25,11));
+            ground.CreateFixture(line,0);
         }
         {//top line
             const line=new b2EdgeShape();
-            line.SetTwoSided(new b2Vec2(0,2),new b2Vec2(25,2));
-            ground.CreateFixture(line,1);
+            line.SetTwoSided(new b2Vec2(0,3),new b2Vec2(24,3));
+            ground.CreateFixture(line,0);
+        }
+        // {//make arc
+        //     const arc=new b2ArcShape();
+        //     arc.SetTwoSided(new b2Vec2(14,4), new b2Vec2(16,4), new b2Vec2(15,4));
+        //     ground.CreateFixture(arc,0);
+        // }
+        {//make arc
+            const arc=new b2ArcShape();
+            arc.SetTwoSided(new b2Vec2(24,3), new b2Vec2(25,4), new b2Vec2(24,4));
+            ground.CreateFixture(arc,0);
         }
     }
 
+    // {//make arc
+    //     const arc=new b2ArcShape();
+    //     arc.SetTwoSided(new b2Vec2(3,4), new b2Vec2(5,4), new b2Vec2(4,4));
+    //     ground.CreateFixture(arc,0);
+    // }
+
+
     //make pump
     {
-        const pump = new b2Pump(new b2Vec2(1,0));
-        pump.SetAsBox(1,1,new b2Vec2(12.5,3),0);
+        const pump = new b2Pump(new b2Vec2(0.02,0));
+        pump.SetAsBox(24,0.35,new b2Vec2(0,3.5),0);//0.35 to not count as wall too
         const bd = new b2BodyDef();
-        bd.set_position(new b2Vec2(0,0));
         const body = world.CreateBody(bd);
-        const fixture = body.CreateFixture(pump,1);
+        const fixture = body.CreateFixture(pump,0);
     }
 
     // make particles
     const partSysDef = new b2ParticleSystemDef();
     partSysDef.radius = 0.05;
-    partSysDef.dampingStrength = 0;
+    partSysDef.dampingStrength = 0.1;
+    partSysDef.pressureStrength=0.01;
+    partSysDef.surfaceTensionNormalStrength=0.005;
+    partSysDef.surfaceTensionPressureStrength=0.005;
     const particleSystem = world.CreateParticleSystem(partSysDef);
-    particleSystem.SetGravityScale(1);
-    const amount = 1;
-    for (let i = 0; i < amount; i++) {
+
+    function summonParticles() {
         const pt = new b2ParticleGroupDef();
+        pt.flags=b2_tensileParticle;
         const shape = new b2PolygonShape();
-        shape.SetAsBox(5, 1, new b2Vec2(5, 3), 0);  //particle spawn area
+        shape.SetAsBox(10, 0.5, new b2Vec2(0, 3.5), 0);  //particle spawn area
         pt.shape = shape;
         //alpha is divided by 255 to get value between 0-1
-        pt.set_color(new b2ParticleColor(100, 0, 255, 255));
+        pt.set_color(new b2ParticleColor(0, 100, 255, 255));
         pt.set_position(new b2Vec2(5, 0));
-        particleSystem.CreateParticleGroup(pt);
+        const group=particleSystem.CreateParticleGroup(pt);
     }
+    function summonParticle() {
+        const pt = new b2ParticleDef();
+        pt.flags=b2_tensileParticle;
+        //alpha is divided by 255 to get value between 0-1
+        pt.set_color(new b2ParticleColor(0, 100, 255, 255));
+        pt.set_position(new b2Vec2(1, 3.5));
+        pt.velocity=new b2Vec2(10,0);
+        const particle=particleSystem.CreateParticle(pt);
 
+    }
+    // {//test particles
+    //     const pt = new b2ParticleGroupDef();
+    //     pt.flags=b2_tensileParticle;
+    //     const shape = new b2PolygonShape();
+    //     shape.SetAsBox(2, 2, new b2Vec2(4, 4), 0);  //particle spawn area
+    //     pt.shape = shape;
+    //     //alpha is divided by 255 to get value between 0-1
+    //     pt.set_color(new b2ParticleColor(0, 100, 255, 255));
+    //     pt.set_position(new b2Vec2(0, 0));
+    //     const group=particleSystem.CreateParticleGroup(pt);
+    // }
+    // summonParticles();
     const debugDraw = makeDebugDraw(ctx, pixelsPerMeter, box2D);
     world.SetDebugDraw(debugDraw);
 
@@ -139,7 +205,32 @@ Box2DFactory_().then(box2D => {
         const nowMs = window.performance.now();
         handle = requestAnimationFrame(loop.bind(null, nowMs));
         const deltaMs = nowMs - prevMs;
-        step(deltaMs);
-        drawCanvas();
+        if(!isPaused) {
+            step(deltaMs);
+            drawCanvas();
+        }
     }(window.performance.now()));
 });
+const draw =()=>{
+    const canvas = document.getElementById("demo-canvas");
+    const ctx = canvas.getContext('2d');
+    const setCtxColor = (rgbaStr) => {
+        ctx.fillStyle = `rgba(${rgbaStr})`;
+        ctx.strokeStyle = `rgba(${rgbaStr})`;
+    };
+    const drawPoint = (x,y) => {
+        setCtxColor("255,0,0,1");
+        const sizePixels = 10;
+        ctx.fillRect(
+            x*32-sizePixels/2,
+            y*32-sizePixels/2,
+            sizePixels,
+            sizePixels
+        );
+    };
+    return drawPoint;
+}
+window.draw = draw;
+export {
+    draw,
+};

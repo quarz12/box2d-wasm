@@ -84,6 +84,9 @@ public:
 	/// Draw a circle.
 	virtual void DrawCircle(const b2Vec2& center, float radius, const b2Color& color) = 0;
 
+    /// Draw an arc
+    virtual void DrawArc(const b2Vec2& center, float radius, const b2Vec2& start, const b2Vec2& end, const b2Color& color)=0;
+
 	/// Draw a solid circle.
 	virtual void DrawSolidCircle(const b2Vec2& center, float radius, const b2Vec2& axis, const b2Color& color) = 0;
 

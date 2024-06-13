@@ -987,7 +987,10 @@ private:
 	void SolveRigid(const b2TimeStep& step);
 	void SolveElastic(const b2TimeStep& step);
 	void SolveSpring(const b2TimeStep& step);
+    /// apply surface tension force between particles
 	void SolveTensile(const b2TimeStep& step);
+    /// apply surface tension force between a particle and a surface
+    void SolveTensileSurface(const b2TimeStep& step);
 	void SolveViscous();
 	void SolveRepulsive(const b2TimeStep& step);
 	void SolvePowder(const b2TimeStep& step);
@@ -1078,7 +1081,7 @@ private:
 	float m_particleDiameter;
 	float m_inverseDiameter;
 	float m_squaredDiameter;
-    ///amount of particles in system?
+    ///amount of particles in system
 	int32 m_count;
 	int32 m_internalAllocatedCapacity;
 	/// Allocator for b2ParticleHandle instances.
@@ -1121,7 +1124,9 @@ private:
 	UserOverridableBuffer<int32> m_consecutiveContactStepsBuffer;
 	b2GrowableBuffer<int32> m_stuckParticleBuffer;
 	b2GrowableBuffer<Proxy> m_proxyBuffer;
+    /// contacts between particles in this step
 	b2GrowableBuffer<b2ParticleContact> m_contactBuffer;
+    ///contacts between particles and bodies in this step
 	b2GrowableBuffer<b2ParticleBodyContact> m_bodyContactBuffer;
 	b2GrowableBuffer<b2ParticlePair> m_pairBuffer;
 	b2GrowableBuffer<b2ParticleTriad> m_triadBuffer;

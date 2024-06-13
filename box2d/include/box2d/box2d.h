@@ -35,6 +35,7 @@
 #include "b2_circle_shape.h"
 #include "b2_edge_shape.h"
 #include "b2_polygon_shape.h"
+#include "b2_arc_shape.h"
 #include "b2_pump.h"
 
 #include "b2_broad_phase.h"

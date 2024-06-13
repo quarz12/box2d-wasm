@@ -28,7 +28,7 @@
 #include "box2d/b2_edge_shape.h"
 #include "box2d/b2_chain_shape.h"
 #include <algorithm>
-#include <stdio.h>
+#include <cstdio>
 #include <emscripten/emscripten.h>
 
 // Define LIQUIDFUN_SIMD_TEST_VS_REFERENCE to run both SIMD and reference
@@ -2802,8 +2802,8 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 				b2Vec2 aVel = m_system->m_velocityBuffer.data[a];
 				b2RayCastOutput output;
 				b2RayCastInput input;
-                if (fixture->GetShape()->is_pump){
-                    m_system->ParticleApplyForce(a,fixture->GetShape()->pumpForce); //TODO does not stop collision
+                if (fixture->GetShape()->m_isPump){
+                    m_system->ParticleApplyForce(a,fixture->GetShape()->pumpForce);
                     //EM_ASM({ console.log("applied force"); });
                     return;
                 }
@@ -2832,11 +2832,11 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 				}
 				input.p2 = aPos + m_step.dt * aVel;
 				input.maxFraction = 1;
-				if (fixture->RayCast(&output, input, childIndex))
+				if (fixture->RayCast(&output, input, childIndex))  //if particle hits border of fixture
 				{
 					b2Vec2 n = output.normal;
 					b2Vec2 p =
-						(1 - output.fraction) * input.p1 +
+						(1 - output.fraction) * input.p1 + // scale ray to stop at collision
 						output.fraction * input.p2 +
 						b2_linearSlop * n;
 					b2Vec2 v = m_step.inv_dt * (p - aPos);
@@ -3050,6 +3050,7 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		if (m_allParticleFlags & b2_tensileParticle)
 		{
 			SolveTensile(subStep);
+//            SolveTensileSurface(subStep);
 		}
 		if (m_allGroupFlags & b2_solidParticleGroup)
 		{
@@ -3242,7 +3243,7 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep& step)
 			}
 		}
 	}
-	// applies pressure between each particles in contact
+	// applies pressure between each particle in contact
 	float velocityPerPressure = step.dt / (m_def.density * m_particleDiameter);
 	for (int32 k = 0; k < m_bodyContactBuffer.GetCount(); k++)
 	{
@@ -3256,14 +3257,14 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep& step)
 		float h = m_accumulationBuffer[a] + pressurePerWeight * w;
 		b2Vec2 f = velocityPerPressure * w * m * h * n;
 
-        //check if all fixtures are pumps
-        bool allPump= true;
-        for (b2Fixture* f = b->GetFixtureList(); f; f = f->GetNext())
+        //check if all fixtures dont have collision
+        bool Collision = false;
+        for (b2Fixture* fixture = b->GetFixtureList(); fixture; fixture = fixture->GetNext())
         {
-            allPump=f->GetShape()->is_pump && allPump;
+            Collision= fixture->GetShape()->m_hasCollision || Collision;
         }
         // if all fixtures are pumps, dont apply pressure as pumps dont have collision
-         if (!allPump){
+         if (Collision){
             m_velocityBuffer.data[a] -= GetParticleInvMass() * f;   //recoil particle
         }
 		b->ApplyLinearImpulse(f, p, true);
@@ -3642,7 +3643,7 @@ void b2ParticleSystem::SolveTensile(const b2TimeStep& step)
 		m_accumulation2Buffer[i] = b2Vec2_zero;
 	}
 	for (int32 k = 0; k < m_contactBuffer.GetCount(); k++)
-	{
+	{   //adjust direction?
 		const b2ParticleContact& contact = m_contactBuffer[k];
 		if (contact.GetFlags() & b2_tensileParticle)
 		{
@@ -3672,15 +3673,59 @@ void b2ParticleSystem::SolveTensile(const b2TimeStep& step)
 			b2Vec2 n = contact.GetNormal();
 			float h = m_weightBuffer[a] + m_weightBuffer[b];
 			b2Vec2 s = m_accumulation2Buffer[b] - m_accumulation2Buffer[a];
-			float fn = b2Min(
+			float normalForce = b2Min(
 					pressureStrength * (h - 2) + normalStrength * b2Dot(s, n),
 					maxVelocityVariation) * w;
-			b2Vec2 f = fn * n;
-			m_velocityBuffer.data[a] -= f;
-			m_velocityBuffer.data[b] += f;
+			b2Vec2 force = normalForce * n;
+			m_velocityBuffer.data[a] -= force;
+			m_velocityBuffer.data[b] += force;
 		}
 	}
 }
+
+void b2ParticleSystem::SolveTensileSurface(const b2TimeStep& step){ //TODO DISTANCE?
+    b2Assert(m_accumulation2Buffer);
+    for (int32 i = 0; i < m_count; i++)
+    {
+        m_accumulation2Buffer[i] = b2Vec2_zero;
+    }
+    for (int32 k = 0; k < m_bodyContactBuffer.GetCount(); k++)
+    {   //adjust direction?
+        const b2ParticleBodyContact& contact = m_bodyContactBuffer[k];
+        if (m_flagsBuffer.data[contact.index] & b2_tensileParticle)
+        {
+            int32 a = contact.index;
+            float w = contact.weight;
+            b2Vec2 n = contact.normal;
+            b2Vec2 weightedNormal = (1 - w) * w * n;
+            m_accumulation2Buffer[a] -= weightedNormal;
+        }
+    }
+    float criticalVelocity = GetCriticalVelocity(step);
+    float pressureStrength = m_def.surfaceTensionPressureStrength
+                             * criticalVelocity;
+    float normalStrength = m_def.surfaceTensionNormalStrength
+                           * criticalVelocity;
+    float maxVelocityVariation = b2_maxParticleForce * criticalVelocity;
+    for (int32 k = 0; k < m_bodyContactBuffer.GetCount(); k++)
+    {
+        const b2ParticleBodyContact& contact = m_bodyContactBuffer[k];
+        if (m_flagsBuffer.data[contact.index] & b2_tensileParticle && contact.fixture->GetShape()->m_hasCollision)
+        {
+            int32 a = contact.index;
+            b2Fixture fixture = *contact.fixture;
+            float w = contact.weight;
+            b2Vec2 n = contact.normal;
+            b2Vec2 s = m_accumulation2Buffer[a];
+            float fn = b2Min(
+                    pressureStrength * (w - 2) + normalStrength * b2Dot(s, n),
+                    maxVelocityVariation) * w;
+            b2Vec2 f = fn * n/2;
+            m_velocityBuffer.data[a] -= f;
+        }
+    }
+};
+
 
 void b2ParticleSystem::SolveViscous()
 {
@@ -4479,6 +4524,7 @@ inline void b2ParticleSystem::PrepareForceBuffer()
 	}
 }
 
+/// apply force to a group of particles, probably all in the system
 void b2ParticleSystem::ApplyForce(int32 firstIndex, int32 lastIndex,
 								  const b2Vec2& force)
 {

@@ -158,6 +158,7 @@ struct B2_API b2RayCastInput
 
 /// Ray-cast output data. The ray hits at p1 + fraction * (p2 - p1), where p1 and p2
 /// come from b2RayCastInput.
+/// normal is surface normal, i.e. perpendicular to the surface at the point of intersection
 struct B2_API b2RayCastOutput
 {
 	b2Vec2 normal;

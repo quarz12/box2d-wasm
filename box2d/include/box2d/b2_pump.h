@@ -2,19 +2,16 @@
 // Created by Daniel on 25.05.2024.
 //
 
-#ifndef BOX2D_B2_PUMP_H
-#define BOX2D_B2_PUMP_H
+#pragma once
 
 #include "b2_polygon_shape.h"
 
 class b2Pump : public b2PolygonShape {
 public:
     explicit b2Pump(const b2Vec2& force){
-        is_pump = true;
+        m_hasCollision = false;
+        m_isPump= true;
         pumpForce = force;
     };
 
 };
-
-#endif //BOX2D_B2_PUMP_H
-

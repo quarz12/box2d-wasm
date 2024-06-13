@@ -104,6 +104,7 @@ enum b2ShapeType {
   "b2Shape::e_edge",
   "b2Shape::e_polygon",
   "b2Shape::e_chain",
+  "b2Shape::e_arc",
   "b2Shape::e_typeCount"
 };
 
@@ -120,7 +121,8 @@ interface b2Shape {
 
   attribute b2ShapeType m_type;
   attribute float m_radius;
-  attribute boolean is_pump;
+  attribute boolean m_hasCollision;
+  attribute boolean m_isPump;
 };
 
 interface b2FixtureUserData {
@@ -365,6 +367,21 @@ interface b2CircleShape {
 
 b2CircleShape implements b2Shape;
 
+[NoDelete]
+interface b2ArcShape {
+  void b2ArcShape();
+  void SetOneSided([Const,Ref] b2Vec2 start, [Const,Ref] b2Vec2 end, [Const,Ref] b2Vec2 center, [Const,Ref] b2Vec2 v0, [Const,Ref] b2Vec2 v3);
+  void SetTwoSided([Const,Ref] b2Vec2 start, [Const,Ref] b2Vec2 end, [Const,Ref] b2Vec2 center);
+  [Value] attribute b2Vec2 m_start;
+  [Value] attribute b2Vec2 m_end;
+  [Value] attribute b2Vec2 m_center;
+  [Value] attribute b2Vec2 m_vertex0;
+  [Value] attribute b2Vec2 m_vertex3;
+  attribute boolean m_oneSided;
+};
+
+b2ArcShape implements b2Shape;
+
 interface b2EdgeShape {
   void b2EdgeShape();
   void SetOneSided([Const,Ref] b2Vec2 v0, [Const,Ref] b2Vec2 v1, [Const,Ref] b2Vec2 v2, [Const,Ref] b2Vec2 v3);
@@ -590,6 +607,7 @@ interface JSDraw {
   void DrawPolygon([Const] b2Vec2 vertices, long vertexCount, [Const, Ref] b2Color color);
   void DrawSolidPolygon([Const] b2Vec2 vertices, long vertexCount, [Const, Ref] b2Color color);
   void DrawCircle([Const, Ref] b2Vec2 center, float radius, [Const, Ref] b2Color color);
+  void DrawArc([Const, Ref] b2Vec2 center, float radius, [Const, Ref] b2Vec2 start, [Const, Ref] b2Vec2 end, [Const, Ref] b2Color color);
   void DrawSolidCircle([Const, Ref] b2Vec2 center, float radius, [Const, Ref] b2Vec2 axis, [Const, Ref] b2Color color);
   void DrawParticles([Const] b2Vec2 centers, float radius, [Const] b2ParticleColor colors, long count);
   void DrawSegment([Const, Ref] b2Vec2 p1, [Const, Ref] b2Vec2 p2, [Const, Ref] b2Color color);

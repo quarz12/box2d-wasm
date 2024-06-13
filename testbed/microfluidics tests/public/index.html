@@ -20,12 +20,11 @@
 </head>
 
 <body>
-  <h1>Box2D in WebAssembly</h1>
-  <canvas id="demo-canvas" width="800" height="700"></canvas>
-  <p>
-    Demonstration of <a href="https://github.com/Birch-san/box2d-wasm">box2d-wasm</a> by Alex Birch of <a href="https://birchlabs.co.uk/">Birchlabs.co.uk</a>. Zlib-licensed.<br>
-    Links against MIT-licensed code from Erin Catto's <a href="https://github.com/erincatto/box2d">box2d</a>.<br>
-    Compiles Zlib-licensed code from Alon Zakai's <a href="https://github.com/kripken/box2d.js">box2d-js</a>.
-  </p>
+  <canvas id="demo-canvas" width="800" height="700"></canvas><br>
+  <button id="pauseBtn">pause</button><br>
+      <label for="stepInterval">time delta in 1/60s</label><br>
+      <input type="number" id="stepInterval" value="1"><button id="stepBtn">step</button><br>
+<button id="summonPartBtn">summon particles</button>
+  <button id="summonParticleBtn">summon particle</button>
 </body>
 </html>

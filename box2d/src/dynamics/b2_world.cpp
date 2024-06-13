@@ -27,6 +27,7 @@
 #include "box2d/b2_broad_phase.h"
 #include "box2d/b2_chain_shape.h"
 #include "box2d/b2_circle_shape.h"
+#include "box2d/b2_arc_shape.h"
 #include "box2d/b2_collision.h"
 #include "box2d/b2_contact.h"
 #include "box2d/b2_draw.h"
@@ -1210,6 +1211,21 @@ void b2World::DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color
 		}
 		break;
 
+    case b2Shape::e_arc:
+    {
+        b2ArcShape* arc = (b2ArcShape*)fixture->GetShape();
+        b2Vec2 start = b2Mul(xf, arc->m_start);
+        b2Vec2 end = b2Mul(xf, arc->m_end);
+        b2Vec2 center = b2Mul(xf, arc->m_center);
+        m_debugDraw->DrawArc(center,arc->m_radius,start, end, color);
+
+        if (!arc->m_oneSided)
+        {
+            m_debugDraw->DrawPoint(start, 4.0f, color);
+            m_debugDraw->DrawPoint(end, 4.0f, color);
+        }
+    }
+        break;
 	default:
 	break;
 	}
@@ -1255,7 +1271,7 @@ void b2World::DebugDraw()
 					// Bad body
 					DrawShape(f, xf, b2Color(1.0f, 0.0f, 0.0f));
 				}
-				else if (b->IsEnabled() == false)
+				else if (!b->IsEnabled())
 				{
 					DrawShape(f, xf, b2Color(0.5f, 0.5f, 0.3f));
 				}
@@ -1267,7 +1283,7 @@ void b2World::DebugDraw()
 				{
 					DrawShape(f, xf, b2Color(0.5f, 0.5f, 0.9f));
 				}
-				else if (b->IsAwake() == false)
+				else if (!b->IsAwake())
 				{
 					DrawShape(f, xf, b2Color(0.6f, 0.6f, 0.6f));
 				}
@@ -1318,7 +1334,7 @@ void b2World::DebugDraw()
 
 		for (b2Body* b = m_bodyList; b; b = b->GetNext())
 		{
-			if (b->IsEnabled() == false)
+			if (!b->IsEnabled())
 			{
 				continue;
 			}

@@ -163,8 +163,13 @@ public:
 	/// @param p a point in world coordinates.
 	bool TestPoint(const b2Vec2& p) const;
 
-	/// Compute the distance from this fixture.
-	/// @param p a point in world coordinates.
+	/**
+	 * Compute the distance from this fixture.
+     * @param p point to check distance to
+     * @param d pointer that will contain the distance
+     * @param n normalized vector pointer that will contain the direction
+     * @param childIndex index of shape in Type enum (fixture->GetShape()->GetType())
+     */
 	void ComputeDistance(const b2Vec2& p, float* distance, b2Vec2* normal, int32 childIndex) const;
 
 	/// Cast a ray against this shape.
