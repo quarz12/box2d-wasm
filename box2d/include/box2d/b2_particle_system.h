@@ -998,6 +998,7 @@ private:
 	void SolveForce(const b2TimeStep& step);
 	void SolveColorMixing();
 	void SolveZombie();
+    void SolveFriction();
 	/// Destroy all particles which have outlived their lifetimes set by
 	/// SetParticleLifetime().
 	void SolveLifetimes(const b2TimeStep& step);

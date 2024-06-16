@@ -1832,16 +1832,16 @@ void b2ParticleSystem::FindContacts_Reference(
 	const Proxy* endProxy = m_proxyBuffer.End();
 
 	contacts.SetCount(0);
-	for (const Proxy *a = beginProxy, *c = beginProxy; a < endProxy; a++)
+	for (const Proxy *a = beginProxy, *c = beginProxy; a < endProxy; a++)//loop over particles
 	{
 		uint32 rightTag = computeRelativeTag(a->tag, 1, 0);
-		for (const Proxy* b = a + 1; b < endProxy; b++)
+		for (const Proxy* b = a + 1; b < endProxy; b++)//??
 		{
 			if (rightTag < b->tag) break;
 			AddContact(a->index, b->index, contacts);
 		}
 		uint32 bottomLeftTag = computeRelativeTag(a->tag, -1, 1);
-		for (; c < endProxy; c++)
+		for (; c < endProxy; c++) //loop over particles again
 		{
 			if (bottomLeftTag <= c->tag) break;
 		}
@@ -3102,6 +3102,7 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		{
 			SolveWall();
 		}
+        SolveFriction();
 		// The particle positions can be updated only at the end of substep.
 		for (int32 i = 0; i < m_count; i++)
 		{
@@ -3263,7 +3264,7 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep& step)
         {
             Collision= fixture->GetShape()->m_hasCollision || Collision;
         }
-        // if all fixtures are pumps, dont apply pressure as pumps dont have collision
+        // if no fixture has collision dont apply pressure
          if (Collision){
             m_velocityBuffer.data[a] -= GetParticleInvMass() * f;   //recoil particle
         }
@@ -4103,6 +4104,23 @@ void b2ParticleSystem::SolveZombie()
 		}
 		group = next;
 	}
+}
+
+void b2ParticleSystem::SolveFriction() {
+    //particle - particle
+    for (int32 i = 0; i < m_contactBuffer.GetCount(); i++){
+        b2ParticleContact contact=m_contactBuffer[i];
+        b2Vec2 p1=m_positionBuffer.data[contact.GetIndexA()];
+        b2Vec2 p2=m_positionBuffer.data[contact.GetIndexB()];
+        EM_ASM(
+                console.log("p1:"+$0+","+$1);
+                console.log("p2:"+$2+","+$3),
+                p1.x,p1.y,p2.x,p2.y);
+    }
+    //particle - body
+    for (int32 j = 0; j < m_bodyContactBuffer.GetCount(); j++){
+        b2ParticleBodyContact& contact = m_bodyContactBuffer[j];
+    }
 }
 
 /// Destroy all particles which have outlived their lifetimes set by

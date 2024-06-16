@@ -196,7 +196,7 @@ bool b2ArcShape::RayCast(b2RayCastOutput* output, const b2RayCastInput& input,
         if (isWithinArc) {
             output->fraction =  fractionOfRayUntilCollision;
             output->normal = distanceToStart<m_radius ? surfaceNorm : -surfaceNorm;
-            EM_ASM(console.log("surface norm: "+$0+","+$1),output->normal.x,output->normal.y);
+//            EM_ASM(console.log("surface norm: "+$0+","+$1),output->normal.x,output->normal.y);
             return true;
         }
     }
