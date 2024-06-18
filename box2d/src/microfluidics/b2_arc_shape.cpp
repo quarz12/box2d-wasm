@@ -7,7 +7,7 @@
 #include <new>
 #include <emscripten/em_asm.h>
 
-void b2ArcShape::SetOneSided(const b2Vec2& start, const b2Vec2& end, const b2Vec2& center, const b2Vec2& v0, const b2Vec2& v3)
+void b2ArcShape::SetOneSided(const b2Vec2& center, const b2Vec2& v0, const b2Vec2& start, const b2Vec2& end, const b2Vec2& v3)
 {
     m_start = start;
     m_end = end;
@@ -15,9 +15,10 @@ void b2ArcShape::SetOneSided(const b2Vec2& start, const b2Vec2& end, const b2Vec
     m_vertex0 = v0;
     m_vertex3 = v3;
     m_oneSided = true;
+    m_radius=(start-center).Length();
 }
 
-void b2ArcShape::SetTwoSided(const b2Vec2& start, const b2Vec2& end, const b2Vec2& center)
+void b2ArcShape::SetTwoSided(const b2Vec2& center, const b2Vec2& start, const b2Vec2& end)
 {
     m_start = start;
     m_end = end;
@@ -67,7 +68,9 @@ void b2ArcShape::ComputeDistance(const b2Transform& transform, const b2Vec2& poi
     double angleToPoint = b2Atan2(toPoint.y, toPoint.x);
     double angleToStart = b2Atan2(toStart.y, toStart.x);
     double angleToEnd = b2Atan2(toEnd.y, toEnd.x);
-
+    angleToEnd=b2_pi-angleToEnd; //flip yaxis todo remove if renderer changes?
+    angleToStart=b2_pi-angleToStart;
+    angleToPoint=b2_pi-angleToPoint;
     // Normalize angles to [0, 2π]
     if (angleToPoint < 0)
         angleToPoint += 2.0f * b2_pi;
@@ -77,13 +80,10 @@ void b2ArcShape::ComputeDistance(const b2Transform& transform, const b2Vec2& poi
         angleToEnd += 2.0f * b2_pi;
 
     bool isWithinArc = false;
-    if (angleToStart <= angleToEnd)
-    {
-        isWithinArc = (angleToStart <= angleToPoint && angleToPoint <= angleToEnd);
-    }
-    else
-    {
-        isWithinArc = (angleToPoint >= angleToStart || angleToPoint <= angleToEnd);
+    if (angleToStart > angleToEnd) {
+        isWithinArc = (angleToPoint <= angleToStart && angleToPoint >= angleToEnd);
+    } else {
+        isWithinArc = (angleToPoint > angleToStart && angleToPoint >= angleToEnd);
     }
 
     if (isWithinArc)

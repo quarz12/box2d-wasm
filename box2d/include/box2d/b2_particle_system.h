@@ -998,7 +998,7 @@ private:
 	void SolveForce(const b2TimeStep& step);
 	void SolveColorMixing();
 	void SolveZombie();
-    void SolveFriction();
+    void SolveFriction(const b2TimeStep& step);
 	/// Destroy all particles which have outlived their lifetimes set by
 	/// SetParticleLifetime().
 	void SolveLifetimes(const b2TimeStep& step);
@@ -1125,9 +1125,9 @@ private:
 	UserOverridableBuffer<int32> m_consecutiveContactStepsBuffer;
 	b2GrowableBuffer<int32> m_stuckParticleBuffer;
 	b2GrowableBuffer<Proxy> m_proxyBuffer;
-    /// contacts between particles in this step
+    /// contacts between particles in this step | updateContacts
 	b2GrowableBuffer<b2ParticleContact> m_contactBuffer;
-    ///contacts between particles and bodies in this step
+    ///contacts between particles and bodies in this step | updateBodyContacts
 	b2GrowableBuffer<b2ParticleBodyContact> m_bodyContactBuffer;
 	b2GrowableBuffer<b2ParticlePair> m_pairBuffer;
 	b2GrowableBuffer<b2ParticleTriad> m_triadBuffer;

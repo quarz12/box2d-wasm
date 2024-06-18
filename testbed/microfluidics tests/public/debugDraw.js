@@ -103,16 +103,13 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
    * @returns {void}
    */
   const drawCircle = (center, radius, axis, fill) => {
-    try {
       ctx.beginPath();
       ctx.arc(center.get_x(), center.get_y(), radius, 0, 2 * Math.PI, false);
+      // fill=true;
       if (fill) {
         ctx.fill();
       }
       ctx.stroke();
-    }catch (e) {
-      console.log("here");
-    }
     if (fill) {
       //render axis marker
       const vertex = copyVec2(center);
@@ -133,15 +130,11 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
    * @returns {void}
    */
   const drawArc = (center, radius, axis, start, end ) => {
-    try {
       ctx.beginPath();
       let startangle=Math.atan2(start.get_y()-center.get_y(),start.get_x()-center.get_x());
       let endangle=Math.atan2(end.get_y()-center.get_y(),end.get_x()-center.get_x());
       ctx.arc(center.get_x(), center.get_y(), radius, startangle, endangle, false);
       ctx.stroke();
-    }catch (e) {
-      console.log("here");
-    }
   };
 
   /**

@@ -63,7 +63,7 @@ public:
     b2Vec2 m_start, m_end, m_center;
 
     /// Optional adjacent vertices. These are used for smooth collision.
-    b2Vec2 m_vertex0, m_vertex3;
+    b2Vec2 m_vertex0, m_vertex3; //probably not used for particles
 
     float m_lineRadius;
     // draw endpoints?
@@ -78,6 +78,8 @@ inline b2ArcShape::b2ArcShape()
     m_end.SetZero();
     m_center.SetZero();
     m_lineRadius=b2_polygonRadius;
+    m_vertex0.SetZero();
+    m_vertex3.SetZero();
 }
 
 #endif //BOX2D_B2_ARC_SHAPE_H

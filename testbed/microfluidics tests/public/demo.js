@@ -37,6 +37,7 @@ Box2DFactory_().then(box2D => {
         b2ParticleDef,
         b2ArcShape,
         b2_staticPressureParticle,
+        b2_viscousParticle,
         _malloc,
         b2_adhesiveParticle //enum values are part of the base Box2D object
     } = box2D;
@@ -97,17 +98,27 @@ Box2DFactory_().then(box2D => {
         {//bot line
             const line=new b2EdgeShape();
             line.SetTwoSided(new b2Vec2(0,11),new b2Vec2(23,11));
+            line.m_vertex0=new b2Vec2(0,0);
+            line.m_vertex3=new b2Vec2(25,10);
             ground.CreateFixture(line,0);
         }
         {//top line
             const line=new b2EdgeShape();
-            line.SetTwoSided(new b2Vec2(0,3),new b2Vec2(23,3));
+            line.SetTwoSided(new b2Vec2(0,3),new b2Vec2(24,3));
             ground.CreateFixture(line,0);
         }
         {//2nd line
-            const line=new b2EdgeShape();
-            line.SetTwoSided(new b2Vec2(0,4),new b2Vec2(23,4));
+            // const line=new b2EdgeShape();
+            // line.SetTwoSided(new b2Vec2(0,4),new b2Vec2(23,4));
+            // ground.CreateFixture(line,0);
+            const line = new b2EdgeShape();
+            const line2=new b2EdgeShape();
+            line.SetTwoSided(new b2Vec2(0,4),new b2Vec2(15,4));
+            line.m_vertex3=new b2Vec2(23,4);
+            line2.SetTwoSided(new b2Vec2(15,4),new b2Vec2(23,4));
+            line2.m_vertex0=new b2Vec2(0,4);
             ground.CreateFixture(line,0);
+            ground.CreateFixture(line2,0);
         }
         {//3rd line
             const line=new b2EdgeShape();
@@ -121,18 +132,27 @@ Box2DFactory_().then(box2D => {
         }
         {//make arc
             const arc=new b2ArcShape();
-            arc.SetTwoSided(new b2Vec2(24,9), new b2Vec2(23,10), new b2Vec2(23,9));
+            // arc.SetTwoSided(new b2Vec2(24,9), new b2Vec2(23,10), new b2Vec2(23,9));
+            arc.SetTwoSided(new b2Vec2(23,9), new b2Vec2(24,9), new b2Vec2(23,10));
+            arc.m_vertex0=new b2Vec2(24,5);
+            arc.m_vertex3=new b2Vec2(1,10);
+            arc.m_oneSided=true;
             ground.CreateFixture(arc,0);
             const arc2=new b2ArcShape();
-            arc2.SetTwoSided(new b2Vec2(25,9), new b2Vec2(23,11), new b2Vec2(23,9));
+            arc2.SetTwoSided(new b2Vec2(23,9), new b2Vec2(25,9), new b2Vec2(23,11));
+            arc2.m_vertex0=new b2Vec2(25,5);
+            arc2.m_vertex3=new b2Vec2(0,11);
+            arc2.m_oneSided=true;
             ground.CreateFixture(arc2,0);
         }
         {//make arc
             const arc=new b2ArcShape();
-            arc.SetTwoSided(new b2Vec2(23,3), new b2Vec2(25,5), new b2Vec2(23,5));
+            arc.SetTwoSided(new b2Vec2(23,5), new b2Vec2(23,3), new b2Vec2(25,5));
             ground.CreateFixture(arc,0);
+            arc.m_oneSided=true;
             const arc2=new b2ArcShape();
-            arc2.SetTwoSided(new b2Vec2(23,4), new b2Vec2(24,5), new b2Vec2(23,5));
+            arc2.SetTwoSided(new b2Vec2(23,5), new b2Vec2(23,4), new b2Vec2(24,5));
+            arc2.m_oneSided=true;
             ground.CreateFixture(arc2,0);
         }
     }
@@ -146,7 +166,7 @@ Box2DFactory_().then(box2D => {
 
     //make pump
     {
-        const pump = new b2Pump(new b2Vec2(0.00,0));
+        const pump = new b2Pump(new b2Vec2(0.1,0));
         pump.SetAsBox(20,0.35,new b2Vec2(0,3.5),0);//0.35 to not count as wall too
         const bd = new b2BodyDef();
         const body = world.CreateBody(bd);
@@ -155,18 +175,18 @@ Box2DFactory_().then(box2D => {
 
     // make particles
     const partSysDef = new b2ParticleSystemDef();
-    partSysDef.radius = 0.15;
+    partSysDef.radius = 0.1;
     partSysDef.dampingStrength = 0.5;
     partSysDef.pressureStrength=0.05;
     partSysDef.staticPressureStrength=0.1;
     partSysDef.surfaceTensionNormalStrength=0.005;
     partSysDef.surfaceTensionPressureStrength=0.005;
     const particleSystem = world.CreateParticleSystem(partSysDef);
-
+    // particleSystem.SetStrictContactCheck(); //probably not needed
     function summonParticles() {
         const pt = new b2ParticleGroupDef();
         // pt.flags=b2_tensileParticle;
-        pt.flags=b2_staticPressureParticle;
+        pt.flags=b2_staticPressureParticle&b2_viscousParticle;
         const shape = new b2PolygonShape();
         shape.SetAsBox(10, 0.5, new b2Vec2(2, 3.5), 0);  //particle spawn area
         pt.shape = shape;
@@ -185,7 +205,7 @@ Box2DFactory_().then(box2D => {
         const particle=particleSystem.CreateParticle(pt);
 
     }
-    console.log=function (){};
+    // console.log=function (){};
     const debugDraw = makeDebugDraw(ctx, pixelsPerMeter, box2D);
     world.SetDebugDraw(debugDraw);
 

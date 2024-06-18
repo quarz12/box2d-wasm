@@ -2652,13 +2652,13 @@ void b2ParticleSystem::UpdateBodyContacts()
 		}
 
 		void ReportFixtureAndParticle(
-								b2Fixture* fixture, int32 childIndex, int32 a)
+								b2Fixture* fixture, int32 childIndex, int32 particleIndex) override //check if particle hits fixture
 		{
-			b2Vec2 ap = m_system->m_positionBuffer.data[a];
+			b2Vec2 ap = m_system->m_positionBuffer.data[particleIndex];
 			float d;
 			b2Vec2 n;
 			fixture->ComputeDistance(ap, &d, &n, childIndex);
-			if (d < m_system->m_particleDiameter && ShouldCollide(fixture, a))
+			if (d < m_system->m_particleDiameter && ShouldCollide(fixture, particleIndex))
 			{
 				b2Body* b = fixture->GetBody();
 				b2Vec2 bp = b->GetWorldCenter();
@@ -2668,21 +2668,21 @@ void b2ParticleSystem::UpdateBodyContacts()
 				float invBm = bm > 0 ? 1 / bm : 0;
 				float invBI = bI > 0 ? 1 / bI : 0;
 				float invAm =
-					m_system->m_flagsBuffer.data[a] &
-					b2_wallParticle ? 0 : m_system->GetParticleInvMass();
+                        m_system->m_flagsBuffer.data[particleIndex] &
+                        b2_wallParticle ? 0 : m_system->GetParticleInvMass();
 				b2Vec2 rp = ap - bp;
 				float rpn = b2Cross(rp, n);
 				float invM = invAm + invBm + invBI * rpn * rpn;
 
-				b2ParticleBodyContact& contact =
+				b2ParticleBodyContact& contact =    //add new contact to buffer
 					m_system->m_bodyContactBuffer.Append();
-				contact.index = a;
+				contact.index = particleIndex;
 				contact.body = b;
 				contact.fixture = fixture;
 				contact.weight = 1 - d * m_system->m_inverseDiameter;
 				contact.normal = -n;
 				contact.mass = invM > 0 ? 1 / invM : 0;
-				m_system->DetectStuckParticle(a);
+				m_system->DetectStuckParticle(particleIndex);
 			}
 		}
 
@@ -2697,9 +2697,9 @@ void b2ParticleSystem::UpdateBodyContacts()
 		}
 	} callback(this, GetFixtureContactFilter());
 
-	b2AABB aabb;
+	b2AABB aabb;    //max aabb of all particles in this system
 	ComputeAABB(&aabb);
-	m_world->QueryAABB(&callback, aabb);
+	m_world->QueryAABB(&callback, aabb);//if anything overlaps with aabb, call ReportFixtureAndParticle on it
 
 	if (m_def.strictContactCheck)
 	{
@@ -2860,7 +2860,7 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 			m_contactFilter = contactFilter;
 		}
 	}
-    //callback calls the constructor of SolveCollisionCallback and stores the object?
+    //callback calls the constructor of SolveCollisionCallback and stores the object
     callback(this, step, GetFixtureContactFilter());
 	m_world->QueryAABB(&callback, aabb);
 }
@@ -3102,7 +3102,7 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		{
 			SolveWall();
 		}
-        SolveFriction();
+        SolveFriction(subStep);
 		// The particle positions can be updated only at the end of substep.
 		for (int32 i = 0; i < m_count; i++)
 		{
@@ -4106,21 +4106,100 @@ void b2ParticleSystem::SolveZombie()
 	}
 }
 
-void b2ParticleSystem::SolveFriction() {
+void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
+//    TODO
+//    get collision tangent
+//    get tangent direction
+//    if is fixture, ignore direction, always reduce
     //particle - particle
     for (int32 i = 0; i < m_contactBuffer.GetCount(); i++){
         b2ParticleContact contact=m_contactBuffer[i];
         b2Vec2 p1=m_positionBuffer.data[contact.GetIndexA()];
         b2Vec2 p2=m_positionBuffer.data[contact.GetIndexB()];
-        EM_ASM(
-                console.log("p1:"+$0+","+$1);
-                console.log("p2:"+$2+","+$3),
-                p1.x,p1.y,p2.x,p2.y);
+//        EM_ASM(
+//                console.log("p1:"+$0+","+$1);
+//                console.log("p2:"+$2+","+$3),
+//                p1.x,p1.y,p2.x,p2.y);
     }
     //particle - body
-    for (int32 j = 0; j < m_bodyContactBuffer.GetCount(); j++){
+    for (int32 j = 0; j < m_bodyContactBuffer.GetCount(); j++){ //for body, particle in contact
         b2ParticleBodyContact& contact = m_bodyContactBuffer[j];
+        int32 i=contact.index;
+        b2Vec2 vel=m_velocityBuffer.data[i];
+        b2Vec2 pos=m_positionBuffer.data[i];
+        b2Fixture* fixture=contact.fixture;
+        b2RayCastInput input;
+        input.p1=pos;
+        input.p2=pos+contact.normal*10; //todo better scaling?
+        input.maxFraction=1;
+        b2RayCastOutput output;
+        bool intersection=fixture->RayCast(&output, input, 0);
+        float distance=(output.normal*output.fraction).Length();//unused
+        if(intersection) {
+            b2Vec2 surfaceNorm = output.normal;
+            b2Rot rot=b2Rot(b2_pi / 2);
+            b2Vec2 surfaceTangent = b2Mul(rot, surfaceNorm);
+            float surfaceAngle, velocityAngle;
+            surfaceAngle= b2Atan2(surfaceTangent.y,surfaceTangent.x);
+            velocityAngle= b2Atan2(vel.y,vel.x);
+            surfaceAngle=surfaceAngle - b2_pi*2 * floor(surfaceAngle / b2_pi*2);
+            velocityAngle=velocityAngle - b2_pi*2 * floor(velocityAngle / b2_pi*2);
+            float diff= fabs(surfaceAngle-velocityAngle);
+            float tolerance=0.5f;
+            if (diff<tolerance){
+                ParticleApplyForce(i,-m_velocityBuffer.data[i]*0.15f);
+            }
+//            EM_ASM(
+//                    console.log("surface norm:" + $0 + "," + $1);
+//                    console.log("tangent:"      + $2 + "," + $3);
+//                    console.log("distance: "+$4);
+//                    , surfaceNorm.x, surfaceNorm.y, surfaceTangent.x, surfaceTangent.y,distance);
+        } else{
+//            EM_ASM(console.log("no intersection"));
+        }
     }
+    //----------------------------------------------------
+//    float linearDamping = m_def.dampingStrength;
+//    float quadraticDamping = 1 / GetCriticalVelocity(step);
+//    for (int32 k = 0; k < m_bodyContactBuffer.GetCount(); k++)
+//    {
+//        const b2ParticleBodyContact& contact = m_bodyContactBuffer[k];
+//        int32 a = contact.index;
+//        b2Body* b = contact.body;
+//        float w = contact.weight;
+//        float m = contact.mass;
+//        b2Vec2 n = contact.normal;
+//        b2Vec2 p = m_positionBuffer.data[a];
+//        b2Vec2 v = b->GetLinearVelocityFromWorldPoint(p) -
+//                   m_velocityBuffer.data[a];
+//        float vn = b2Dot(v, n);
+//        if (vn < 0)
+//        {
+//            float damping =
+//                    b2Max(linearDamping * w, b2Min(- quadraticDamping * vn, 0.5f));
+//            b2Vec2 f = damping * m * vn * n;
+//            m_velocityBuffer.data[a] += GetParticleInvMass() * f;
+//            b->ApplyLinearImpulse(-f, p, true);
+//        }
+//    }
+//    for (int32 k = 0; k < m_contactBuffer.GetCount(); k++)
+//    {
+//        const b2ParticleContact& contact = m_contactBuffer[k];
+//        int32 a = contact.GetIndexA();
+//        int32 b = contact.GetIndexB();
+//        float w = contact.GetWeight();
+//        b2Vec2 n = contact.GetNormal();
+//        b2Vec2 v = m_velocityBuffer.data[b] - m_velocityBuffer.data[a];
+//        float vn = b2Dot(v, n);
+//        if (vn < 0)
+//        {
+//            float damping =
+//                    b2Max(linearDamping * w, b2Min(- quadraticDamping * vn, 0.5f));
+//            b2Vec2 f = damping * vn * n;
+//            m_velocityBuffer.data[a] += f;
+//            m_velocityBuffer.data[b] -= f;
+//        }
+//    }
 }
 
 /// Destroy all particles which have outlived their lifetimes set by
