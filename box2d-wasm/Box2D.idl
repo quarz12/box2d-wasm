@@ -1273,6 +1273,7 @@ interface b2ParticleSystemDef {
 	attribute float colorMixingStrength;
 	attribute boolean destroyByAge;
 	attribute float lifetimeGranularity;
+	attribute float frictionRate;
 };
 
 [NoDelete]

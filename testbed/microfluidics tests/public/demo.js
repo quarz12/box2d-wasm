@@ -108,17 +108,17 @@ Box2DFactory_().then(box2D => {
             ground.CreateFixture(line,0);
         }
         {//2nd line
-            // const line=new b2EdgeShape();
-            // line.SetTwoSided(new b2Vec2(0,4),new b2Vec2(23,4));
-            // ground.CreateFixture(line,0);
-            const line = new b2EdgeShape();
-            const line2=new b2EdgeShape();
-            line.SetTwoSided(new b2Vec2(0,4),new b2Vec2(15,4));
-            line.m_vertex3=new b2Vec2(23,4);
-            line2.SetTwoSided(new b2Vec2(15,4),new b2Vec2(23,4));
-            line2.m_vertex0=new b2Vec2(0,4);
+            const line=new b2EdgeShape();
+            line.SetTwoSided(new b2Vec2(0,4),new b2Vec2(23,4));
             ground.CreateFixture(line,0);
-            ground.CreateFixture(line2,0);
+            // const line = new b2EdgeShape();
+            // const line2=new b2EdgeShape();
+            // line.SetTwoSided(new b2Vec2(0,4),new b2Vec2(15,4));
+            // line.m_vertex3=new b2Vec2(23,4);
+            // line2.SetTwoSided(new b2Vec2(15,4),new b2Vec2(23,4));
+            // line2.m_vertex0=new b2Vec2(0,4);
+            // ground.CreateFixture(line,0);
+            // ground.CreateFixture(line2,0);
         }
         {//3rd line
             const line=new b2EdgeShape();
@@ -166,7 +166,7 @@ Box2DFactory_().then(box2D => {
 
     //make pump
     {
-        const pump = new b2Pump(new b2Vec2(0.1,0));
+        const pump = new b2Pump(new b2Vec2(0.01,0));
         pump.SetAsBox(20,0.35,new b2Vec2(0,3.5),0);//0.35 to not count as wall too
         const bd = new b2BodyDef();
         const body = world.CreateBody(bd);
@@ -177,18 +177,20 @@ Box2DFactory_().then(box2D => {
     const partSysDef = new b2ParticleSystemDef();
     partSysDef.radius = 0.1;
     partSysDef.dampingStrength = 0.5;
-    partSysDef.pressureStrength=0.05;
+    partSysDef.pressureStrength=0.1;
     partSysDef.staticPressureStrength=0.1;
     partSysDef.surfaceTensionNormalStrength=0.005;
     partSysDef.surfaceTensionPressureStrength=0.005;
+    partSysDef.frictionRate=0.05;
     const particleSystem = world.CreateParticleSystem(partSysDef);
     // particleSystem.SetStrictContactCheck(); //probably not needed
     function summonParticles() {
         const pt = new b2ParticleGroupDef();
+        pt.stride=0.2;    //density of particle spawns, for ideal fit radius*2
         // pt.flags=b2_tensileParticle;
         pt.flags=b2_staticPressureParticle&b2_viscousParticle;
         const shape = new b2PolygonShape();
-        shape.SetAsBox(10, 0.5, new b2Vec2(2, 3.5), 0);  //particle spawn area
+        shape.SetAsBox(10, 0.45, new b2Vec2(2, 3.5), 0);  //particle spawn area| len/2,height/2, center, angle
         pt.shape = shape;
         //alpha is divided by 255 to get value between 0-1
         pt.set_color(new b2ParticleColor(0, 100, 255, 255));

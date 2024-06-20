@@ -922,11 +922,12 @@ void b2ParticleSystem::CreateParticlesFillShapeForGroup(
 	b2AABB aabb;
 	b2Assert(shape->GetChildCount() == 1);
 	shape->ComputeAABB(&aabb, identity, 0);
-	for (float y = floorf(aabb.lowerBound.y / stride) * stride;
-		y < aabb.upperBound.y; y += stride)
+    float radius=m_def.radius;
+	for (float y = floorf((aabb.lowerBound.y+radius) / stride) * stride;
+		y < (aabb.upperBound.y-radius); y += stride)
 	{
-		for (float x = floorf(aabb.lowerBound.x / stride) * stride;
-			x < aabb.upperBound.x; x += stride)
+		for (float x = floorf((aabb.lowerBound.x+radius) / stride) * stride;
+			x < (aabb.upperBound.x-radius); x += stride)
 		{
 			b2Vec2 p(x, y);
 			if (shape->TestPoint(identity, p))
@@ -4114,8 +4115,19 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
     //particle - particle
     for (int32 i = 0; i < m_contactBuffer.GetCount(); i++){
         b2ParticleContact contact=m_contactBuffer[i];
-        b2Vec2 p1=m_positionBuffer.data[contact.GetIndexA()];
-        b2Vec2 p2=m_positionBuffer.data[contact.GetIndexB()];
+        int32 a,b;
+        a=contact.GetIndexA();
+        b=contact.GetIndexB();
+        b2Vec2 v1=m_velocityBuffer.data[a];
+        b2Vec2 v2=m_velocityBuffer.data[b];
+        float angleDiff = b2Dot(v1, v2) / (v1.Length() * v2.Length());
+        if (angleDiff > 1.0) angleDiff = 1.0;
+        if (angleDiff < -1.0) angleDiff = -1.0;
+        float tolerance=0.5f;
+        if (angleDiff < tolerance || angleDiff - b2_pi < tolerance){
+//            ParticleApplyForce(a,-m_velocityBuffer.data[a]*m_def.frictionRate); //TODO only those next to each other
+//            ParticleApplyForce(b,-m_velocityBuffer.data[b]*m_def.frictionRate);
+        }
 //        EM_ASM(
 //                console.log("p1:"+$0+","+$1);
 //                console.log("p2:"+$2+","+$3),
@@ -4139,15 +4151,13 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
             b2Vec2 surfaceNorm = output.normal;
             b2Rot rot=b2Rot(b2_pi / 2);
             b2Vec2 surfaceTangent = b2Mul(rot, surfaceNorm);
-            float surfaceAngle, velocityAngle;
-            surfaceAngle= b2Atan2(surfaceTangent.y,surfaceTangent.x);
-            velocityAngle= b2Atan2(vel.y,vel.x);
-            surfaceAngle=surfaceAngle - b2_pi*2 * floor(surfaceAngle / b2_pi*2);
-            velocityAngle=velocityAngle - b2_pi*2 * floor(velocityAngle / b2_pi*2);
-            float diff= fabs(surfaceAngle-velocityAngle);
+            float diff = b2Dot(vel,surfaceTangent)/(vel.Length()*surfaceTangent.Length());
+            if (diff > 1.0) diff = 1.0;
+            if (diff < -1.0) diff = -1.0;
+            diff=acosf(diff);
             float tolerance=0.5f;
-            if (diff<tolerance){
-                ParticleApplyForce(i,-m_velocityBuffer.data[i]*0.15f);
+            if (diff<tolerance|| diff-b2_pi<tolerance){
+                ParticleApplyForce(i,-m_velocityBuffer.data[i]*m_def.frictionRate);
             }
 //            EM_ASM(
 //                    console.log("surface norm:" + $0 + "," + $1);
@@ -4158,48 +4168,6 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
 //            EM_ASM(console.log("no intersection"));
         }
     }
-    //----------------------------------------------------
-//    float linearDamping = m_def.dampingStrength;
-//    float quadraticDamping = 1 / GetCriticalVelocity(step);
-//    for (int32 k = 0; k < m_bodyContactBuffer.GetCount(); k++)
-//    {
-//        const b2ParticleBodyContact& contact = m_bodyContactBuffer[k];
-//        int32 a = contact.index;
-//        b2Body* b = contact.body;
-//        float w = contact.weight;
-//        float m = contact.mass;
-//        b2Vec2 n = contact.normal;
-//        b2Vec2 p = m_positionBuffer.data[a];
-//        b2Vec2 v = b->GetLinearVelocityFromWorldPoint(p) -
-//                   m_velocityBuffer.data[a];
-//        float vn = b2Dot(v, n);
-//        if (vn < 0)
-//        {
-//            float damping =
-//                    b2Max(linearDamping * w, b2Min(- quadraticDamping * vn, 0.5f));
-//            b2Vec2 f = damping * m * vn * n;
-//            m_velocityBuffer.data[a] += GetParticleInvMass() * f;
-//            b->ApplyLinearImpulse(-f, p, true);
-//        }
-//    }
-//    for (int32 k = 0; k < m_contactBuffer.GetCount(); k++)
-//    {
-//        const b2ParticleContact& contact = m_contactBuffer[k];
-//        int32 a = contact.GetIndexA();
-//        int32 b = contact.GetIndexB();
-//        float w = contact.GetWeight();
-//        b2Vec2 n = contact.GetNormal();
-//        b2Vec2 v = m_velocityBuffer.data[b] - m_velocityBuffer.data[a];
-//        float vn = b2Dot(v, n);
-//        if (vn < 0)
-//        {
-//            float damping =
-//                    b2Max(linearDamping * w, b2Min(- quadraticDamping * vn, 0.5f));
-//            b2Vec2 f = damping * vn * n;
-//            m_velocityBuffer.data[a] += f;
-//            m_velocityBuffer.data[b] -= f;
-//        }
-//    }
 }
 
 /// Destroy all particles which have outlived their lifetimes set by

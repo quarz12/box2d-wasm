@@ -179,6 +179,7 @@ struct B2_API b2ParticleSystemDef
 		colorMixingStrength = 0.5f;
 		destroyByAge = true;
 		lifetimeGranularity = 1.0f / 60.0f;
+        frictionRate=0.0f;
 	}
 
 	/// Enable strict Particle/Body contact check.
@@ -276,6 +277,10 @@ struct B2_API b2ParticleSystemDef
 	/// With the value set to 1/60 the maximum lifetime or age of a particle is
 	/// 2.27 years.
 	float lifetimeGranularity;
+
+
+    /// rate at which particles get slowed on tangential contact in fraction of current velocity
+    float frictionRate;
 };
 
 
