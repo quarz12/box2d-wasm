@@ -1118,6 +1118,8 @@ private:
 	/// m_depthBuffer is first allocated and populated in ComputeDepth() and
 	/// used in SolveSolid(). It will be reallocated on subsequent
 	/// CreateParticle() calls.
+    b2Vec2* m_frictionAccumulationBuffer;
+    /// used to calculate friction
 	float* m_depthBuffer;
 	UserOverridableBuffer<b2ParticleColor> m_colorBuffer;
 	b2ParticleGroup** m_groupBuffer;

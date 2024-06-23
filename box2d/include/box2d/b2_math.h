@@ -801,4 +801,36 @@ inline void b2Sweep::Normalize()
 	a -= d;
 }
 
+/// m is slope of the intersecting lines
+inline float angleOfIntersection(float m1, float m2, bool& parallel) {
+    if(m1==m2) {
+        parallel = true;
+        return 0.0f;
+    }
+    else
+        parallel= false;
+    // Special cases handling for vertical lines
+    if (m1 == INFINITY || m1 == -INFINITY) {
+        return atanf(fabs(1.0f / m2));
+    }
+    if (m2 == INFINITY || m2 == -INFINITY) {
+        return atanf(fabs(1.0f / m1));
+    }
+
+    // Compute the angle of intersection
+    return b2Atan2(fabs(m1 - m2) ,1 + m1 * m2);
+}
+
+inline void lineFromPointAndVector(b2Vec2& p, b2Vec2& v, float& m, float& c) {
+    if (v.x == 0) {
+        // Special case: vertical vector direction
+        m = INFINITY;  // Vertical line
+        c = p.x;
+    } else {
+        m = v.y / v.x;
+        c = p.y - m * p.x;
+    }
+}
+
+
 #endif
