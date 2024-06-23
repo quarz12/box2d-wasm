@@ -223,12 +223,12 @@ Box2DFactory_().then(box2D => {
     const partSysDef = new b2ParticleSystemDef();
     partSysDef.radius = 0.1;
     partSysDef.dampingStrength = 0.5;
-    partSysDef.pressureStrength=0.01; //prevents laminar flow
+    partSysDef.pressureStrength=0.1; //prevents laminar flow
     partSysDef.staticPressureStrength=1;
     partSysDef.surfaceTensionNormalStrength=0.005;
     partSysDef.surfaceTensionPressureStrength=0.005;
-    partSysDef.frictionRate=0.01;
-    partSysDef.viscousStrength=10.0;
+    partSysDef.frictionRate=0.1;
+    partSysDef.viscousStrength=1.0;
     const particleSystem = world.CreateParticleSystem(partSysDef);
     function summonParticles() {
         const pt = new b2ParticleGroupDef();
