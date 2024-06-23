@@ -38,6 +38,7 @@ Box2DFactory_().then(box2D => {
         b2ArcShape,
         b2_staticPressureParticle,
         b2_viscousParticle,
+        b2_frictionParticle,
         _malloc,
         b2_adhesiveParticle //enum values are part of the base Box2D object
     } = box2D;
@@ -218,23 +219,23 @@ Box2DFactory_().then(box2D => {
             ground.CreateFixture(arc2,0);
         }
     }
-
+    console.log(b2_frictionParticle);
     // make particles
     const partSysDef = new b2ParticleSystemDef();
     partSysDef.radius = 0.1;
     partSysDef.dampingStrength = 0.5;
     partSysDef.pressureStrength=0.1; //prevents laminar flow
-    partSysDef.staticPressureStrength=1;
+    partSysDef.staticPressureStrength=0.1;
     partSysDef.surfaceTensionNormalStrength=0.005;
     partSysDef.surfaceTensionPressureStrength=0.005;
-    partSysDef.frictionRate=0.1;
+    partSysDef.frictionRate=0.01;
     partSysDef.viscousStrength=1.0;
     const particleSystem = world.CreateParticleSystem(partSysDef);
     function summonParticles() {
         const pt = new b2ParticleGroupDef();
         pt.stride=0.2;    //density of particle spawns, for ideal fit radius*2
         pt.flags=b2_tensileParticle;
-        pt.flags=b2_staticPressureParticle&b2_viscousParticle;
+        pt.flags=b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle;
         let shape = new b2PolygonShape();
         shape.SetAsBox(5, 0.9, new b2Vec2(6, 1), 0);  //particle spawn area| len/2,height/2, center, angle
         pt.shape = shape;
@@ -245,7 +246,7 @@ Box2DFactory_().then(box2D => {
     }
     function summonParticle() {
         const pt = new b2ParticleDef();
-        pt.flags=b2_staticPressureParticle&b2_viscousParticle;
+        pt.flags=b2_staticPressureParticle|b2_viscousParticle|b2_frictionParticle;
         // pt.flags=b2_tensileParticle;
         //alpha is divided by 255 to get value between 0-1
         pt.set_color(new b2ParticleColor(0, 100, 255, 255));
@@ -256,7 +257,7 @@ Box2DFactory_().then(box2D => {
     }
     function summonfricParticles1(){
         const pt = new b2ParticleDef();
-        pt.flags=b2_staticPressureParticle&b2_viscousParticle;
+        pt.flags=b2_staticPressureParticle|b2_viscousParticle|b2_frictionParticle;
         // pt.flags=b2_tensileParticle;
         //alpha is divided by 255 to get value between 0-1
         pt.set_color(new b2ParticleColor(0, 100, 255, 255));
@@ -267,7 +268,7 @@ Box2DFactory_().then(box2D => {
     }
     function summonfricParticles2(){
         const pt2 = new b2ParticleDef();
-        pt2.flags=b2_staticPressureParticle&b2_viscousParticle;
+        pt2.flags=b2_staticPressureParticle|b2_viscousParticle|b2_frictionParticle;
         // pt.flags=b2_tensileParticle;
         //alpha is divided by 255 to get value between 0-1
         pt2.set_color(new b2ParticleColor(0, 100, 255, 255));
@@ -279,7 +280,7 @@ Box2DFactory_().then(box2D => {
     function summonLine(){
         const pt = new b2ParticleGroupDef();
         pt.stride=0.2;    //density of particle spawns, for ideal fit radius*2
-        // pt.flags=b2_tensileParticle;
+        pt.flags=b2_staticPressureParticle|b2_viscousParticle|b2_frictionParticle;
         // pt.flags=b2_staticPressureParticle&b2_viscousParticle;
         let shape = new b2PolygonShape();
         shape.SetAsBox(3,1,new b2Vec2(5,14),0);  //particle spawn area| len/2,height/2, center, angle

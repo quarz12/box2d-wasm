@@ -1091,7 +1091,8 @@ enum b2ParticleFlag {
   "b2_fixtureContactListenerParticle",
   "b2_particleContactListenerParticle",
   "b2_fixtureContactFilterParticle",
-  "b2_particleContactFilterParticle"
+  "b2_particleContactFilterParticle",
+  "b2_frictionParticle"
 };
 
 interface b2ParticleColor {

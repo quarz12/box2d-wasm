@@ -3104,7 +3104,10 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		{
 			SolveBarrier(subStep);
 		}
-        SolveFriction(subStep);
+        if(m_allParticleFlags & b2_frictionParticle)
+        {
+            SolveFriction(subStep);
+        }
 		// SolveCollision, SolveRigid and SolveWall should be called after
 		// other force functions because they may require particles to have
 		// specific velocities.
@@ -3120,7 +3123,7 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		// The particle positions can be updated only at the end of substep.
 		for (int32 i = 0; i < m_count; i++)
 		{
-//            m_velocityBuffer.data[i].y=0;//todo remove
+//            m_velocityBuffer.data[i].y=0;//for debugging, eliminates y movement
 			m_positionBuffer.data[i] += subStep.dt * m_velocityBuffer.data[i]; //change particle position
 		}
 	}
@@ -4109,7 +4112,7 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
 //                console.log("m2,c2:"+$2+","+$3),
 //                m1,c1,m2,c2);
         bool parallel;
-        float angle=angleOfIntersection(m1,m2,parallel);    //TODO angle of 2 vectors intersection | is intersection in front of particle?
+        float angle=angleOfIntersection(m1,m2,parallel);
         EM_ASM(
         console.log("parallel:"+$0);
         console.log("angle:"+$1);

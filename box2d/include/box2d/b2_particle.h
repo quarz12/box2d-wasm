@@ -76,6 +76,8 @@ enum b2ParticleFlag
 	/// Call b2ContactFilter when this particle interacts with other
 	/// particles.
 	b2_particleContactFilterParticle = 1 << 17,
+    /// particle experiences friction on tangential contact
+    b2_frictionParticle= 1 << 18,
 };
 
 /// Small color object for each particle
