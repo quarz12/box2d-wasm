@@ -4078,7 +4078,6 @@ void b2ParticleSystem::SolveZombie()
 }
 
 void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
-//    TODO collision weight?
     //particle - particle
     for (int i = 0; i < m_count; ++i) {
         m_frictionAccumulationBuffer[i]=m_velocityBuffer.data[i];
@@ -4133,10 +4132,10 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
             if(!(parallel1 || parallel2 || angleAToBVel<0.9|| angleBToAVel<0.9|| angleBToAVel>2.3 ||angleAToBVel>2.3)){ //particles are not behind each other
 
             b2Vec2 diff=m_velocityBuffer.data[b]-m_velocityBuffer.data[a];
-                m_frictionAccumulationBuffer[a]+= diff * (m_def.frictionRate);
-                m_frictionAccumulationBuffer[b]-= diff * (m_def.frictionRate);
-            b2Vec2 a1=diff*(m_def.frictionRate);
-            b2Vec2 a2=-diff*(m_def.frictionRate);
+            b2Vec2 a1=diff*(m_def.frictionRate)*contact.GetWeight();
+            b2Vec2 a2=-a1;
+            m_frictionAccumulationBuffer[a]+= a1;
+            m_frictionAccumulationBuffer[b]-= a1;
             EM_ASM(
                     console.log("id"+$4+" apply:"+$0+","+$1);
                     console.log("id"+$5+" apply:"+$2+","+$3),
@@ -4152,7 +4151,7 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
         b2Fixture* fixture=contact.fixture;
         b2RayCastInput input;
         input.p1=pos;
-        input.p2=pos+contact.normal*10; //todo better scaling?
+        input.p2=pos+contact.normal*10; //better scaling?
         input.maxFraction=1;
         b2RayCastOutput output;
         bool intersection=fixture->RayCast(&output, input, 0);
@@ -4170,12 +4169,12 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
                 EM_ASM(
                         console.log("p------------surface"););
 ////                m_colorBuffer.data[i].Set(255,20,20,255);
-                b2Vec2 fric=-m_velocityBuffer.data[i]*m_def.frictionRate;
+                b2Vec2 fric=-m_velocityBuffer.data[i]*m_def.frictionRate*contact.weight;
                 EM_ASM(
                         console.log("id"+$4+":"+$0+","+$1);
                         console.log("apply:"+$2+","+$3);,
                         pos.x,pos.y,fric.x,fric.y,i);
-                m_frictionAccumulationBuffer[i]-= m_velocityBuffer.data[i] * m_def.frictionRate;
+                m_frictionAccumulationBuffer[i]+=fric;
             }
 
         } else{     //should only be on corners of fixtures
