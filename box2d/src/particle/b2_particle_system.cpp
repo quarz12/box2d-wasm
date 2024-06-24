@@ -33,12 +33,7 @@
 #ifdef DEBUG
 #include <emscripten/emscripten.h>
 #else   //turn off EM_ASM
-#define CODE_EXPR(code) (__extension__({           \
-    __attribute__((section("em_asm"), aligned(1))) \
-    static const char x[] = code;                  \
-    x;                                             \
-  }))
-#define EM_ASM(code, ...) (void)(CODE_EXPR(#code))
+#define EM_ASM(code, ...)
 #endif
 
 // Define LIQUIDFUN_SIMD_TEST_VS_REFERENCE to run both SIMD and reference
@@ -155,7 +150,7 @@ class ExpirationTimeComparator
 public:
 	// Initialize the class with a pointer to an array of particle
 	// lifetimes.
-	ExpirationTimeComparator(const int32* const expirationTimes) :
+	explicit ExpirationTimeComparator(const int32* const expirationTimes) :
 		m_expirationTimes(expirationTimes)
 	{
 	}
@@ -177,8 +172,8 @@ public:
 	{
 		const int32 expirationTimeA = m_expirationTimes[particleIndexA];
 		const int32 expirationTimeB = m_expirationTimes[particleIndexB];
-		const bool infiniteExpirationTimeA = expirationTimeA <= 0.0f;
-		const bool infiniteExpirationTimeB = expirationTimeB <= 0.0f;
+		const bool infiniteExpirationTimeA = expirationTimeA <= 0.0;
+		const bool infiniteExpirationTimeB = expirationTimeB <= 0.0;
 		return infiniteExpirationTimeA == infiniteExpirationTimeB ?
 			expirationTimeA > expirationTimeB : infiniteExpirationTimeA;
 	}
@@ -210,7 +205,7 @@ class FixedSetAllocator
 {
 public:
 	// Associate a memory allocator with this object.
-	FixedSetAllocator(b2StackAllocator* allocator);
+	explicit FixedSetAllocator(b2StackAllocator* allocator);
 	// Deallocate storage for this class.
 	~FixedSetAllocator()
 	{
@@ -218,7 +213,7 @@ public:
 	}
 
 	// Allocate internal storage for this object returning the size.
-	int32 Allocate(const int32 itemSize, const int32 count);
+	int32 Allocate(int32 itemSize, int32 count);
 
 	// Deallocate the internal buffer if it's allocated.
 	void Clear();
@@ -266,7 +261,7 @@ class TypedFixedSetAllocator : public FixedSetAllocator
 {
 public:
 	// Initialize members of this class.
-	TypedFixedSetAllocator(b2StackAllocator* allocator) :
+	explicit TypedFixedSetAllocator(b2StackAllocator* allocator) :
 		FixedSetAllocator(allocator) { }
 
 	// Allocate a set of objects, returning the new size of the set.
@@ -317,15 +312,15 @@ class FixtureParticleSet :
 {
 public:
 	// Initialize members of this class.
-	FixtureParticleSet(b2StackAllocator* allocator) :
+	explicit FixtureParticleSet(b2StackAllocator* allocator) :
 		TypedFixedSetAllocator<FixtureParticle>(allocator) { }
 
 
 	// Initialize from a set of particle / body contacts for particles
 	// that have the b2_fixtureContactListenerParticle flag set.
-	void Initialize(const b2ParticleBodyContact * const bodyContacts,
-					const int32 numBodyContacts,
-					const uint32 * const particleFlagsBuffer);
+	void Initialize(const b2ParticleBodyContact * bodyContacts,
+					int32 numBodyContacts,
+					const uint32 * particleFlagsBuffer);
 
 	// Find the index of a particle / fixture pair in the set or -1
 	// if it's not present.
@@ -339,13 +334,13 @@ class b2ParticlePairSet : public TypedFixedSetAllocator<ParticlePair>
 {
 public:
 	// Initialize members of this class.
-	b2ParticlePairSet(b2StackAllocator* allocator) :
+	explicit b2ParticlePairSet(b2StackAllocator* allocator) :
 		TypedFixedSetAllocator<ParticlePair>(allocator) { }
 
 	// Initialize from a set of particle contacts.
-	void Initialize(const b2ParticleContact * const contacts,
-					const int32 numContacts,
-					const uint32 * const particleFlagsBuffer);
+	void Initialize(const b2ParticleContact * contacts,
+					int32 numContacts,
+					const uint32 * particleFlagsBuffer);
 
 	// Find the index of a particle pair in the set or -1
 	// if it's not present.
@@ -807,7 +802,7 @@ void b2ParticleSystem::DestroyOldestParticle(
 	const int32 oldestInfiniteLifetimeParticle =
 		m_indexByExpirationTimeBuffer.data[index];
 	DestroyParticle(
-		m_expirationTimeBuffer.data[oldestFiniteLifetimeParticle] > 0.0f ?
+		m_expirationTimeBuffer.data[oldestFiniteLifetimeParticle] > 0.0 ?
 			oldestFiniteLifetimeParticle : oldestInfiniteLifetimeParticle,
 		callDestructionListener);
 }
@@ -836,13 +831,13 @@ int32 b2ParticleSystem::DestroyParticlesInShape(
 			m_destroyed = 0;
 		}
 
-		bool ReportFixture(b2Fixture* fixture)
+		bool ReportFixture(b2Fixture* fixture) override
 		{
 			B2_NOT_USED(fixture);
 			return false;
 		}
 
-		bool ReportParticle(const b2ParticleSystem* particleSystem, int32 index)
+		bool ReportParticle(const b2ParticleSystem* particleSystem, int32 index) override
 		{
 			if (particleSystem != m_system)
 				return false;
@@ -983,17 +978,17 @@ void b2ParticleSystem::CreateParticlesWithShapesForGroup(
 			m_shapes = shapes;
 			m_shapeCount = shapeCount;
 		}
-		b2Shape* Clone(b2BlockAllocator* allocator) const
+		b2Shape* Clone(b2BlockAllocator* allocator) const override
 		{
 			b2Assert(false);
 			B2_NOT_USED(allocator);
 			return nullptr;
 		}
-		int32 GetChildCount() const
+		int32 GetChildCount() const override
 		{
 			return 1;
 		}
-		bool TestPoint(const b2Transform& xf, const b2Vec2& p) const
+		bool TestPoint(const b2Transform& xf, const b2Vec2& p) const override
 		{
 			for (int32 i = 0; i < m_shapeCount; i++)
 			{
@@ -1005,7 +1000,7 @@ void b2ParticleSystem::CreateParticlesWithShapesForGroup(
 			return false;
 		}
 		void ComputeDistance(const b2Transform& xf, const b2Vec2& p,
-					float* distance, b2Vec2* normal, int32 childIndex) const
+					float* distance, b2Vec2* normal, int32 childIndex) const override
 		{
 			b2Assert(false);
 			B2_NOT_USED(xf);
@@ -1015,7 +1010,7 @@ void b2ParticleSystem::CreateParticlesWithShapesForGroup(
 			B2_NOT_USED(childIndex);
 		}
 		bool RayCast(b2RayCastOutput* output, const b2RayCastInput& input,
-						const b2Transform& transform, int32 childIndex) const
+						const b2Transform& transform, int32 childIndex) const override
 		{
 			b2Assert(false);
 			B2_NOT_USED(output);
@@ -1025,7 +1020,7 @@ void b2ParticleSystem::CreateParticlesWithShapesForGroup(
 			return false;
 		}
 		void ComputeAABB(
-				b2AABB* aabb, const b2Transform& xf, int32 childIndex) const
+				b2AABB* aabb, const b2Transform& xf, int32 childIndex) const override
 		{
 			B2_NOT_USED(childIndex);
 			aabb->lowerBound.x = +FLT_MAX;
@@ -1044,7 +1039,7 @@ void b2ParticleSystem::CreateParticlesWithShapesForGroup(
 				}
 			}
 		}
-		void ComputeMass(b2MassData* massData, float density) const
+		void ComputeMass(b2MassData* massData, float density) const override
 		{
 			b2Assert(false);
 			B2_NOT_USED(massData);
@@ -1158,7 +1153,7 @@ void b2ParticleSystem::JoinParticleGroups(b2ParticleGroup* groupA,
 		}
 		int32 m_threshold;
 	public:
-		JoinParticleGroupsFilter(int32 threshold)
+		explicit JoinParticleGroupsFilter(int32 threshold)
 		{
 			m_threshold = threshold;
 		}
@@ -1452,13 +1447,13 @@ void b2ParticleSystem::UpdatePairsAndTriadsWithReactiveParticles()
 {
 	class ReactiveFilter : public ConnectionFilter
 	{
-		bool IsNecessary(int32 index) const
+		bool IsNecessary(int32 index) const override
 		{
 			return (m_flagsBuffer[index] & b2_reactiveParticle) != 0;
 		}
 		const uint32* m_flagsBuffer;
 	public:
-		ReactiveFilter(uint32* flagsBuffer)
+		ReactiveFilter(const uint32* flagsBuffer)
 		{
 			m_flagsBuffer = flagsBuffer;
 		}
@@ -1750,10 +1745,10 @@ void b2ParticleSystem::ComputeDepth()
 	for (int32 i = 0; i < groupsToUpdateCount; i++)
 	{
 		const b2ParticleGroup* group = groupsToUpdate[i];
-		for (int32 i = group->m_firstIndex; i < group->m_lastIndex; i++)
+		for (int32 j = group->m_firstIndex; j < group->m_lastIndex; j++)
 		{
-			float w = m_accumulationBuffer[i];
-			m_depthBuffer[i] = w < 0.8f ? 0 : b2_maxFloat;
+			float w = m_accumulationBuffer[j];
+			m_depthBuffer[j] = w < 0.8f ? 0 : b2_maxFloat;
 		}
 	}
 	// The number of iterations is equal to particle number from the deepest
@@ -2173,7 +2168,7 @@ void b2ParticleSystem::UpdateProxies(
 // TODO OPT: The sort is a hot spot on the profiles. We could use SIMD to
 // speed this up. See http://www.vldb.org/pvldb/1/1454171.pdf for an excellent
 // explanation of a SIMD mergesort algorithm.
-void b2ParticleSystem::SortProxies(b2GrowableBuffer<Proxy>& proxies) const
+void b2ParticleSystem::SortProxies(b2GrowableBuffer<Proxy>& proxies)
 {
 	std::sort(proxies.Begin(), proxies.End());
 }

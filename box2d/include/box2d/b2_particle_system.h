@@ -966,7 +966,7 @@ private:
 	void UpdateProxies_Reference(b2GrowableBuffer<Proxy>& proxies) const;
 	void UpdateProxies_Simd(b2GrowableBuffer<Proxy>& proxies) const;
 	void UpdateProxies(b2GrowableBuffer<Proxy>& proxies) const;
-	void SortProxies(b2GrowableBuffer<Proxy>& proxies) const;
+	static void SortProxies(b2GrowableBuffer<Proxy>& proxies) ;
 	void FilterContacts(b2GrowableBuffer<b2ParticleContact>& contacts);
 	void NotifyContactListenerPreContact(
 		b2ParticlePairSet* particlePairs) const;
