@@ -4113,7 +4113,7 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
         console.log("angle:"+$1);
         console.log("friction:"+$2);,
                 parallel,angle,(parallel || angle < 0.7));
-        if(parallel || angle < 0.7 || angle>2.5){   //direction is parallel or somewhat close
+        if(parallel || angle < 0.7 || angle>b2_pi-0.7){   //direction is parallel or somewhat close
             b2Vec2 toB=contact.GetNormal(); //a->b
             float m,c;
             bool parallel1,parallel2;
@@ -4127,7 +4127,7 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
 //                console.log("parallel1:"+$2);
 //                console.log("parallel2:"+$3);,
 //                angleAToBVel,angleBToAVel,parallel1,parallel2,m,c);
-            if(!(parallel1 || parallel2 || angleAToBVel<0.9|| angleBToAVel<0.9|| angleBToAVel>2.3 ||angleAToBVel>2.3)){ //particles are not behind each other
+            if(!(parallel1 || parallel2 || angleAToBVel<0.9|| angleBToAVel<0.9|| angleBToAVel>b2_pi-0.9 ||angleAToBVel>b2_pi-0.9)){ //particles are not behind each other
 
             b2Vec2 diff=m_velocityBuffer.data[b]-m_velocityBuffer.data[a];
             b2Vec2 a1=diff*(m_def.frictionRate)*contact.GetWeight();
@@ -4162,7 +4162,7 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
             if (diff > 1.0) diff = 1.0;
             if (diff < -1.0) diff = -1.0;
             diff=acosf(diff);
-            float tolerance=0.5f;
+            float tolerance=0.5;
             if (diff<tolerance|| diff-b2_pi<tolerance){
                 EM_ASM(
                         console.log("p------------surface"););
@@ -4175,12 +4175,6 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
                 m_frictionAccumulationBuffer[i]+=fric;
             }
 
-        } else{     //should only be on corners of fixtures
-//            EM_ASM(
-//                    console.log("ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-//                    console.log("p1:" + $0 + "," + $1);
-//                    console.log("p2:"      + $2 + "," + $3);
-//                    , pos.x, pos.y, input.p2.x, input.p2.y);
         }
     }
     for (int i = 0; i < m_count; ++i) {
