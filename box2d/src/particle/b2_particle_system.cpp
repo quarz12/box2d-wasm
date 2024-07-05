@@ -4790,6 +4790,19 @@ void b2ParticleSystem::SetStuckThreshold(int32 steps)
 	}
 }
 
+int b2ParticleSystem::MoveParticleToSystem(int particleIndex, b2ParticleSystem* newSystem){
+    b2ParticleDef partDef;
+    partDef.position=m_positionBuffer.data[particleIndex];
+    partDef.color=m_colorBuffer.data[particleIndex];
+    partDef.flags=m_flagsBuffer.data[particleIndex];
+    partDef.velocity=m_velocityBuffer.data[particleIndex];
+    partDef.group;
+    int32 newIndex=newSystem->CreateParticle(partDef);
+    DestroyParticle(particleIndex);
+    return newIndex;
+};
+
+
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
 
 b2ParticleSystem::b2ExceptionType b2ParticleSystem::IsBufCopyValid(

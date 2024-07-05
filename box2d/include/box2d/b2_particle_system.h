@@ -702,6 +702,9 @@ public:
 	/// @param aabb Returns the axis-aligned bounding box of the system.
 	void ComputeAABB(b2AABB* const aabb) const;
 
+    /// move particle to a different particlesystem, returns index of particle in new system
+    int MoveParticleToSystem(int particleIndex, b2ParticleSystem* newSystem);
+
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
 public:
 	enum b2ExceptionType
@@ -994,8 +997,6 @@ private:
 	void SolveSpring(const b2TimeStep& step);
     /// apply surface tension force between particles
 	void SolveTensile(const b2TimeStep& step);
-    /// apply surface tension force between a particle and a surface
-    void SolveTensileSurface(const b2TimeStep& step);
 	void SolveViscous();
 	void SolveRepulsive(const b2TimeStep& step);
 	void SolvePowder(const b2TimeStep& step);
@@ -1015,7 +1016,6 @@ private:
 	float GetParticleStride() const;
 	float GetParticleMass() const;
 	float GetParticleInvMass() const;
-
 	// Get the world's contact filter if any particles with the
 	// b2_contactFilterParticle flag are present in the system.
 	b2ContactFilter* GetFixtureContactFilter() const;

@@ -1369,6 +1369,7 @@ interface b2ParticleSystem {
   void QueryShapeAABB(b2QueryCallback callback, [Const, Ref] b2Shape shape, [Const, Ref] b2Transform xf);
   void RayCast(b2RayCastCallback callback, [Const, Ref] b2Vec2 point1, [Const, Ref] b2Vec2 point2);
   void ComputeAABB(b2AABB aabb);
+  long MoveParticleToSystem(long particleIndex, b2ParticleSystem newSystem);
 };
 
 // interface b2IntrusiveListNode {
