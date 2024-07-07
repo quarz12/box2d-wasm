@@ -105,6 +105,7 @@ struct B2_API b2FixtureDef
     /// if true, particles in contact get moved to m_newParticleSystem
     bool hasLayerChange;
     b2ParticleSystem* newParticleSystem;
+    bool hasCollision;
 };
 
 /// This proxy is used internally to connect fixtures to the broad-phase.
@@ -141,12 +142,15 @@ public:
 	/// @return the true if the shape is a sensor.
 	bool IsSensor() const;
 
-    /// set m_newParticleSystem
+    /// set m_newParticleSystem to newSystem and hasCollision to false
     void SetLayerChange(b2ParticleSystem* newSystem);
     void RemoveLayerChange();
     /// do particles move to m_newParticleSystem on contact?
     bool IsLayerChange() const;
-    b2ParticleSystem* getNewParticleSystem() const;
+    b2ParticleSystem* GetNewParticleSystem() const;
+    bool HasCollision() const;
+    void SetCollision(bool hasCollision);
+
 	/// Set the contact filtering data. This will not update contacts until the next time
 	/// step when either parent body is active and awake.
 	/// This automatically calls Refilter.
@@ -272,6 +276,7 @@ protected:
     /// if true, particles in contact get moved to m_newParticleSystem
     bool m_hasLayerChange;
     b2ParticleSystem* m_newParticleSystem;
+    bool m_hasCollision;
 
 	b2FixtureUserData m_userData;
 };
@@ -299,6 +304,7 @@ inline bool b2Fixture::IsSensor() const
 inline void b2Fixture::SetLayerChange(b2ParticleSystem* newSystem)
 {
     m_hasLayerChange= true;
+    m_hasCollision= false;
     m_newParticleSystem=newSystem;
 }
 
@@ -407,8 +413,16 @@ inline void b2Fixture::RemoveLayerChange() {
     m_hasLayerChange= false;
 }
 
-inline b2ParticleSystem *b2Fixture::getNewParticleSystem() const {
+inline b2ParticleSystem* b2Fixture::GetNewParticleSystem() const {
     return m_newParticleSystem;
+}
+
+inline bool b2Fixture::HasCollision() const {
+    return m_hasCollision;
+}
+
+inline void b2Fixture::SetCollision(bool hasCollision) {
+    m_hasCollision=hasCollision;
 }
 
 #endif

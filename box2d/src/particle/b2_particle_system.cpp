@@ -2807,19 +2807,17 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 		void ReportFixtureAndParticle(
 								b2Fixture* fixture, int32 childIndex, int32 a) override
 		{
-			if (ShouldCollide(fixture, a)) {
+			if (ShouldCollide(fixture, a) && fixture->HasCollision()) {
 				b2Body* body = fixture->GetBody();
 				b2Vec2 aPos = m_system->m_positionBuffer.data[a];
 				b2Vec2 aVel = m_system->m_velocityBuffer.data[a];
 				b2RayCastOutput output;
 				b2RayCastInput input;
-                if (fixture->GetShape()->m_isPump){
+                if (fixture->GetShape()->m_isPump){//TODO use fixture.hasCollision and solvePump
                     m_system->ParticleApplyForce(a,fixture->GetShape()->pumpForce);
                     //EM_ASM({ console.log("applied force"); });
                     return;
                 }
-                if (fixture->IsLayerChange())
-                    return;
 				if (m_system->m_iterationIndex == 0)
 				{
 					// Put 'aPos' in the local space of the previous frame
@@ -3132,7 +3130,7 @@ void b2ParticleSystem::SolveLayerChange(){
     for (int32 j = 0; j < m_bodyContactBuffer.GetCount(); j++){
         b2ParticleBodyContact contact = m_bodyContactBuffer[j];
         if(contact.fixture->IsLayerChange()){
-            MoveParticleToSystem(contact.index, contact.fixture->getNewParticleSystem());
+            MoveParticleToSystem(contact.index, contact.fixture->GetNewParticleSystem());
         }
     }
 }

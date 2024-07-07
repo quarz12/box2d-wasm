@@ -41,6 +41,7 @@ b2Fixture::b2Fixture()
 	m_density = 0.0f;
     m_hasLayerChange= false;
     m_newParticleSystem = nullptr;
+    m_hasCollision = true;
 }
 
 void b2Fixture::Create(b2BlockAllocator* allocator, b2Body* body, const b2FixtureDef* def)

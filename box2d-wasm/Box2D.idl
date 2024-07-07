@@ -170,6 +170,9 @@ interface b2Fixture {
   void SetLayerChange(b2ParticleSystem newSystem);
   boolean IsLayerChange();
   void RemoveLayerChange();
+  void SetCollision(boolean hasCollision);
+  boolean HasCollision();
+  b2ParticleSystem GetNewParticleSystem();
 };
 
 interface b2Transform {
