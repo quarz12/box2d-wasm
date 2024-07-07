@@ -981,6 +981,8 @@ private:
 	void UpdateBodyContacts();
 
 	void Solve(const b2TimeStep& step);
+    /// particles in collision with a layer changing fixture get moved to its new ParticleSystem
+    void SolveLayerChange();
 	void SolveCollision(const b2TimeStep& step);
 	void LimitVelocity(const b2TimeStep& step);
 	void SolveGravity(const b2TimeStep& step);

@@ -29,7 +29,8 @@
 #include "box2d/b2_chain_shape.h"
 #include <algorithm>
 #include <cstdio>
-#define DEBU
+
+#define DEBUG
 #ifdef DEBUG
 #include <emscripten/emscripten.h>
 #else   //turn off EM_ASM
@@ -2817,6 +2818,8 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
                     //EM_ASM({ console.log("applied force"); });
                     return;
                 }
+                if (fixture->IsLayerChange())
+                    return;
 				if (m_system->m_iterationIndex == 0)
 				{
 					// Put 'aPos' in the local space of the previous frame
@@ -3033,6 +3036,7 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		UpdateContacts(false);
 		UpdateBodyContacts();
 		ComputeWeight();
+        SolveLayerChange(); //TODO will this process a particle in the same step in the new system?
 		if (m_allGroupFlags & b2_particleGroupNeedsUpdateDepth)
 		{
 			ComputeDepth();
@@ -3122,6 +3126,15 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 			m_positionBuffer.data[i] += subStep.dt * m_velocityBuffer.data[i]; //change particle position
 		}
 	}
+}
+
+void b2ParticleSystem::SolveLayerChange(){
+    for (int32 j = 0; j < m_bodyContactBuffer.GetCount(); j++){
+        b2ParticleBodyContact contact = m_bodyContactBuffer[j];
+        if(contact.fixture->IsLayerChange()){
+            MoveParticleToSystem(contact.index, contact.fixture->getNewParticleSystem());
+        }
+    }
 }
 
 void b2ParticleSystem::UpdateAllParticleFlags()
@@ -4089,16 +4102,16 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
         b2Vec2 v2=m_velocityBuffer.data[b];
         b2Vec2 p1=m_positionBuffer.data[a];
         b2Vec2 p2=m_positionBuffer.data[b];
-        EM_ASM(
-                console.log("p------------p"););
-        EM_ASM(
-                console.log("id"+$4+":"+$0+","+$1);
-                console.log("id"+$5+":"+$2+","+$3),
-                p1.x,p1.y,p2.x,p2.y,a,b);
-        EM_ASM(
-                console.log("v"+$4+":"+$0+","+$1);
-                console.log("v"+$5+":"+$2+","+$3),
-                v1.x,v1.y,v2.x,v2.y,a,b);
+//        EM_ASM(
+//                console.log("p------------p"););
+//        EM_ASM(
+//                console.log("id"+$4+":"+$0+","+$1);
+//                console.log("id"+$5+":"+$2+","+$3),
+//                p1.x,p1.y,p2.x,p2.y,a,b);
+//        EM_ASM(
+//                console.log("v"+$4+":"+$0+","+$1);
+//                console.log("v"+$5+":"+$2+","+$3),
+//                v1.x,v1.y,v2.x,v2.y,a,b);
         float m1, c1, m2, c2;
         lineFromPointAndVector(p1,v1,m1,c1);
         lineFromPointAndVector(p2,v2,m2,c2);
@@ -4108,11 +4121,11 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
 //                m1,c1,m2,c2);
         bool parallel;
         float angle=angleOfIntersection(m1,m2,parallel);
-        EM_ASM(
-        console.log("parallel:"+$0);
-        console.log("angle:"+$1);
-        console.log("friction:"+$2);,
-                parallel,angle,(parallel || angle < 0.7));
+//        EM_ASM(
+//        console.log("parallel:"+$0);
+//        console.log("angle:"+$1);
+//        console.log("friction:"+$2);,
+//                parallel,angle,(parallel || angle < 0.7));
         if(parallel || angle < 0.7 || angle>b2_pi-0.7){   //direction is parallel or somewhat close
             b2Vec2 toB=contact.GetNormal(); //a->b
             float m,c;
@@ -4134,10 +4147,10 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
             b2Vec2 a2=-a1;
             m_frictionAccumulationBuffer[a]+= a1;
             m_frictionAccumulationBuffer[b]-= a1;
-            EM_ASM(
-                    console.log("id"+$4+" apply:"+$0+","+$1);
-                    console.log("id"+$5+" apply:"+$2+","+$3),
-                    a1.x,a1.y,a2.x,a2.y,a,b);
+//            EM_ASM(
+//                    console.log("id"+$4+" apply:"+$0+","+$1);
+//                    console.log("id"+$5+" apply:"+$2+","+$3),
+//                    a1.x,a1.y,a2.x,a2.y,a,b);
         }}}
 
     //particle - body
@@ -4164,28 +4177,28 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
             diff=acosf(diff);
             float tolerance=0.5;
             if (diff<tolerance|| diff-b2_pi<tolerance){
-                EM_ASM(
-                        console.log("p------------surface"););
+//                EM_ASM(
+//                        console.log("p------------surface"););
 ////                m_colorBuffer.data[i].Set(255,20,20,255);
                 b2Vec2 fric=-m_velocityBuffer.data[i]*m_def.frictionRate*contact.weight;
-                EM_ASM(
-                        console.log("id"+$4+":"+$0+","+$1);
-                        console.log("apply:"+$2+","+$3);,
-                        pos.x,pos.y,fric.x,fric.y,i);
+//                EM_ASM(
+//                        console.log("id"+$4+":"+$0+","+$1);
+//                        console.log("apply:"+$2+","+$3);,
+//                        pos.x,pos.y,fric.x,fric.y,i);
                 m_frictionAccumulationBuffer[i]+=fric;
             }
 
         }
     }
     for (int i = 0; i < m_count; ++i) {
-        EM_ASM(
-                console.log("id"+$0+" is:"+$1+","+$2);,
-                i,m_velocityBuffer.data[i].x,m_velocityBuffer.data[i].y);
+//        EM_ASM(
+//                console.log("id"+$0+" is:"+$1+","+$2);,
+//                i,m_velocityBuffer.data[i].x,m_velocityBuffer.data[i].y);
         m_velocityBuffer.data[i]=m_frictionAccumulationBuffer[i];
-        EM_ASM(
-                console.log("id"+$0+" set: "+$1+","+$2);,
-                i, m_frictionAccumulationBuffer[i].x, m_frictionAccumulationBuffer[i].y
-                );
+//        EM_ASM(
+//                console.log("id"+$0+" set: "+$1+","+$2);,
+//                i, m_frictionAccumulationBuffer[i].x, m_frictionAccumulationBuffer[i].y
+//                );
     }
 }
 
@@ -4790,14 +4803,17 @@ void b2ParticleSystem::SetStuckThreshold(int32 steps)
 	}
 }
 
+///only makes sense if newSystem is in another world
 int b2ParticleSystem::MoveParticleToSystem(int particleIndex, b2ParticleSystem* newSystem){
     b2ParticleDef partDef;
     partDef.position=m_positionBuffer.data[particleIndex];
     partDef.color=m_colorBuffer.data[particleIndex];
     partDef.flags=m_flagsBuffer.data[particleIndex];
     partDef.velocity=m_velocityBuffer.data[particleIndex];
+    EM_ASM(console.log($0+","+$1);,partDef.velocity.x,partDef.velocity.y);
 //    partDef.group;
     int32 newIndex=newSystem->CreateParticle(partDef);
+    EM_ASM(console.log($0+","+$1);,newSystem->m_velocityBuffer.data[newIndex].x,newSystem->m_velocityBuffer.data[newIndex].y);
     DestroyParticle(particleIndex);
     return newIndex;
 };

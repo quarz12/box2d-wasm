@@ -146,7 +146,7 @@ public:
     void RemoveLayerChange();
     /// do particles move to m_newParticleSystem on contact?
     bool IsLayerChange() const;
-
+    b2ParticleSystem* getNewParticleSystem() const;
 	/// Set the contact filtering data. This will not update contacts until the next time
 	/// step when either parent body is active and awake.
 	/// This automatically calls Refilter.
@@ -405,6 +405,10 @@ inline bool b2Fixture::IsLayerChange() const {
 
 inline void b2Fixture::RemoveLayerChange() {
     m_hasLayerChange= false;
+}
+
+inline b2ParticleSystem *b2Fixture::getNewParticleSystem() const {
+    return m_newParticleSystem;
 }
 
 #endif

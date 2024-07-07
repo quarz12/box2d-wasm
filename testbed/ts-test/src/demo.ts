@@ -12,6 +12,7 @@ Box2DFactory_().then(box2D => {
         b2ParticleSystemDef,
         b2ChainShape,
         b2ParticleColor,
+        b2FixtureDef,
         b2Pump,
         b2_tensileParticle,
         b2ParticleDef,
@@ -19,6 +20,7 @@ Box2DFactory_().then(box2D => {
         b2_staticPressureParticle,
         b2_viscousParticle,
         b2_frictionParticle,
+
         //enum values are part of the base Box2D object
     } = box2D;
 
@@ -70,6 +72,11 @@ Box2DFactory_().then(box2D => {
         const linebtn = document.getElementById("linebtn");
         linebtn?.addEventListener("click", () => {
             summonLine();
+        })
+        const test1btn=document.getElementById("test1");
+        test1btn?.addEventListener("click",()=>{
+            console.log(particleSystem.GetParticleCount());
+            console.log(particleSystem2.GetParticleCount());
         })
     }
     const gravity = new b2Vec2(0, 0);
@@ -201,7 +208,6 @@ Box2DFactory_().then(box2D => {
             ground.CreateFixture(arc2,0);
         }
     }
-    console.log(b2_frictionParticle);
     // make particles
     const partSysDef = new b2ParticleSystemDef();
     partSysDef.radius = 0.1;
@@ -213,7 +219,18 @@ Box2DFactory_().then(box2D => {
     partSysDef.frictionRate=0.01;
     partSysDef.viscousStrength=1.0;
     const particleSystem = world.CreateParticleSystem(partSysDef);
-    const particleSystem2= world.CreateParticleSystem(partSysDef);
+    const world2=new b2World(new b2Vec2(0,0));
+    const particleSystem2= world2.CreateParticleSystem(partSysDef);
+
+    {
+        const fixtureDef= new b2FixtureDef();
+        const line=new b2EdgeShape();
+        line.SetTwoSided(new b2Vec2(0,0),new b2Vec2(11,11));
+        fixtureDef.shape=line;
+        let fixture=ground.CreateFixture(fixtureDef);
+        fixture.SetLayerChange(particleSystem2);
+
+    }
     function summonParticles() {
         const pt = new b2ParticleGroupDef();
         pt.stride=0.2;    //density of particle spawns, for ideal fit radius*2
@@ -287,6 +304,7 @@ Box2DFactory_().then(box2D => {
     // console.log=function (){}; //disable console logs
     const debugDraw = makeDebugDraw(ctx, pixelsPerMeter, box2D);
     world.SetDebugDraw(debugDraw);
+    world2.SetDebugDraw(debugDraw);
 
     // calculate no more than a 60th of a second during one world.Step() call
     const maxTimeStepMs = 1 / 60 * 1000;
@@ -294,6 +312,7 @@ Box2DFactory_().then(box2D => {
     const step = (deltaMs: number) => {
         const clampedDeltaMs = Math.min(deltaMs, maxTimeStepMs);
         world.Step(clampedDeltaMs / 1000, 3, 2, 3);
+        world2.Step(clampedDeltaMs / 1000, 3, 2, 3);
     };
     const drawCanvas = () => {
         ctx.fillStyle = 'rgb(255,255,255)';  //set background color
@@ -307,7 +326,7 @@ Box2DFactory_().then(box2D => {
         ctx.lineWidth *= 3;
 
         world.DebugDraw();
-        world.GetJointList()
+        world2.DebugDraw();
         ctx.restore();
     };
 
