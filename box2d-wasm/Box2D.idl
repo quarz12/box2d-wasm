@@ -139,6 +139,8 @@ interface b2FixtureDef {
   attribute float density;
   attribute boolean isSensor;
   [Value] attribute b2Filter filter;
+  attribute boolean hasLayerChange;
+  attribute b2ParticleSystem newParticleSystem;
 };
 
 interface b2Fixture {
@@ -165,6 +167,9 @@ interface b2Fixture {
   void SetRestitutionThreshold(float threshold);
   [Const, Ref] b2AABB GetAABB(long childIndex);
   void Dump(long bodyIndex);
+  void SetLayerChange(b2ParticleSystem newSystem);
+  boolean IsLayerChange();
+  void RemoveLayerChange();
 };
 
 interface b2Transform {

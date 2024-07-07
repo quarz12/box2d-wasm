@@ -4796,7 +4796,7 @@ int b2ParticleSystem::MoveParticleToSystem(int particleIndex, b2ParticleSystem* 
     partDef.color=m_colorBuffer.data[particleIndex];
     partDef.flags=m_flagsBuffer.data[particleIndex];
     partDef.velocity=m_velocityBuffer.data[particleIndex];
-    partDef.group;
+//    partDef.group;
     int32 newIndex=newSystem->CreateParticle(partDef);
     DestroyParticle(particleIndex);
     return newIndex;

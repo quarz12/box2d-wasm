@@ -28,6 +28,7 @@
 #include "b2_body.h"
 #include "b2_collision.h"
 #include "b2_shape.h"
+#include "b2_particle_system.h"
 
 class b2BlockAllocator;
 class b2Body;
@@ -70,6 +71,8 @@ struct B2_API b2FixtureDef
 		restitutionThreshold = 1.0f * b2_lengthUnitsPerMeter;
 		density = 0.0f;
 		isSensor = false;
+        hasLayerChange= false;
+        newParticleSystem= nullptr;
 	}
 
 	/// The shape, this must be set. The shape will be cloned, so you
@@ -98,6 +101,10 @@ struct B2_API b2FixtureDef
 
 	/// Contact filtering data.
 	b2Filter filter;
+
+    /// if true, particles in contact get moved to m_newParticleSystem
+    bool hasLayerChange;
+    b2ParticleSystem* newParticleSystem;
 };
 
 /// This proxy is used internally to connect fixtures to the broad-phase.
@@ -133,6 +140,12 @@ public:
 	/// Is this fixture a sensor (non-solid)?
 	/// @return the true if the shape is a sensor.
 	bool IsSensor() const;
+
+    /// set m_newParticleSystem
+    void SetLayerChange(b2ParticleSystem* newSystem);
+    void RemoveLayerChange();
+    /// do particles move to m_newParticleSystem on contact?
+    bool IsLayerChange() const;
 
 	/// Set the contact filtering data. This will not update contacts until the next time
 	/// step when either parent body is active and awake.
@@ -256,6 +269,9 @@ protected:
 	b2Filter m_filter;
 
 	bool m_isSensor;
+    /// if true, particles in contact get moved to m_newParticleSystem
+    bool m_hasLayerChange;
+    b2ParticleSystem* m_newParticleSystem;
 
 	b2FixtureUserData m_userData;
 };
@@ -278,6 +294,12 @@ inline const b2Shape* b2Fixture::GetShape() const
 inline bool b2Fixture::IsSensor() const
 {
 	return m_isSensor;
+}
+
+inline void b2Fixture::SetLayerChange(b2ParticleSystem* newSystem)
+{
+    m_hasLayerChange= true;
+    m_newParticleSystem=newSystem;
 }
 
 inline const b2Filter& b2Fixture::GetFilterData() const
@@ -375,6 +397,14 @@ inline const b2AABB& b2Fixture::GetAABB(int32 childIndex) const
 {
 	b2Assert(0 <= childIndex && childIndex < m_proxyCount);
 	return m_proxies[childIndex].aabb;
+}
+
+inline bool b2Fixture::IsLayerChange() const {
+    return m_hasLayerChange;
+}
+
+inline void b2Fixture::RemoveLayerChange() {
+    m_hasLayerChange= false;
 }
 
 #endif
