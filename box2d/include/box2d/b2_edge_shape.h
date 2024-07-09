@@ -66,15 +66,17 @@ public:
 	/// @see b2Shape::ComputeMass
 	void ComputeMass(b2MassData* massData, float density) const override;
 
+    bool CloserToNext(b2Vec2 point) const override;
+    bool CloserToPrev(b2Vec2 point) const override;
+
+    void AddConnection(b2Shape *next) override;
+
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
 	/// Set this as an isolated edge, with direct floats.
 	void Set(float vx1, float vy1, float vx2, float vy2);
 #endif // LIQUIDFUN_EXTERNAL_LANGUAGE_API
 
-	/// These are the edge vertices
-	b2Vec2 m_vertex1, m_vertex2;
-
-	/// Optional adjacent vertices. These are used for smooth collision.
+	/// Optional adjacent vertices. These are used for smooth collision. not used for particle collision
 	b2Vec2 m_vertex0, m_vertex3;
 
 	/// Uses m_vertex0 and m_vertex3 to create smooth collision.

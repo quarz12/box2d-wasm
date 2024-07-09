@@ -123,6 +123,8 @@ interface b2Shape {
   attribute float m_radius;
   attribute boolean m_hasCollision;
   attribute boolean m_isPump;
+  void AddConnection(b2Shape next);
+  attribute boolean m_isLineSegment;
 };
 
 interface b2FixtureUserData {
@@ -378,14 +380,10 @@ b2CircleShape implements b2Shape;
 [NoDelete]
 interface b2ArcShape {
   void b2ArcShape();
-  void SetOneSided([Const,Ref] b2Vec2 start, [Const,Ref] b2Vec2 end, [Const,Ref] b2Vec2 center, [Const,Ref] b2Vec2 v0, [Const,Ref] b2Vec2 v3);
-  void SetTwoSided([Const,Ref] b2Vec2 start, [Const,Ref] b2Vec2 end, [Const,Ref] b2Vec2 center);
-  [Value] attribute b2Vec2 m_start;
-  [Value] attribute b2Vec2 m_end;
+  void SetTwoSided([Const,Ref] b2Vec2 center, [Const,Ref] b2Vec2 start, [Const,Ref] b2Vec2 end);
+  [Value] attribute b2Vec2 m_vertex1;
+  [Value] attribute b2Vec2 m_vertex2;
   [Value] attribute b2Vec2 m_center;
-  [Value] attribute b2Vec2 m_vertex0;
-  [Value] attribute b2Vec2 m_vertex3;
-  attribute boolean m_oneSided;
 };
 
 b2ArcShape implements b2Shape;

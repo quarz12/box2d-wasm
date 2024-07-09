@@ -27,6 +27,7 @@
 #include "b2_api.h"
 #include "b2_math.h"
 #include "b2_collision.h"
+#include <stdexcept>
 
 class b2BlockAllocator;
 
@@ -114,6 +115,19 @@ public:
 	/// Radius of a shape. For polygonal shapes this must be b2_polygonRadius. There is no support for
 	/// making rounded polygons.
 	float m_radius;
+
+    /// These are the edge vertices, goes from vertex1 to vertex2, only used in Arcshape and Edgeshape
+    b2Vec2 m_vertex1, m_vertex2;
+
+    b2Shape* previousSegment= nullptr;
+    b2Shape* nextSegment= nullptr;
+    /// true if the point is closer to previousSegment than this
+    inline virtual bool CloserToPrev(b2Vec2 point) const { return false;} ;
+    /// true if the point is closer to nextSegment than this
+    inline virtual bool CloserToNext(b2Vec2 point) const { return false;} ;
+    /// throws invalid_argument if shapes are not connected, overwrites previous shape if point is already connected
+    inline virtual void AddConnection(b2Shape* next){};
+    bool m_isLineSegment=false;
 };
 
 inline b2Shape::Type b2Shape::GetType() const

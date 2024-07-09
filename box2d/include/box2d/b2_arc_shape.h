@@ -13,13 +13,6 @@ class B2_API b2ArcShape: public b2Shape
 public:
     b2ArcShape();
 
-    /// Set this as a part of a sequence. Vertex v0 precedes the edge and vertex v3
-    /// follows. These extra vertices are used to provide smooth movement
-    /// across junctions. This also makes the collision one-sided. The edge
-    /// normal points to the right looking from v1 to v2.
-    /// arc direction is clockwise
-    void SetOneSided(const b2Vec2& start, const b2Vec2& end, const b2Vec2& center,const b2Vec2& v2, const b2Vec2& v3);
-
     /// Set this as an isolated edge. Collision is two-sided. arc direction is clockwise
     void SetTwoSided(const b2Vec2& start, const b2Vec2& end, const b2Vec2& center);
 
@@ -46,6 +39,7 @@ public:
 
     /// @see b2Shape::ComputeMass
     void ComputeMass(b2MassData* massData, float density) const override;
+    void AddConnection(b2Shape *next) override;
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
     /// Set position with direct floats.
@@ -60,26 +54,19 @@ public:
 
     /// start/end/center of circle
     /// start/end must have equal distance to center
-    b2Vec2 m_start, m_end, m_center;
+    b2Vec2 m_vertex1, m_vertex2, m_center;
 
-    /// Optional adjacent vertices. These are used for smooth collision.
-    b2Vec2 m_vertex0, m_vertex3; //probably not used for particles
-
-    float m_lineRadius;
-    // draw endpoints?
-    bool m_oneSided= false;
+    bool CloserToPrev(b2Vec2 point) const override;
+    bool CloserToNext(b2Vec2 point) const override;
 };
 
 inline b2ArcShape::b2ArcShape()
 {
     m_type = e_arc;
     m_radius = 0.0f;
-    m_start.SetZero();
-    m_end.SetZero();
+    m_vertex1.SetZero();
+    m_vertex2.SetZero();
     m_center.SetZero();
-    m_lineRadius=b2_polygonRadius;
-    m_vertex0.SetZero();
-    m_vertex3.SetZero();
 }
 
 #endif //BOX2D_B2_ARC_SHAPE_H

@@ -7,23 +7,12 @@
 #include <new>
 #include <emscripten/em_asm.h>
 
-void b2ArcShape::SetOneSided(const b2Vec2& center, const b2Vec2& v0, const b2Vec2& start, const b2Vec2& end, const b2Vec2& v3)
-{
-    m_start = start;
-    m_end = end;
-    m_center = center;
-    m_vertex0 = v0;
-    m_vertex3 = v3;
-    m_oneSided = true;
-    m_radius=(start-center).Length();
-}
 
 void b2ArcShape::SetTwoSided(const b2Vec2& center, const b2Vec2& start, const b2Vec2& end)
 {
-    m_start = start;
-    m_end = end;
+    m_vertex1 = start;
+    m_vertex2 = end;
     m_center=center;
-    m_oneSided = false;
     m_radius=(start-center).Length();
 }
 
@@ -55,8 +44,8 @@ void b2ArcShape::ComputeDistance(const b2Transform& transform, const b2Vec2& poi
 
     // Check if the closest point is within the arc
     b2Vec2 toPoint = point - center; // Vector from center to point point
-    b2Vec2 toStart = m_start - center;
-    b2Vec2 toEnd = m_end - center;
+    b2Vec2 toStart = m_vertex1 - center;
+    b2Vec2 toEnd = m_vertex2 - center;
 
     float distanceToPoint=toPoint.Length();
 
@@ -95,8 +84,8 @@ void b2ArcShape::ComputeDistance(const b2Transform& transform, const b2Vec2& poi
     else
     {
         // Compute distance to the closest endpoint of the arc
-        b2Vec2 pointToStart=point-m_start;
-        b2Vec2 pointToEnd=point-m_end;
+        b2Vec2 pointToStart=point- m_vertex1;
+        b2Vec2 pointToEnd= point - m_vertex2;
         float distanceToStart = pointToStart.Normalize();
         float distanceToEnd = pointToEnd.Normalize();
 
@@ -147,8 +136,8 @@ bool b2ArcShape::RayCast(b2RayCastOutput* output, const b2RayCastInput& input,
 
         // Check if the intersection point is within the arc segment
         b2Vec2 toIntersection = intersectionPoint - position;
-        b2Vec2 toStart = m_start - position;
-        b2Vec2 toEnd = m_end - position;
+        b2Vec2 toStart = m_vertex1 - position;
+        b2Vec2 toEnd = m_vertex2 - position;
         float distanceToStart=toStart.Length();
         // Normalize the vectors to get directions
         toIntersection.Normalize();
@@ -170,7 +159,7 @@ bool b2ArcShape::RayCast(b2RayCastOutput* output, const b2RayCastInput& input,
         if (angleToEnd < 0)
             angleToEnd += 2 * b2_pi;
 
-        bool isWithinArc = false;
+        bool isWithinArc;
 
         if (angleToStart > angleToEnd) {
             isWithinArc = (angleToIntersection <= angleToStart && angleToIntersection >= angleToEnd);
@@ -217,6 +206,45 @@ void b2ArcShape::ComputeMass(b2MassData* massData, float density) const
     B2_NOT_USED(density);
 
     massData->mass = 0.0f;
-    massData->center=0.5f*(m_start-m_end);
+    massData->center=0.5f*(m_vertex1 - m_vertex2);
     massData->I = 0.0f;
+}
+bool b2ArcShape::CloserToNext(b2Vec2 point) const {
+    if(nextSegment== nullptr)
+        return false;
+    float distanceThis, distanceNext;
+    b2Vec2 normThis,normNext;
+    b2Transform transform;
+    ComputeDistance(transform, point, &distanceThis, &normThis, 0);
+    nextSegment->ComputeDistance(transform, point, &distanceNext, &normNext,0);
+    return distanceNext<distanceThis;
+    //TODO check Angle
+}
+
+bool b2ArcShape::CloserToPrev(b2Vec2 point) const {
+    if(previousSegment== nullptr)
+        return false;
+    float distanceThis, distancePrev;
+    b2Vec2 normThis,normNext;
+    b2Transform transform;
+    ComputeDistance(transform, point, &distanceThis, &normThis, 0);
+    previousSegment->ComputeDistance(transform, point, &distancePrev, &normNext,0);
+    return distancePrev<distanceThis;
+    //TODO
+}
+
+void b2ArcShape::AddConnection(b2Shape *next) {
+    if(next->m_vertex1==m_vertex1 || next->m_vertex2==m_vertex1) {
+        previousSegment = next;
+        m_isLineSegment= true;
+        return;
+    }
+    else if(next->m_vertex1==m_vertex2 || next->m_vertex2==m_vertex2){
+        nextSegment = next;
+        m_isLineSegment= true;
+        return;
+    }
+    else{
+        throw std::invalid_argument("Shapes are not connected");
+    }
 }

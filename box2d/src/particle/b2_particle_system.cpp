@@ -27,6 +27,7 @@
 #include "box2d/b2_shape.h"
 #include "box2d/b2_edge_shape.h"
 #include "box2d/b2_chain_shape.h"
+#include "box2d/b2_arc_shape.h"
 #include <algorithm>
 #include <cstdio>
 
@@ -2793,6 +2794,23 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 		inline bool ShouldCollide(b2Fixture * const fixture,
 								  int32 particleIndex)
 		{
+            b2Shape* shape=fixture->GetShape();
+            b2Shape::Type type=shape->GetType();
+            b2Vec2 pos=m_system->m_positionBuffer.data[particleIndex];
+            if (fixture->GetShape()->m_isLineSegment){
+                if (type==b2Shape::e_edge) {
+                    b2EdgeShape *edge = (b2EdgeShape*) shape;
+                    if (edge->CloserToPrev(pos) || edge->CloserToNext(pos))
+                        return false;
+                }
+                else if (type==b2Shape::e_arc){
+                        b2ArcShape* arc= (b2ArcShape*) shape;
+                        if (arc->CloserToPrev(pos) || arc->CloserToNext(pos))
+                            return false;
+                }
+            }
+            if(!fixture->HasCollision())
+                return false;
 			if (m_contactFilter) {
 				const uint32* const flags = m_system->GetFlagsBuffer();
 				if (flags[particleIndex] & b2_fixtureContactFilterParticle) {
@@ -4087,7 +4105,7 @@ void b2ParticleSystem::SolveZombie()
 }
 
 void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
-    //particle - particle
+    //particle - particle TODO only if particle has correct flag
     for (int i = 0; i < m_count; ++i) {
         m_frictionAccumulationBuffer[i]=m_velocityBuffer.data[i];
     }
@@ -4808,10 +4826,10 @@ int b2ParticleSystem::MoveParticleToSystem(int particleIndex, b2ParticleSystem* 
     partDef.color=m_colorBuffer.data[particleIndex];
     partDef.flags=m_flagsBuffer.data[particleIndex];
     partDef.velocity=m_velocityBuffer.data[particleIndex];
-    EM_ASM(console.log($0+","+$1);,partDef.velocity.x,partDef.velocity.y);
+//    EM_ASM(console.log($0+","+$1);,partDef.velocity.x,partDef.velocity.y);
 //    partDef.group;
     int32 newIndex=newSystem->CreateParticle(partDef);
-    EM_ASM(console.log($0+","+$1);,newSystem->m_velocityBuffer.data[newIndex].x,newSystem->m_velocityBuffer.data[newIndex].y);
+//    EM_ASM(console.log($0+","+$1);,newSystem->m_velocityBuffer.data[newIndex].x,newSystem->m_velocityBuffer.data[newIndex].y);
     DestroyParticle(particleIndex);
     return newIndex;
 };

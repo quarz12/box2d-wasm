@@ -1171,11 +1171,12 @@ void b2World::DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color
 			b2Vec2 v2 = b2Mul(xf, edge->m_vertex2);
 			m_debugDraw->DrawSegment(v1, v2, color);
 
-			if (!edge->m_oneSided)
-			{
-				m_debugDraw->DrawPoint(v1, 4.0f, color);
-				m_debugDraw->DrawPoint(v2, 4.0f, color);
-			}
+			if (!edge->m_oneSided){
+                if(edge->previousSegment== nullptr)
+                        m_debugDraw->DrawPoint(v1, 4.0f, color);
+                if(edge->nextSegment== nullptr)
+                        m_debugDraw->DrawPoint(v2, 4.0f, color);
+            }
 		}
 		break;
 
@@ -1214,16 +1215,15 @@ void b2World::DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color
     case b2Shape::e_arc:
     {
         b2ArcShape* arc = (b2ArcShape*)fixture->GetShape();
-        b2Vec2 start = b2Mul(xf, arc->m_start);
-        b2Vec2 end = b2Mul(xf, arc->m_end);
+        b2Vec2 start = b2Mul(xf, arc->m_vertex1);
+        b2Vec2 end = b2Mul(xf, arc->m_vertex2);
         b2Vec2 center = b2Mul(xf, arc->m_center);
         m_debugDraw->DrawArc(center,arc->m_radius,start, end, color);
 
-        if (!arc->m_oneSided)
-        {
+        if (arc->previousSegment == nullptr)
             m_debugDraw->DrawPoint(start, 4.0f, color);
+        if (arc->nextSegment == nullptr)
             m_debugDraw->DrawPoint(end, 4.0f, color);
-        }
     }
         break;
 	default:
