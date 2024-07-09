@@ -4,6 +4,7 @@
 
 #include "box2d/b2_arc_shape.h"
 #include "box2d/b2_block_allocator.h"
+#include "box2d/b2_edge_shape.h"
 #include <new>
 #include <emscripten/em_asm.h>
 
@@ -233,18 +234,47 @@ bool b2ArcShape::CloserToPrev(b2Vec2 point) const {
     //TODO
 }
 
-void b2ArcShape::AddConnection(b2Shape *next) {
-    if(next->m_vertex1==m_vertex1 || next->m_vertex2==m_vertex1) {
-        previousSegment = next;
-        m_isLineSegment= true;
-        return;
+bool b2ArcShape::AddConnection(b2Shape& next) {
+    if (next.GetType()==b2Shape::Type::e_edge) {
+        b2EdgeShape edge = (b2EdgeShape &) next;
+//        EM_ASM({
+//                   console.log("isprev", $0, $1);
+//                   console.log("isnext", $2, $3);
+//                   console.log("tv1:", $4, ",", $5, ";tv2:", $6, ",", $7);
+//                   console.log("ov1:", $8, ",", $9, ";ov2:", $10, ",", $11);
+//               }, edge.m_vertex1 == m_vertex1, edge.m_vertex2 == m_vertex1, edge.m_vertex1 == m_vertex2,
+//               edge.m_vertex2 == m_vertex2,
+//               m_vertex1.x, m_vertex1.y, m_vertex2.x, m_vertex2.y,
+//               edge.m_vertex1.x, edge.m_vertex1.y, edge.m_vertex2.x, edge.m_vertex2.y);
+        if (edge.m_vertex1 == m_vertex1 || edge.m_vertex2 == m_vertex1) {
+            previousSegment = &next;
+            m_isLineSegment = true;
+            return true;
+        } else if (edge.m_vertex1 == m_vertex2 || edge.m_vertex2 == m_vertex2) {
+            nextSegment = &next;
+            m_isLineSegment = true;
+            return true;
+        } else {
+            return false;
+        }
     }
-    else if(next->m_vertex1==m_vertex2 || next->m_vertex2==m_vertex2){
-        nextSegment = next;
-        m_isLineSegment= true;
-        return;
-    }
-    else{
-        throw std::invalid_argument("Shapes are not connected");
-    }
+    else if(next.GetType()==b2Shape::Type::e_arc){
+            b2ArcShape arc =(b2ArcShape&) arc;
+        if (arc.m_vertex1 == m_vertex1 || arc.m_vertex2 == m_vertex1) {
+            previousSegment = &next;
+            m_isLineSegment = true;
+            return true;
+        } else if (arc.m_vertex1 == m_vertex2 || arc.m_vertex2 == m_vertex2) {
+            nextSegment = &next;
+            m_isLineSegment = true;
+            return true;
+        } else {
+            return false;
+        }
+    } else{ return false;}
+
+
+
+
+
 }

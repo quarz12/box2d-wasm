@@ -211,18 +211,18 @@ bool b2EdgeShape::CloserToPrev(b2Vec2 point) const {
     //TODO
 }
 
-void b2EdgeShape::AddConnection(b2Shape *next) {
-    if(next->m_vertex1==m_vertex1 || next->m_vertex2==m_vertex1) {
-        previousSegment = next;
+bool b2EdgeShape::AddConnection(b2Shape& next) {
+    if(next.m_vertex1==m_vertex1 || next.m_vertex2==m_vertex1) {
+        previousSegment = &next;
         m_isLineSegment= true;
-        return;
+        return true;
     }
-    else if(next->m_vertex1==m_vertex2 || next->m_vertex2==m_vertex2){
-        nextSegment = next;
+    else if(next.m_vertex1==m_vertex2 || next.m_vertex2==m_vertex2){
+        nextSegment = &next;
         m_isLineSegment= true;
-        return;
+        return true;
     }
     else{
-        throw std::invalid_argument("Shapes are not connected");
+        return false;
     }
 }

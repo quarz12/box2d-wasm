@@ -39,7 +39,7 @@ public:
 
     /// @see b2Shape::ComputeMass
     void ComputeMass(b2MassData* massData, float density) const override;
-    void AddConnection(b2Shape *next) override;
+    bool AddConnection(b2Shape& next) override;
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
     /// Set position with direct floats.
@@ -54,7 +54,7 @@ public:
 
     /// start/end/center of circle
     /// start/end must have equal distance to center
-    b2Vec2 m_vertex1, m_vertex2, m_center;
+    b2Vec2 m_center;
 
     bool CloserToPrev(b2Vec2 point) const override;
     bool CloserToNext(b2Vec2 point) const override;

@@ -69,7 +69,7 @@ public:
     bool CloserToNext(b2Vec2 point) const override;
     bool CloserToPrev(b2Vec2 point) const override;
 
-    void AddConnection(b2Shape *next) override;
+    bool AddConnection(b2Shape& next) override;
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
 	/// Set this as an isolated edge, with direct floats.

@@ -123,8 +123,10 @@ interface b2Shape {
   attribute float m_radius;
   attribute boolean m_hasCollision;
   attribute boolean m_isPump;
-  void AddConnection(b2Shape next);
+  boolean AddConnection([Ref] b2Shape next);
   attribute boolean m_isLineSegment;
+  attribute b2Shape previousSegment;
+  attribute b2Shape nextSegment;
 };
 
 interface b2FixtureUserData {

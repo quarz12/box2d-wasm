@@ -126,7 +126,7 @@ public:
     /// true if the point is closer to nextSegment than this
     inline virtual bool CloserToNext(b2Vec2 point) const { return false;} ;
     /// throws invalid_argument if shapes are not connected, overwrites previous shape if point is already connected
-    inline virtual void AddConnection(b2Shape* next){};
+    inline virtual bool AddConnection(b2Shape& next){return false;};
     bool m_isLineSegment=false;
 };
 
