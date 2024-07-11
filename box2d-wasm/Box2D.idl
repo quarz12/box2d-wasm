@@ -54,7 +54,7 @@ interface JSContactListener {
 };
 
 interface b2World {
-  void b2World([Const, Ref] b2Vec2 gravity);
+  void b2World([Const, Ref] b2Vec2 gravity, float gravityFriction);
   void SetDestructionListener(b2DestructionListener listener);
   void SetContactFilter(JSContactFilter filter);
   void SetContactListener(JSContactListener listener);
@@ -97,6 +97,8 @@ interface b2World {
   boolean GetAutoClearForces();
   [Const, Ref] b2Profile GetProfile();
   void Dump();
+  float GetGravityFriction();
+  void SetGravityFriction(float gravityFriction);
 };
 
 enum b2ShapeType {

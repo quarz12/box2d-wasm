@@ -51,7 +51,8 @@ class B2_API b2World
 public:
 	/// Construct a world object.
 	/// @param gravity the world gravity vector.
-	b2World(const b2Vec2& gravity);
+	/// @param gravityFriction how much the top down gravity slows particles down
+	b2World(const b2Vec2& gravity, float gravityFriction);
 
 	/// Destruct the world. All physics entities are destroyed and all heap memory is released.
 	~b2World();
@@ -244,6 +245,10 @@ public:
 	/// Get the global gravity vector.
 	b2Vec2 GetGravity() const;
 
+    ///Set the top down particle slow due to gravity
+    void SetGravityFriction(float gravityFriction);
+    ///Get the top down particle slow due to gravity
+    float GetGravityFriction() const;
 	/// Is the world locked (in the middle of a time step).
 	bool IsLocked() const;
 
@@ -343,6 +348,8 @@ private:
 	/// the static library.
 	const b2Version *m_liquidFunVersion;
 	const char *m_liquidFunVersionString;
+
+    float m_gravityFriction;
 };
 
 inline b2Body* b2World::GetBodyList()
@@ -408,6 +415,16 @@ inline void b2World::SetGravity(const b2Vec2& gravity)
 inline b2Vec2 b2World::GetGravity() const
 {
 	return m_gravity;
+}
+
+inline float b2World::GetGravityFriction() const
+{
+    return m_gravityFriction;
+}
+
+inline void b2World::SetGravityFriction(float gravityFriction)
+{
+    m_gravityFriction=gravityFriction;
 }
 
 inline bool b2World::IsLocked() const

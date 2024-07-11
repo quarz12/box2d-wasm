@@ -192,6 +192,7 @@ struct B2_API b2ParticleSystemDef
 
 	/// Change the particle gravity scale. Adjusts the effect of the global
 	/// gravity vector on particles. Default value is 1.0f.
+	///@deprecated
 	float gravityScale;
 
 	/// Particles behave as circles with this radius. In Box2D units.

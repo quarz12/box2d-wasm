@@ -2794,21 +2794,21 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 		inline bool ShouldCollide(b2Fixture * const fixture,
 								  int32 particleIndex)
 		{
-            b2Shape* shape=fixture->GetShape();
-            b2Shape::Type type=shape->GetType();
-            b2Vec2 pos=m_system->m_positionBuffer.data[particleIndex];
-            if (fixture->GetShape()->m_isLineSegment){
-                if (type==b2Shape::e_edge) {
-                    b2EdgeShape *edge = (b2EdgeShape*) shape;
-                    if (edge->CloserToPrev(pos) || edge->CloserToNext(pos))
-                        return false;
-                }
-                else if (type==b2Shape::e_arc){
-                        b2ArcShape* arc= (b2ArcShape*) shape;
-                        if (arc->CloserToPrev(pos) || arc->CloserToNext(pos))
-                            return false;
-                }
-            }
+//            b2Shape* shape=fixture->GetShape();
+//            b2Shape::Type type=shape->GetType();
+//            b2Vec2 pos=m_system->m_positionBuffer.data[particleIndex];
+//            if (fixture->GetShape()->m_isLineSegment){
+//                if (type==b2Shape::e_edge) {
+//                    b2EdgeShape *edge = (b2EdgeShape*) shape;
+//                    if (edge->CloserToPrev(pos) || edge->CloserToNext(pos))
+//                        return false;
+//                }
+//                else if (type==b2Shape::e_arc){
+//                        b2ArcShape* arc= (b2ArcShape*) shape;
+//                        if (arc->CloserToPrev(pos) || arc->CloserToNext(pos))
+//                            return false;
+//                }
+//            }
             if(!fixture->HasCollision())
                 return false;
 			if (m_contactFilter) {
@@ -2825,7 +2825,7 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 		void ReportFixtureAndParticle(
 								b2Fixture* fixture, int32 childIndex, int32 a) override
 		{
-			if (ShouldCollide(fixture, a) && fixture->HasCollision()) {
+			if (ShouldCollide(fixture, a)) {
 				b2Body* body = fixture->GetBody();
 				b2Vec2 aPos = m_system->m_positionBuffer.data[a];
 				b2Vec2 aVel = m_system->m_velocityBuffer.data[a];
@@ -3190,10 +3190,10 @@ void b2ParticleSystem::LimitVelocity(const b2TimeStep& step)
 
 void b2ParticleSystem::SolveGravity(const b2TimeStep& step)
 {
-	b2Vec2 gravity = step.dt * m_def.gravityScale * m_world->GetGravity();
+	float gravity = pow(m_world->GetGravityFriction(),step.dt);
 	for (int32 i = 0; i < m_count; i++)
 	{
-		m_velocityBuffer.data[i] += gravity;
+		m_velocityBuffer.data[i] *= gravity;
 	}
 }
 
