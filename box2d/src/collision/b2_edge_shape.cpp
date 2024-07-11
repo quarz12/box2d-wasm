@@ -128,13 +128,13 @@ bool b2EdgeShape::RayCast(b2RayCastOutput* output, const b2RayCastInput& input,
 		return false;
 	}
 
-	float t = numerator / denominator;
+	float t = numerator / denominator;  //intersection fraction of ray
 	if (t < 0.0f || input.maxFraction < t)
 	{
 		return false;
 	}
 
-	b2Vec2 q = p1 + t * d;
+	b2Vec2 q = p1 + t * d;  //intersection point on edge
 
 	// q = v1 + s * r
 	// s = dot(q - v1, r) / dot(r, r)
@@ -145,8 +145,8 @@ bool b2EdgeShape::RayCast(b2RayCastOutput* output, const b2RayCastInput& input,
 		return false;
 	}
 
-	float s = b2Dot(q - v1, r) / rr;
-	if (s < 0.0f || 1.0f < s)
+	float s = b2Dot(q - v1, r) / rr;    //is q on the edge?
+	if (s < 0.0f || s > 1.0f )  // is s not between 0,1
 	{
 		return false;
 	}
@@ -173,9 +173,8 @@ void b2EdgeShape::ComputeAABB(b2AABB* aabb, const b2Transform& xf, int32 childIn
 	b2Vec2 lower = b2Min(v1, v2);
 	b2Vec2 upper = b2Max(v1, v2);
 
-	b2Vec2 r(m_radius, m_radius);
-	aabb->lowerBound = lower - r;
-	aabb->upperBound = upper + r;
+	aabb->lowerBound = lower;
+	aabb->upperBound = upper;
 }
 
 void b2EdgeShape::ComputeMass(b2MassData* massData, float density) const
