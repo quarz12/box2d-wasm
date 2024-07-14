@@ -16,11 +16,12 @@
 export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
   const {
     b2Color,
-    b2Draw: { e_shapeBit, e_particleBit},
+    b2Draw: { e_shapeBit, e_particleBit, e_aabbBit},
     b2Transform,
     b2Vec2,
     JSDraw,
     wrapPointer,
+
       b2ParticleColor
   } = box2D;
 

@@ -20,11 +20,15 @@
 </head>
 
 <body>
+<div style="display: flex; flex-direction: row;">
   <canvas id="demo-canvas" width="800" height="700"></canvas><br>
+  <canvas id="demo-canvas2" width="800" height="700"></canvas><br>
+</div>
   <button id="pauseBtn">pause</button><br>
       <label for="stepInterval">time delta in 1/60s</label><br>
       <input type="number" id="stepInterval" value="1"><button id="stepBtn">step</button><br>
-<button id="summonPartBtn">summon particles</button>
+  <label><input type="number" id="x" value="6.01"><input type="number" id="y" value="1.99"></label><button id="summonxy">summon particle</button><br>
+  <button id="summonPartBtn">summon particles</button>
   <button id="summonParticleBtn">summon particle</button>
   <button id="fricBtn1">summon friction particles1</button>
   <button id="fricBtn2">summon friction particles2</button>

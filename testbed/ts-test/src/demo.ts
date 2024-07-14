@@ -14,7 +14,6 @@ Box2DFactory_().then(box2D => {
         b2ChainShape,
         b2ParticleColor,
         b2FixtureDef,
-        b2Pump,
         b2_tensileParticle,
         b2ParticleDef,
         b2ArcShape,
@@ -27,7 +26,8 @@ Box2DFactory_().then(box2D => {
     /** @type {HTMLCanvasElement} */
     const canvas: HTMLCanvasElement = document.getElementById("demo-canvas") as HTMLCanvasElement;
     const ctx: CanvasRenderingContext2D = canvas?.getContext('2d') as CanvasRenderingContext2D;
-
+    const canvas2: HTMLCanvasElement = document.getElementById("demo-canvas2") as HTMLCanvasElement;
+    const ctx2: CanvasRenderingContext2D = canvas2?.getContext('2d') as CanvasRenderingContext2D;
     const pixelsPerMeter: number = 32;
     const cameraOffsetMetres: { x: number; y: number } = {
         x: 0,
@@ -48,7 +48,8 @@ Box2DFactory_().then(box2D => {
                     step(1/60*1000);
                     // drawCanvas();
                 }
-                drawCanvas();
+                drawCanvas(ctx, world);
+                drawCanvas(ctx2, world2);
             }
         })
 
@@ -84,8 +85,9 @@ Box2DFactory_().then(box2D => {
             summonParticlexy(parseFloat(x.value),parseFloat(y.value));
         });
     }
-    const gravity = new b2Vec2(0,1);
+    const gravity = new b2Vec2(0,0);
     const world = new b2World(gravity,0.5);
+    const world2=new b2World(new b2Vec2(0,0),0.5);
 
     const bd_ground = new b2BodyDef();
     const ground = world.CreateBody(bd_ground);
@@ -95,7 +97,13 @@ Box2DFactory_().then(box2D => {
         let corners = [new b2Vec2(0, 21), new b2Vec2(0, 0), new b2Vec2(25, 0), new b2Vec2(25, 21)];
         chain.CreateLoop(vecArrToPointer(corners, box2D), corners.length);
         let fix=ground.CreateFixture(chain, 0);
-        fix.GetShape().get_m_isPump()
+    }
+    {
+        const ground=world2.CreateBody(bd_ground);
+        const chain = new b2ChainShape();
+        let corners = [new b2Vec2(0, 21), new b2Vec2(0, 0), new b2Vec2(25, 0), new b2Vec2(25, 21)];
+        chain.CreateLoop(vecArrToPointer(corners, box2D), corners.length);
+        let fix=ground.CreateFixture(chain, 0);
     }
     //channel
     if (false)
@@ -245,17 +253,16 @@ Box2DFactory_().then(box2D => {
     partSysDef.frictionRate=0.0;
     partSysDef.viscousStrength=1.0;
     const particleSystem = world.CreateParticleSystem(partSysDef);
-    const world2=new b2World(new b2Vec2(0,0),0.9);
     const particleSystem2= world2.CreateParticleSystem(partSysDef);
 
-    // {
-    //     const fixtureDef= new b2FixtureDef();
-    //     const line=new b2EdgeShape();
-    //     line.SetTwoSided(new b2Vec2(0,0),new b2Vec2(11,11));
-    //     fixtureDef.shape=line;
-    //     let fixture=ground.CreateFixture(fixtureDef);
-    //     fixture.SetLayerChange(particleSystem2);
-    // }
+    {   //layer change line
+        const fixtureDef= new b2FixtureDef();
+        const line=new b2EdgeShape();
+        line.SetTwoSided(new b2Vec2(0,0),new b2Vec2(11,11));
+        fixtureDef.shape=line;
+        let fixture=ground.CreateFixture(fixtureDef);
+        fixture.SetLayerChange(particleSystem2);
+    }
     function summonParticles() {
         const pt = new b2ParticleGroupDef();
         pt.flags=b2_tensileParticle;
@@ -286,7 +293,7 @@ Box2DFactory_().then(box2D => {
         //alpha is divided by 255 to get value between 0-1
         pt.set_color(new b2ParticleColor(0, 100, 255, 255));
         pt.set_position(new b2Vec2(x, y));
-        pt.velocity=new b2Vec2(10,0);
+        // pt.velocity=new b2Vec2(10,0);
         particleSystem.CreateParticle(pt);
     }
     function summonfricParticles1(){
@@ -338,8 +345,9 @@ Box2DFactory_().then(box2D => {
     }
     // console.log=function (){}; //disable console logs
     const debugDraw = makeDebugDraw(ctx, pixelsPerMeter, box2D);
+    const debugDraw2 = makeDebugDraw(ctx2, pixelsPerMeter, box2D);
     world.SetDebugDraw(debugDraw);
-    world2.SetDebugDraw(debugDraw);
+    world2.SetDebugDraw(debugDraw2);
 
     // calculate no more than a 60th of a second during one world.Step() call
     const maxTimeStepMs = 1 / 60 * 1000;
@@ -349,19 +357,16 @@ Box2DFactory_().then(box2D => {
         world.Step(clampedDeltaMs / 1000, 3, 2, 3);
         world2.Step(clampedDeltaMs / 1000, 3, 2, 3);
     };
-    const drawCanvas = () => {
+    const drawCanvas = (ctx:CanvasRenderingContext2D, world: Box2D.b2World) => {
         ctx.fillStyle = 'rgb(255,255,255)';  //set background color
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         ctx.save();
         ctx.scale(pixelsPerMeter, pixelsPerMeter);
         const {x, y} = cameraOffsetMetres;
         ctx.translate(x, y);
         ctx.lineWidth /= pixelsPerMeter;
         ctx.lineWidth *= 3;
-
         world.DebugDraw();
-        world2.DebugDraw();
         ctx.restore();
     };
 
@@ -370,10 +375,12 @@ Box2DFactory_().then(box2D => {
     (function loop(prevMs) {
         const nowMs = window.performance.now();
         requestAnimationFrame(loop.bind(null, nowMs));
-        const deltaMs = nowMs - prevMs;
+        let deltaMs = nowMs - prevMs;
+        deltaMs=1/60*1000;
         if(!isPaused) {
             step(deltaMs);
-            drawCanvas();
+            drawCanvas(ctx, world);
+            drawCanvas(ctx2, world2);
         }
     }(window.performance.now()));
 });
