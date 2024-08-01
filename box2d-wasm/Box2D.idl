@@ -56,7 +56,7 @@ interface JSContactListener {
 interface b2World {
   void b2World([Const, Ref] b2Vec2 gravity, float gravityFriction);
   void SetDestructionListener(b2DestructionListener listener);
-  void SetContactFilter(JSContactFilter filter);
+  void SetContactFilter(b2ContactFilter filter);
   void SetContactListener(JSContactListener listener);
   void SetDebugDraw(b2Draw debugDraw);
   b2Body CreateBody([Const] b2BodyDef def);
@@ -1425,3 +1425,11 @@ interface b2Pump {
     void b2Pump([Const, Ref] b2Vec2 force);
 };
 b2Pump implements b2PolygonShape;
+
+interface b2MicrofluidicsContactFilter {
+  void b2MicrofluidicsContactFilter();
+  boolean ShouldCollide(b2Fixture fixtureA, b2Fixture fixtureB);
+  boolean ShouldCollide(b2Fixture fixture, b2ParticleSystem particleSystem, long particleIndex);
+  void SetParticleSystem(b2ParticleSystem system);
+};
+b2MicrofluidicsContactFilter implements b2ContactFilter;

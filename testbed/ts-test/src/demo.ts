@@ -85,6 +85,12 @@ Box2DFactory_().then(box2D => {
             let y=document.getElementById("y") as HTMLFormElement;
             summonParticlexy(parseFloat(x.value),parseFloat(y.value));
         });
+        const force=document.getElementById("applyForce");
+        force?.addEventListener("click",()=>{
+            let x=document.getElementById("fx") as HTMLFormElement;
+            let y=document.getElementById("fy") as HTMLFormElement;
+            applyForce(parseFloat(x.value),parseFloat(y.value));
+        });
     }
     const gravity = new b2Vec2(0,0);
     const world = new b2World(gravity,0.5);
@@ -118,6 +124,16 @@ Box2DFactory_().then(box2D => {
             const line2 = new b2EdgeShape();
             line2.SetTwoSided(new b2Vec2(6, 2), new b2Vec2(21, 2));
             link(line,line2);
+            {//make top arc
+                const arc=new b2ArcShape();
+                arc.SetTwoSided(new b2Vec2(21,4), new b2Vec2(21,0), new b2Vec2(25,4));
+                const arc2=new b2ArcShape();
+                arc2.SetTwoSided(new b2Vec2(21,4), new b2Vec2(21,2), new b2Vec2(23,4));
+                // arc2.AddConnection(line2);//all setprev setnext must be done before createfixture
+                link(line2,arc2);
+                ground.CreateFixture(arc,0);
+                ground.CreateFixture(arc2,0);
+            }
             let f=ground.CreateFixture(line, 0);
             let f2=ground.CreateFixture(line2, 0);
             let t=f.GetShape();
@@ -152,15 +168,6 @@ Box2DFactory_().then(box2D => {
             const arc3=new b2ArcShape();
             arc3.SetTwoSided(new b2Vec2(2,15), new b2Vec2(0,15), new b2Vec2(2,13));
             ground.CreateFixture(arc3,0);
-        }
-        {//make top arc
-            const arc=new b2ArcShape();
-            arc.SetTwoSided(new b2Vec2(21,4), new b2Vec2(21,0), new b2Vec2(25,4));
-            const arc2=new b2ArcShape();
-            arc2.SetTwoSided(new b2Vec2(21,4), new b2Vec2(21,2), new b2Vec2(23,4));
-            // arc2.AddConnection(line2);//all setprev setnext must be done before createfixture
-            ground.CreateFixture(arc,0);
-            ground.CreateFixture(arc2,0);
         }
         {
             const l1=new b2EdgeShape();
@@ -255,6 +262,11 @@ Box2DFactory_().then(box2D => {
 
         }
     }
+    // {
+    //     let line=new b2EdgeShape();
+    //     line.SetTwoSided(new b2Vec2(0,1.6),new b2Vec2(10,1.6));
+    //     ground.CreateFixture(line,0);
+    // }
     // make particles
     const partSysDef = new b2ParticleSystemDef();
     partSysDef.radius = 0.2;
@@ -267,6 +279,7 @@ Box2DFactory_().then(box2D => {
     partSysDef.viscousStrength=1.0;
     const particleSystem = world.CreateParticleSystem(partSysDef);
     const particleSystem2= world2.CreateParticleSystem(partSysDef);
+    systems.push(particleSystem,particleSystem2);
     let filter=new b2MicrofluidicsContactFilter();
     filter.SetParticleSystem(particleSystem);
     world.SetContactFilter(filter);
@@ -286,7 +299,7 @@ Box2DFactory_().then(box2D => {
     function summonParticles() {
         const pt = new b2ParticleGroupDef();
         pt.flags=b2_tensileParticle;
-        pt.flags=b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle;
+        pt.flags=b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle | b2_fixtureContactFilterParticle;
         let shape = new b2PolygonShape();
         shape.SetAsBox(5, 0.9, new b2Vec2(6, 1), 0);  //particle spawn area| len/2,height/2, center, angle
         pt.shape = shape;
@@ -363,7 +376,10 @@ Box2DFactory_().then(box2D => {
         // particleSystem.CreateParticleGroup(p);
 
     }
-    // console.log=function (){}; //disable console logs
+
+    function applyForce(x: number, y: number){
+        particleSystem.ApplyForce(0,particleSystem.GetParticleCount(),new b2Vec2(x,y));
+    }
     const debugDraw = makeDebugDraw(ctx, pixelsPerMeter, box2D);
     const debugDraw2 = makeDebugDraw(ctx2, pixelsPerMeter, box2D);
     world.SetDebugDraw(debugDraw);
@@ -404,3 +420,6 @@ Box2DFactory_().then(box2D => {
         }
     }(window.performance.now()));
 });
+const systems: Box2D.b2ParticleSystem[]=[];
+// @ts-ignore
+window.systems=systems;

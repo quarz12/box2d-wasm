@@ -3055,6 +3055,8 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		{
 			SolveForce(subStep);
 		}
+//        print("0 -> velocity:"+m_velocityBuffer.data[0].ToString());
+//        print("0 -> force:"+m_forceBuffer[0].ToString());
 		if (m_allParticleFlags & b2_viscousParticle)
 		{
 			SolveViscous();
@@ -3071,10 +3073,12 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		{
 			SolveTensile(subStep);
 		}
-		if (m_allGroupFlags & b2_solidParticleGroup)
+        if (m_allGroupFlags & b2_solidParticleGroup)
 		{
 			SolveSolid(subStep);
 		}
+//        print("1 -> velocity:"+m_velocityBuffer.data[0].ToString());
+//        print("1 -> force:"+m_forceBuffer[0].ToString());
 		if (m_allParticleFlags & b2_colorMixingParticle)
 		{
 			SolveColorMixing();
@@ -3090,6 +3094,8 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		{
 			SolveExtraDamping();
 		}
+//        print("2 -> velocity:"+m_velocityBuffer.data[0].ToString());
+//        print("2 -> force:"+m_forceBuffer[0].ToString());
 		// SolveElastic and SolveSpring refer the current velocities for
 		// numerical stability, they should be called as late as possible.
 		if (m_allParticleFlags & b2_elasticParticle)
@@ -3109,10 +3115,12 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		{
 			SolveBarrier(subStep);
 		}
-        if(m_allParticleFlags & b2_frictionParticle)
+        if (m_allParticleFlags & b2_frictionParticle)
         {
             SolveFriction(subStep);
         }
+//        print("3 -> velocity:"+m_velocityBuffer.data[0].ToString());
+//        print("3 -> force:"+m_forceBuffer[0].ToString());
 		// SolveCollision, SolveRigid and SolveWall should be called after
 		// other force functions because they may require particles to have
 		// specific velocities.
@@ -3128,11 +3136,14 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		// The particle positions can be updated only at the end of substep.
 		for (int32 i = 0; i < m_count; i++)
 		{
+//            print(std::to_string(i)+" -> velocity:"+m_velocityBuffer.data[i].ToString());
+//            print("0 -> velocity:"+m_velocityBuffer.data[0].ToString());
+//            print("0 -> force:"+m_forceBuffer[0].ToString());
 //            m_velocityBuffer.data[i].y=0;//for debugging, eliminates y movement
 			m_positionBuffer.data[i] += subStep.dt * m_velocityBuffer.data[i]; //change particle position
-            print("position: "+m_positionBuffer.data[i].ToString());
+//            print("position: "+m_positionBuffer.data[i].ToString());
 		}
-        print("end step");
+//        print("end step");
 	}
 }
 
@@ -3254,6 +3265,7 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep& step)
 		float w = m_weightBuffer[i];
 		float h = pressurePerWeight * b2Max(0.0f, w - b2_minParticleWeight);
 		m_accumulationBuffer[i] = b2Min(h, maxPressure);
+//        print(std::to_string(i)+"weight:"+std::to_string(m_weightBuffer[i]));
 	}
 	// ignores particles which have their own repulsive force
 	if (m_allParticleFlags & k_noPressureFlags)
@@ -3275,11 +3287,11 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep& step)
 			if (m_flagsBuffer.data[i] & b2_staticPressureParticle)
 			{
 				m_accumulationBuffer[i] += m_staticPressureBuffer[i];
-//                print("static pressure: "+floatToString(m_staticPressureBuffer[i]));
+//                print(std::to_string(i)+"static pressure: "+floatToString(m_staticPressureBuffer[i]));
 			}
 		}
 	}
-	// applies pressure between each particle in contact
+	// applies pressure between each particle & body in contact
 	float velocityPerPressure = step.dt / (m_def.density * m_particleDiameter);
 	for (int32 k = 0; k < m_bodyContactBuffer.GetCount(); k++)
 	{
@@ -3292,10 +3304,11 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep& step)
 		b2Vec2 p = m_positionBuffer.data[a];
 		float h = m_accumulationBuffer[a] + pressurePerWeight * w;
 		b2Vec2 f = velocityPerPressure * w * m * h * n;
-//        print("weight="+std::to_string(w));
+//        print(std::to_string(a)+"weight2="+std::to_string(w));
 //        print("mass="+std::to_string(m));
 //        print("h="+std::to_string(h));
 //        print("acc="+std::to_string(m_accumulationBuffer[a]));
+//        print("normal:"+n.ToString());
         //check if all fixtures dont have collision
         bool Collision = false;
         for (b2Fixture* fixture = b->GetFixtureList(); fixture; fixture = fixture->GetNext())
@@ -3740,6 +3753,10 @@ void b2ParticleSystem::SolveViscous()
 			b2Vec2 v = b->GetLinearVelocityFromWorldPoint(p) -
 					   m_velocityBuffer.data[a];
 			b2Vec2 f = viscousStrength * m * w * v;
+//            print("m:"+std::to_string(m));
+//            print("w:"+std::to_string(w));
+//            print("v:"+v.ToString());
+//            print("f:"+f.ToString());
 			m_velocityBuffer.data[a] += GetParticleInvMass() * f;
 			b->ApplyLinearImpulse(-f, p, true);
 		}

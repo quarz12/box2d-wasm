@@ -198,8 +198,11 @@ bool b2EdgeShape::CloserToNext(b2Vec2& point, b2Transform& tf) const {
     nextSegment->ComputeDistance(transform, point, &distanceNext, &normNext,0);
 //    print("point: "+point.ToString());
 //    print("distances next-this: "+floatToString(distanceNext)+(distanceNext<distanceThis?"<":">")+floatToString(distanceThis));
+    if (distanceNext==distanceThis){
+        return this < nextSegment;
+    }
     return distanceNext<distanceThis;
-    //TODO check Angle + ==
+    //TODO check Angle
 }
 
 bool b2EdgeShape::CloserToPrev(b2Vec2& point, b2Transform& tf) const {
@@ -212,6 +215,9 @@ bool b2EdgeShape::CloserToPrev(b2Vec2& point, b2Transform& tf) const {
     previousSegment->ComputeDistance(transform, point, &distancePrev, &normNext,0);
 //    print("point: "+point.ToString());
 //    print("distances prev-this: "+floatToString(distancePrev)+(distancePrev<distanceThis?"<":">")+floatToString(distanceThis));
+    if (distancePrev==distanceThis){
+        return this > previousSegment;
+    }
     return distancePrev<distanceThis;
     //TODO
 }

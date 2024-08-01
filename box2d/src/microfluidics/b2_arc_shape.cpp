@@ -218,6 +218,9 @@ bool b2ArcShape::CloserToNext(b2Vec2& point, b2Transform& tf) const {
     b2Transform transform=tf;
     ComputeDistance(transform, point, &distanceThis, &normThis, 0);
     nextSegment->ComputeDistance(transform, point, &distanceNext, &normNext,0);
+    if (distanceNext==distanceThis){
+        return this < nextSegment;
+    }
     return distanceNext<distanceThis;
     //TODO check Angle
 }
@@ -230,6 +233,9 @@ bool b2ArcShape::CloserToPrev(b2Vec2& point, b2Transform& tf) const {
     b2Transform transform=tf;
     ComputeDistance(transform, point, &distanceThis, &normThis, 0);
     previousSegment->ComputeDistance(transform, point, &distancePrev, &normNext,0);
+    if (distancePrev==distanceThis){
+        return this > previousSegment;
+    }
     return distancePrev<distanceThis;
     //TODO
 }

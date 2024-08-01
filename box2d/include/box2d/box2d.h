@@ -61,5 +61,5 @@
 
 #include "b2_particle.h"
 #include "b2_particle_group.h"
-
+#include "b2_contact_filter.h"
 #endif
