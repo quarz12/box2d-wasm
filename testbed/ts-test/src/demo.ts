@@ -20,7 +20,8 @@ Box2DFactory_().then(box2D => {
         b2_staticPressureParticle,
         b2_viscousParticle,
         b2_frictionParticle,
-
+        b2_fixtureContactFilterParticle,
+        b2MicrofluidicsContactFilter,
         //enum values are part of the base Box2D object
     } = box2D;
     /** @type {HTMLCanvasElement} */
@@ -88,9 +89,9 @@ Box2DFactory_().then(box2D => {
     const gravity = new b2Vec2(0,0);
     const world = new b2World(gravity,0.5);
     const world2=new b2World(new b2Vec2(0,0),0.5);
-
     const bd_ground = new b2BodyDef();
     const ground = world.CreateBody(bd_ground);
+    const ground2=world2.CreateBody(bd_ground);
     //edges
     {
         const chain = new b2ChainShape();
@@ -99,80 +100,16 @@ Box2DFactory_().then(box2D => {
         let fix=ground.CreateFixture(chain, 0);
     }
     {
-        const ground=world2.CreateBody(bd_ground);
         const chain = new b2ChainShape();
         let corners = [new b2Vec2(0, 21), new b2Vec2(0, 0), new b2Vec2(25, 0), new b2Vec2(25, 21)];
         chain.CreateLoop(vecArrToPointer(corners, box2D), corners.length);
-        let fix=ground.CreateFixture(chain, 0);
+        let fix=ground2.CreateFixture(chain, 0);
     }
-    //channel
-    if (false)
-    {
-
-        // {// U
-        //     const chain = new b2ChainShape();
-        //     let corners = arrToVecArr([[0,4],[24, 4],[24,10], [1,10]], box2D);
-        //     chain.CreateChain(vecArrToPointer(corners, box2D), corners.length);
-        //     ground.CreateFixture(chain, 0);
-        // }
-        {//bot line
-            const line=new b2EdgeShape();
-            line.SetTwoSided(new b2Vec2(0,11),new b2Vec2(23,11));
-            line.m_vertex0=new b2Vec2(0,0);
-            line.m_vertex3=new b2Vec2(25,10);
-            ground.CreateFixture(line,0);
-        }
-        {//top line
-            const line=new b2EdgeShape();
-            line.SetTwoSided(new b2Vec2(0,3),new b2Vec2(24,3));
-            ground.CreateFixture(line,0);
-        }
-        {//2nd line
-            const line=new b2EdgeShape();
-            line.SetTwoSided(new b2Vec2(0,4),new b2Vec2(23,4));
-            ground.CreateFixture(line,0);
-            // const line = new b2EdgeShape();
-            // const line2=new b2EdgeShape();
-            // line.SetTwoSided(new b2Vec2(0,4),new b2Vec2(15,4));
-            // line.m_vertex3=new b2Vec2(23,4);
-            // line2.SetTwoSided(new b2Vec2(15,4),new b2Vec2(23,4));
-            // line2.m_vertex0=new b2Vec2(0,4);
-            // ground.CreateFixture(line,0);
-            // ground.CreateFixture(line2,0);
-        }
-        {//3rd line
-            const line=new b2EdgeShape();
-            line.SetTwoSided(new b2Vec2(1,10),new b2Vec2(23,10));
-            ground.CreateFixture(line,0);
-        }
-        {// |
-            const line=new b2EdgeShape();
-            line.SetTwoSided(new b2Vec2(24,5),new b2Vec2(24,9));
-            ground.CreateFixture(line,0);
-        }
-        {//make arc
-            const arc=new b2ArcShape();
-            // arc.SetTwoSided(new b2Vec2(24,9), new b2Vec2(23,10), new b2Vec2(23,9));
-            arc.SetTwoSided(new b2Vec2(23,9), new b2Vec2(24,9), new b2Vec2(23,10));
-            ground.CreateFixture(arc,0);
-            const arc2=new b2ArcShape();
-            arc2.SetTwoSided(new b2Vec2(23,9), new b2Vec2(25,9), new b2Vec2(23,11));
-            ground.CreateFixture(arc2,0);
-        }
-        {//make arc
-            const arc=new b2ArcShape();
-            arc.SetTwoSided(new b2Vec2(23,5), new b2Vec2(23,3), new b2Vec2(25,5));
-            ground.CreateFixture(arc,0);
-            const arc2=new b2ArcShape();
-            arc2.SetTwoSided(new b2Vec2(23,5), new b2Vec2(23,4), new b2Vec2(24,5));
-            ground.CreateFixture(arc2,0);
-        }
-    }
-    else
+    //world1
     {
         {//2nd line
             const line=new b2EdgeShape();
-            line.SetTwoSided(new b2Vec2(0,13),new b2Vec2(21,13));
+            line.SetTwoSided(new b2Vec2(2,13),new b2Vec2(21,13));
             ground.CreateFixture(line,0);
         }
         {//1st line
@@ -180,10 +117,11 @@ Box2DFactory_().then(box2D => {
             line.SetTwoSided(new b2Vec2(0, 2), new b2Vec2(6, 2));
             const line2 = new b2EdgeShape();
             line2.SetTwoSided(new b2Vec2(6, 2), new b2Vec2(21, 2));
-            line.AddConnection(line2);
-            line2.AddConnection(line);
-            ground.CreateFixture(line, 0);
-            ground.CreateFixture(line2, 0);
+            link(line,line2);
+            let f=ground.CreateFixture(line, 0);
+            let f2=ground.CreateFixture(line2, 0);
+            let t=f.GetShape();
+            let t2=f2.GetShape();
             // const chain=new b2ChainShape();
             // let first=new b2Vec2(0,2);
             // let last= new b2Vec2(21,2);
@@ -242,6 +180,81 @@ Box2DFactory_().then(box2D => {
 
         }
     }
+    //world2
+    {
+        {//2nd line
+            const line=new b2EdgeShape();
+            line.SetTwoSided(new b2Vec2(2,13),new b2Vec2(21,13));
+            ground2.CreateFixture(line,0);
+        }
+        {//1st line
+            const line = new b2EdgeShape();
+            line.SetTwoSided(new b2Vec2(0, 2), new b2Vec2(6, 2));
+            const line2 = new b2EdgeShape();
+            line2.SetTwoSided(new b2Vec2(6, 2), new b2Vec2(21, 2));
+            link(line,line2);
+            let f=ground2.CreateFixture(line, 0);
+            let f2=ground2.CreateFixture(line2, 0);
+            let t=f.GetShape();
+            let t2=f2.GetShape();
+            // const chain=new b2ChainShape();
+            // let first=new b2Vec2(0,2);
+            // let last= new b2Vec2(21,2);
+            // chain.CreateChain(vecArrToPointer([first,new b2Vec2(6,2),last],box2D),3,first,last);
+            // ground.CreateFixture(chain,0);
+        }
+
+        {//3rd line
+            const line=new b2EdgeShape();
+            line.SetTwoSided(new b2Vec2(2,15),new b2Vec2(6,15));
+            ground2.CreateFixture(line,0);
+            const line2=new b2EdgeShape();
+            line2.SetTwoSided(new b2Vec2(6,15),new b2Vec2(21,15));
+            ground2.CreateFixture(line2,0);
+        }
+        {// |
+            const line=new b2EdgeShape();
+            line.SetTwoSided(new b2Vec2(23,4),new b2Vec2(23,11));
+            ground2.CreateFixture(line,0);
+        }
+        {//make bot arc
+            const arc=new b2ArcShape();
+            arc.SetTwoSided(new b2Vec2(21,11), new b2Vec2(25,11), new b2Vec2(21,15));
+            ground2.CreateFixture(arc,0);
+            const arc2=new b2ArcShape();
+            arc2.SetTwoSided(new b2Vec2(21,11), new b2Vec2(23,11), new b2Vec2(21,13));
+            ground2.CreateFixture(arc2,0);
+            const arc3=new b2ArcShape();
+            arc3.SetTwoSided(new b2Vec2(2,15), new b2Vec2(0,15), new b2Vec2(2,13));
+            ground2.CreateFixture(arc3,0);
+        }
+        {//make top arc
+            const arc=new b2ArcShape();
+            arc.SetTwoSided(new b2Vec2(21,4), new b2Vec2(21,0), new b2Vec2(25,4));
+            const arc2=new b2ArcShape();
+            arc2.SetTwoSided(new b2Vec2(21,4), new b2Vec2(21,2), new b2Vec2(23,4));
+            // arc2.AddConnection(line2);//all setprev setnext must be done before createfixture
+            ground2.CreateFixture(arc,0);
+            ground2.CreateFixture(arc2,0);
+        }
+        {
+            const l1=new b2EdgeShape();
+            l1.SetTwoSided(new b2Vec2(2,7), new b2Vec2(5,7));
+            const l2=new b2EdgeShape();
+            l2.SetTwoSided(new b2Vec2(2,9), new b2Vec2(5,9));
+            const arc=new b2ArcShape();
+            arc.SetTwoSided(new b2Vec2(5,8), new b2Vec2(5,7), new b2Vec2(5,9));
+            let success;
+            success=arc.AddConnection(l1);
+            success=arc.AddConnection(l2);
+            success=l1.AddConnection(arc);
+            success=l2.AddConnection(arc);
+            ground2.CreateFixture(l1,0);
+            ground2.CreateFixture(l2,0);
+            ground2.CreateFixture(arc,0);
+
+        }
+    }
     // make particles
     const partSysDef = new b2ParticleSystemDef();
     partSysDef.radius = 0.2;
@@ -254,14 +267,21 @@ Box2DFactory_().then(box2D => {
     partSysDef.viscousStrength=1.0;
     const particleSystem = world.CreateParticleSystem(partSysDef);
     const particleSystem2= world2.CreateParticleSystem(partSysDef);
-
+    let filter=new b2MicrofluidicsContactFilter();
+    filter.SetParticleSystem(particleSystem);
+    world.SetContactFilter(filter);
     {   //layer change line
         const fixtureDef= new b2FixtureDef();
         const line=new b2EdgeShape();
-        line.SetTwoSided(new b2Vec2(0,0),new b2Vec2(11,11));
+        line.SetTwoSided(new b2Vec2(23,10),new b2Vec2(25,10));
         fixtureDef.shape=line;
         let fixture=ground.CreateFixture(fixtureDef);
         fixture.SetLayerChange(particleSystem2);
+        const fixtureDef2= new b2FixtureDef();
+        const line2=new b2EdgeShape();
+        line.SetTwoSided(new b2Vec2(23,9),new b2Vec2(25,9));
+        fixtureDef2.shape=line2;
+        let fixture2=ground2.CreateFixture(fixtureDef);
     }
     function summonParticles() {
         const pt = new b2ParticleGroupDef();
@@ -288,7 +308,7 @@ Box2DFactory_().then(box2D => {
     }
     function summonParticlexy(x:number,y:number) {
         const pt = new b2ParticleDef();
-        pt.flags=b2_staticPressureParticle|b2_viscousParticle|b2_frictionParticle;
+        pt.flags=b2_staticPressureParticle|b2_viscousParticle|b2_frictionParticle|b2_fixtureContactFilterParticle;
         // pt.flags=b2_tensileParticle;
         //alpha is divided by 255 to get value between 0-1
         pt.set_color(new b2ParticleColor(0, 100, 255, 255));

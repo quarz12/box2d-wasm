@@ -66,8 +66,8 @@ public:
 	/// @see b2Shape::ComputeMass
 	void ComputeMass(b2MassData* massData, float density) const override;
 
-    bool CloserToNext(b2Vec2 point) const override;
-    bool CloserToPrev(b2Vec2 point) const override;
+    bool CloserToNext(b2Vec2& point, b2Transform& tf) const override;
+    bool CloserToPrev(b2Vec2& point, b2Transform& tf) const override;
 
     bool AddConnection(b2Shape& next) override;
 

@@ -56,8 +56,8 @@ public:
     /// start/end must have equal distance to center
     b2Vec2 m_center;
 
-    bool CloserToPrev(b2Vec2 point) const override;
-    bool CloserToNext(b2Vec2 point) const override;
+    bool CloserToPrev(b2Vec2& point, b2Transform& tf) const override;
+    bool CloserToNext(b2Vec2& point, b2Transform& tf) const override;
 };
 
 inline b2ArcShape::b2ArcShape()

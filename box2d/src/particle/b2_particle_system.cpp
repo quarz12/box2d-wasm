@@ -30,6 +30,7 @@
 #include "box2d/b2_arc_shape.h"
 #include <algorithm>
 #include <cstdio>
+#include "box2d/debug.h"
 
 #define DEBUG
 #ifdef DEBUG
@@ -1685,6 +1686,7 @@ void b2ParticleSystem::ComputeWeight()
 		const b2ParticleBodyContact& contact = m_bodyContactBuffer[k];
 		int32 a = contact.index;
 		float w = contact.weight;
+//        print("increase weight by "+std::to_string(w));
 		m_weightBuffer[a] += w;
 	}
 	for (int32 k = 0; k < m_contactBuffer.GetCount(); k++)
@@ -2794,21 +2796,6 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 		inline bool ShouldCollide(b2Fixture * const fixture,
 								  int32 particleIndex)
 		{
-//            b2Shape* shape=fixture->GetShape();
-//            b2Shape::Type type=shape->GetType();
-//            b2Vec2 pos=m_system->m_positionBuffer.data[particleIndex];
-//            if (fixture->GetShape()->m_isLineSegment){
-//                if (type==b2Shape::e_edge) {
-//                    b2EdgeShape *edge = (b2EdgeShape*) shape;
-//                    if (edge->CloserToPrev(pos) || edge->CloserToNext(pos))
-//                        return false;
-//                }
-//                else if (type==b2Shape::e_arc){
-//                        b2ArcShape* arc= (b2ArcShape*) shape;
-//                        if (arc->CloserToPrev(pos) || arc->CloserToNext(pos))
-//                            return false;
-//                }
-//            }
             if(!fixture->HasCollision())
                 return false;
 			if (m_contactFilter) {
@@ -2831,11 +2818,11 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 				b2Vec2 aVel = m_system->m_velocityBuffer.data[a];
 				b2RayCastOutput output;
 				b2RayCastInput input;
-                if (fixture->GetShape()->m_isPump){//TODO use fixture.hasCollision and solvePump
-                    m_system->ParticleApplyForce(a,fixture->GetShape()->pumpForce);
-                    //EM_ASM({ console.log("applied force"); });
-                    return;
-                }
+//                if (fixture->GetShape()->m_isPump){//TODO use solvePump
+//                    m_system->ParticleApplyForce(a,fixture->GetShape()->pumpForce);
+//                    //EM_ASM({ console.log("applied force"); });
+//                    return;
+//                }
 				if (m_system->m_iterationIndex == 0)
 				{
 					// Put 'aPos' in the local space of the previous frame
@@ -2872,6 +2859,9 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep& step)
 					m_system->m_velocityBuffer.data[a] = v;
 					b2Vec2 f = m_step.inv_dt *
 						m_system->GetParticleMass() * (aVel - v);
+//                    EM_ASM({
+//                        console.log("collision applied: "+$0+","+$1);
+//                    },f.x,f.y);
 					m_system->ParticleApplyForce(a, f); //force change happens here
 				}
 			}
@@ -3140,7 +3130,9 @@ void b2ParticleSystem::Solve(const b2TimeStep& step)
 		{
 //            m_velocityBuffer.data[i].y=0;//for debugging, eliminates y movement
 			m_positionBuffer.data[i] += subStep.dt * m_velocityBuffer.data[i]; //change particle position
+            print("position: "+m_positionBuffer.data[i].ToString());
 		}
+        print("end step");
 	}
 }
 
@@ -3283,6 +3275,7 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep& step)
 			if (m_flagsBuffer.data[i] & b2_staticPressureParticle)
 			{
 				m_accumulationBuffer[i] += m_staticPressureBuffer[i];
+//                print("static pressure: "+floatToString(m_staticPressureBuffer[i]));
 			}
 		}
 	}
@@ -3299,7 +3292,10 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep& step)
 		b2Vec2 p = m_positionBuffer.data[a];
 		float h = m_accumulationBuffer[a] + pressurePerWeight * w;
 		b2Vec2 f = velocityPerPressure * w * m * h * n;
-
+//        print("weight="+std::to_string(w));
+//        print("mass="+std::to_string(m));
+//        print("h="+std::to_string(h));
+//        print("acc="+std::to_string(m_accumulationBuffer[a]));
         //check if all fixtures dont have collision
         bool Collision = false;
         for (b2Fixture* fixture = b->GetFixtureList(); fixture; fixture = fixture->GetNext())
@@ -3308,6 +3304,8 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep& step)
         }
         // if no fixture has collision dont apply pressure
          if (Collision){
+             b2Vec2 force=-GetParticleInvMass() * f;
+//             print("pressure applied: "+force.ToString());
             m_velocityBuffer.data[a] -= GetParticleInvMass() * f;   //recoil particle
         }
 		b->ApplyLinearImpulse(f, p, true);
@@ -4118,30 +4116,11 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
         b2Vec2 v2=m_velocityBuffer.data[b];
         b2Vec2 p1=m_positionBuffer.data[a];
         b2Vec2 p2=m_positionBuffer.data[b];
-//        EM_ASM(
-//                console.log("p------------p"););
-//        EM_ASM(
-//                console.log("id"+$4+":"+$0+","+$1);
-//                console.log("id"+$5+":"+$2+","+$3),
-//                p1.x,p1.y,p2.x,p2.y,a,b);
-//        EM_ASM(
-//                console.log("v"+$4+":"+$0+","+$1);
-//                console.log("v"+$5+":"+$2+","+$3),
-//                v1.x,v1.y,v2.x,v2.y,a,b);
         float m1, c1, m2, c2;
         lineFromPointAndVector(p1,v1,m1,c1);
         lineFromPointAndVector(p2,v2,m2,c2);
-//        EM_ASM(
-//                console.log("m1,c1:"+$0+","+$1);
-//                console.log("m2,c2:"+$2+","+$3),
-//                m1,c1,m2,c2);
         bool parallel;
         float angle=angleOfIntersection(m1,m2,parallel);
-//        EM_ASM(
-//        console.log("parallel:"+$0);
-//        console.log("angle:"+$1);
-//        console.log("friction:"+$2);,
-//                parallel,angle,(parallel || angle < 0.7));
         if(parallel || angle < 0.7 || angle>b2_pi-0.7){   //direction is parallel or somewhat close
             b2Vec2 toB=contact.GetNormal(); //a->b
             float m,c;
@@ -4149,13 +4128,6 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
             lineFromPointAndVector(p1,toB,m,c);
             float angleAToBVel= angleOfIntersection(m,m1,parallel1);
             float angleBToAVel= angleOfIntersection(m,m2,parallel2);
-//            EM_ASM(
-//                    console.log("m,c:"+$4+","+$5);
-//                console.log("angleAToBVel:"+$0);
-//                console.log("angleBToAVel:"+$1);
-//                console.log("parallel1:"+$2);
-//                console.log("parallel2:"+$3);,
-//                angleAToBVel,angleBToAVel,parallel1,parallel2,m,c);
             if(!(parallel1 || parallel2 || angleAToBVel<0.9|| angleBToAVel<0.9|| angleBToAVel>b2_pi-0.9 ||angleAToBVel>b2_pi-0.9)){ //particles are not behind each other
 
             b2Vec2 diff=m_velocityBuffer.data[b]-m_velocityBuffer.data[a];
@@ -4163,10 +4135,6 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
             b2Vec2 a2=-a1;
             m_frictionAccumulationBuffer[a]+= a1;
             m_frictionAccumulationBuffer[b]-= a1;
-//            EM_ASM(
-//                    console.log("id"+$4+" apply:"+$0+","+$1);
-//                    console.log("id"+$5+" apply:"+$2+","+$3),
-//                    a1.x,a1.y,a2.x,a2.y,a,b);
         }}}
 
     //particle - body
@@ -4178,7 +4146,7 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
         b2Fixture* fixture=contact.fixture;
         b2RayCastInput input;
         input.p1=pos;
-        input.p2=pos+contact.normal*10; //better scaling?
+        input.p2=pos+contact.normal*10; //todo better scaling?
         input.maxFraction=1;
         b2RayCastOutput output;
         bool intersection=fixture->RayCast(&output, input, 0);
@@ -4186,35 +4154,21 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep& step) {
         if(intersection) {
             b2Vec2 surfaceNorm = output.normal;
             b2Rot rot=b2Rot(b2_pi / 2);
-            b2Vec2 surfaceTangent = b2Mul(rot, surfaceNorm);
+            b2Vec2 surfaceTangent = b2Mul(rot, surfaceNorm); // parallel to surface in intersection-point
             float diff = b2Dot(vel,surfaceTangent)/(vel.Length()*surfaceTangent.Length());
             if (diff > 1.0) diff = 1.0;
             if (diff < -1.0) diff = -1.0;
             diff=acosf(diff);
             float tolerance=0.5;
             if (diff<tolerance|| diff-b2_pi<tolerance){
-//                EM_ASM(
-//                        console.log("p------------surface"););
-////                m_colorBuffer.data[i].Set(255,20,20,255);
-                b2Vec2 fric=-m_velocityBuffer.data[i]*m_def.frictionRate*contact.weight;
-//                EM_ASM(
-//                        console.log("id"+$4+":"+$0+","+$1);
-//                        console.log("apply:"+$2+","+$3);,
-//                        pos.x,pos.y,fric.x,fric.y,i);
-                m_frictionAccumulationBuffer[i]+=fric;
+                b2Vec2 fric=m_velocityBuffer.data[i]*m_def.frictionRate*contact.weight;
+                m_frictionAccumulationBuffer[i]-=fric;
             }
 
         }
     }
     for (int i = 0; i < m_count; ++i) {
-//        EM_ASM(
-//                console.log("id"+$0+" is:"+$1+","+$2);,
-//                i,m_velocityBuffer.data[i].x,m_velocityBuffer.data[i].y);
         m_velocityBuffer.data[i]=m_frictionAccumulationBuffer[i];
-//        EM_ASM(
-//                console.log("id"+$0+" set: "+$1+","+$2);,
-//                i, m_frictionAccumulationBuffer[i].x, m_frictionAccumulationBuffer[i].y
-//                );
     }
 }
 

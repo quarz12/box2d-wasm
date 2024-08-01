@@ -23,7 +23,9 @@
 
 #include "box2d/b2_edge_shape.h"
 #include "box2d/b2_block_allocator.h"
+#include "box2d/debug.h"
 #include <new>
+#include <string>
 
 void b2EdgeShape::SetOneSided(const b2Vec2& v0, const b2Vec2& v1, const b2Vec2& v2, const b2Vec2& v3)
 {
@@ -186,26 +188,30 @@ void b2EdgeShape::ComputeMass(b2MassData* massData, float density) const
 	massData->I = 0.0f;
 }
 
-bool b2EdgeShape::CloserToNext(b2Vec2 point) const {
+bool b2EdgeShape::CloserToNext(b2Vec2& point, b2Transform& tf) const {
     if(nextSegment== nullptr)
         return false;
     float distanceThis, distanceNext;
     b2Vec2 normThis,normNext;
-    b2Transform transform;
+    b2Transform transform=tf;
     ComputeDistance(transform, point, &distanceThis, &normThis, 0);
     nextSegment->ComputeDistance(transform, point, &distanceNext, &normNext,0);
+//    print("point: "+point.ToString());
+//    print("distances next-this: "+floatToString(distanceNext)+(distanceNext<distanceThis?"<":">")+floatToString(distanceThis));
     return distanceNext<distanceThis;
-    //TODO check Angle
+    //TODO check Angle + ==
 }
 
-bool b2EdgeShape::CloserToPrev(b2Vec2 point) const {
+bool b2EdgeShape::CloserToPrev(b2Vec2& point, b2Transform& tf) const {
     if(previousSegment== nullptr)
         return false;
     float distanceThis, distancePrev;
     b2Vec2 normThis,normNext;
-    b2Transform transform;
+    b2Transform transform=tf;
     ComputeDistance(transform, point, &distanceThis, &normThis, 0);
     previousSegment->ComputeDistance(transform, point, &distancePrev, &normNext,0);
+//    print("point: "+point.ToString());
+//    print("distances prev-this: "+floatToString(distancePrev)+(distancePrev<distanceThis?"<":">")+floatToString(distanceThis));
     return distancePrev<distanceThis;
     //TODO
 }

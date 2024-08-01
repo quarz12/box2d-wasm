@@ -122,9 +122,9 @@ public:
     b2Shape* previousSegment= nullptr;
     b2Shape* nextSegment= nullptr;
     /// true if the point is closer to previousSegment than this
-    inline virtual bool CloserToPrev(b2Vec2 point) const { return false;} ;
+    inline virtual bool CloserToPrev(b2Vec2& point, b2Transform& tf) const { return false;} ;
     /// true if the point is closer to nextSegment than this
-    inline virtual bool CloserToNext(b2Vec2 point) const { return false;} ;
+    inline virtual bool CloserToNext(b2Vec2& point, b2Transform& tf) const { return false;} ;
     /// throws invalid_argument if shapes are not connected, overwrites previous shape if point is already connected
     inline virtual bool AddConnection(b2Shape& next){return false;};
     bool m_isLineSegment=false;

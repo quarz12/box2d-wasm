@@ -210,24 +210,24 @@ void b2ArcShape::ComputeMass(b2MassData* massData, float density) const
     massData->center=0.5f*(m_vertex1 - m_vertex2);
     massData->I = 0.0f;
 }
-bool b2ArcShape::CloserToNext(b2Vec2 point) const {
+bool b2ArcShape::CloserToNext(b2Vec2& point, b2Transform& tf) const {
     if(nextSegment== nullptr)
         return false;
     float distanceThis, distanceNext;
     b2Vec2 normThis,normNext;
-    b2Transform transform;
+    b2Transform transform=tf;
     ComputeDistance(transform, point, &distanceThis, &normThis, 0);
     nextSegment->ComputeDistance(transform, point, &distanceNext, &normNext,0);
     return distanceNext<distanceThis;
     //TODO check Angle
 }
 
-bool b2ArcShape::CloserToPrev(b2Vec2 point) const {
+bool b2ArcShape::CloserToPrev(b2Vec2& point, b2Transform& tf) const {
     if(previousSegment== nullptr)
         return false;
     float distanceThis, distancePrev;
     b2Vec2 normThis,normNext;
-    b2Transform transform;
+    b2Transform transform=tf;
     ComputeDistance(transform, point, &distanceThis, &normThis, 0);
     previousSegment->ComputeDistance(transform, point, &distancePrev, &normNext,0);
     return distancePrev<distanceThis;

@@ -118,7 +118,9 @@ set(BOX2D_HEADER_FILES
 	../include/box2d/b2_world_callbacks.h
 	../include/box2d/box2d.h
 		../include/box2d/b2_pump.h
-		../include/box2d/b2_arc_shape.h)
+		../include/box2d/b2_arc_shape.h
+		../include/box2d/debug.h
+		../include/box2d/b2_contact_filter.h)
 
 add_library(box2d ${BOX2D_SOURCE_FILES} ${BOX2D_HEADER_FILES})
 target_include_directories(box2d
