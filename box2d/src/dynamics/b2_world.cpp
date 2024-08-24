@@ -1173,9 +1173,9 @@ void b2World::DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color
 			m_debugDraw->DrawSegment(v1, v2, color);
 
 			if (!edge->m_oneSided){
-//                if(edge->previousSegment== nullptr)
+                if(edge->previousSegment== nullptr)
                         m_debugDraw->DrawPoint(v1, 4.0f, color);
-//                if(edge->nextSegment== nullptr)
+                if(edge->nextSegment== nullptr)
                         m_debugDraw->DrawPoint(v2, 4.0f, color);
             }
 		}
@@ -1221,9 +1221,9 @@ void b2World::DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color
         b2Vec2 center = b2Mul(xf, arc->m_center);
         m_debugDraw->DrawArc(center,arc->m_radius,start, end, color);
 
-//        if (arc->previousSegment == nullptr)
+        if (arc->previousSegment == nullptr)
             m_debugDraw->DrawPoint(start, 4.0f, color);
-//        if (arc->nextSegment == nullptr)
+        if (arc->nextSegment == nullptr)
             m_debugDraw->DrawPoint(end, 4.0f, color);
     }
         break;

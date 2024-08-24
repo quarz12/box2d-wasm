@@ -124,7 +124,6 @@ interface b2Shape {
   attribute b2ShapeType m_type;
   attribute float m_radius;
   attribute boolean m_hasCollision;
-  attribute boolean m_isPump;
   boolean AddConnection([Ref] b2Shape next);
   attribute boolean m_isLineSegment;
   attribute b2Shape previousSegment;
@@ -761,8 +760,8 @@ b2MouseJointDef implements b2JointDef;
 interface b2PolygonShape {
   void b2PolygonShape();
   void Set(b2Vec2 vertices, long vertexCount);
-  void SetAsBox(float hx, float hy);
-  void SetAsBox(float hx, float hy, [Ref] b2Vec2 center, float angle);
+  void SetAsBox(float halfx, float halfy);
+  void SetAsBox(float halfx, float halfy, [Ref] b2Vec2 center, float angle);
   [Value] attribute b2Vec2 m_centroid;
   // length 8
   [Value,BoundsChecked] attribute b2Vec2[] m_vertices;
@@ -1102,7 +1101,9 @@ enum b2ParticleFlag {
   "b2_particleContactListenerParticle",
   "b2_fixtureContactFilterParticle",
   "b2_particleContactFilterParticle",
-  "b2_frictionParticle"
+  "b2_frictionParticle",
+  "b2_airParticle",
+  "b2_adhesiveParticle",
 };
 
 interface b2ParticleColor {
@@ -1285,6 +1286,9 @@ interface b2ParticleSystemDef {
 	attribute boolean destroyByAge;
 	attribute float lifetimeGranularity;
 	attribute float frictionRate;
+	attribute float maxAirPressure;
+	attribute float adhesionRadius;
+	attribute float adhesiveStrength;
 };
 
 [NoDelete]
@@ -1420,12 +1424,6 @@ interface b2VoronoiDiagram {
 interface NodeCallback {
 };
 
-[NoDelete] //dont use inline
-interface b2Pump {
-    void b2Pump([Const, Ref] b2Vec2 force);
-};
-b2Pump implements b2PolygonShape;
-
 interface b2MicrofluidicsContactFilter {
   void b2MicrofluidicsContactFilter();
   boolean ShouldCollide(b2Fixture fixtureA, b2Fixture fixtureB);
@@ -1433,3 +1431,21 @@ interface b2MicrofluidicsContactFilter {
   void SetParticleSystem(b2ParticleSystem system);
 };
 b2MicrofluidicsContactFilter implements b2ContactFilter;
+
+interface b2Sensor {
+  void b2Sensor();
+  void Configure(boolean speed, boolean pressure, b2ParticleSystem system, long intervalSteps);
+  attribute boolean pressureSensor;
+  attribute boolean speedSensor;
+ // attribute sequence<float> pressureSamples;
+ // attribute sequence<float> speedSamples;
+  attribute long intervalTimeSteps;
+  attribute b2ParticleSystem m_system;
+  //void SensePressure(sequence<b2ParticleBodyContact> contacts);
+  //void SenseSpeed(sequence<b2ParticleBodyContact> contacts);
+  float GetAvgPressure();
+  float GetAvgSpeed();
+  boolean IsPressureSensor();
+  boolean IsSpeedSensor();
+};
+b2Sensor implements b2PolygonShape;

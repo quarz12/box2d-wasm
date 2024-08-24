@@ -23,7 +23,8 @@
 #include "b2_growable_buffer.h"
 #include "b2_particle.h"
 #include "b2_time_step.h"
-
+#include <list>
+#include <map>
 #ifdef LIQUIDFUN_UNIT_TESTS
 #include <gtest/gtest.h>
 #endif // LIQUIDFUN_UNIT_TESTS
@@ -180,6 +181,9 @@ struct B2_API b2ParticleSystemDef
 		destroyByAge = true;
 		lifetimeGranularity = 1.0f / 60.0f;
         frictionRate=0.0f;
+        maxAirPressure=30.0f;
+        adhesionRadius=1.0f;
+        adhesiveStrength=0.0f;
 	}
 
 	/// Enable strict Particle/Body contact check.
@@ -282,6 +286,12 @@ struct B2_API b2ParticleSystemDef
 
     /// rate at which particles get slowed on tangential contact in fraction of current velocity
     float frictionRate;
+    /// pressure at which air particles disappear
+    float maxAirPressure;
+    /// radius in which adhesive forces apply
+    float adhesionRadius;
+    /// attraction strength to closest fixture
+    float adhesiveStrength;
 };
 
 
@@ -1005,9 +1015,11 @@ private:
 	void SolvePowder(const b2TimeStep& step);
 	void SolveSolid(const b2TimeStep& step);
 	void SolveForce(const b2TimeStep& step);
+    void SolveAdhesion(const b2TimeStep& step);
 	void SolveColorMixing();
 	void SolveZombie();
     void SolveFriction(const b2TimeStep& step);
+    void SolveSensor();
 	/// Destroy all particles which have outlived their lifetimes set by
 	/// SetParticleLifetime().
 	void SolveLifetimes(const b2TimeStep& step);
@@ -1123,6 +1135,7 @@ private:
 	/// CreateParticle() calls.
     b2Vec2* m_frictionAccumulationBuffer;
     /// used to calculate friction
+    float* m_totalForceBuffer;
 	float* m_depthBuffer;
 	UserOverridableBuffer<b2ParticleColor> m_colorBuffer;
 	b2ParticleGroup** m_groupBuffer;
@@ -1139,6 +1152,7 @@ private:
 	b2GrowableBuffer<b2ParticleContact> m_contactBuffer;
     ///contacts between particles and bodies in this step | updateBodyContacts
 	b2GrowableBuffer<b2ParticleBodyContact> m_bodyContactBuffer;
+    b2GrowableBuffer<b2ParticleBodyContact> m_sensorContactBuffer;
 	b2GrowableBuffer<b2ParticlePair> m_pairBuffer;
 	b2GrowableBuffer<b2ParticleTriad> m_triadBuffer;
 

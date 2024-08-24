@@ -108,9 +108,7 @@ public:
 
 	Type m_type;
 
-    bool m_isPump= false;
     bool m_hasCollision = true;
-    b2Vec2 pumpForce=b2Vec2_zero;
 
 	/// Radius of a shape. For polygonal shapes this must be b2_polygonRadius. There is no support for
 	/// making rounded polygons.
@@ -125,9 +123,10 @@ public:
     inline virtual bool CloserToPrev(b2Vec2& point, b2Transform& tf) const { return false;} ;
     /// true if the point is closer to nextSegment than this
     inline virtual bool CloserToNext(b2Vec2& point, b2Transform& tf) const { return false;} ;
-    /// throws invalid_argument if shapes are not connected, overwrites previous shape if point is already connected
+    /// false if shapes are not connected, overwrites previous shape if point is already connected
     inline virtual bool AddConnection(b2Shape& next){return false;};
     bool m_isLineSegment=false;
+    bool isSensor=false;
 };
 
 inline b2Shape::Type b2Shape::GetType() const

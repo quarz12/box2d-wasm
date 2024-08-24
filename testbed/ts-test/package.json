@@ -4,7 +4,8 @@
   "description": "",
   "main": "demo.js",
   "scripts": {
-    "build-dev": "npm-run-all clean build start",
+    "build-clean": "npm-run-all clean build start",
+    "build-dev" : "npm-run-all build start",
     "build": "webpack --mode development",
     "clean": "rm -rf build",
     "test": "node ./build/demo.js",

@@ -7,7 +7,6 @@
 
 bool b2MicrofluidicsContactFilter::ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB) {
     return true;
-//        return b2ContactFilter::ShouldCollide(fixtureA, fixtureB);
 }
 
 bool b2MicrofluidicsContactFilter::ShouldCollide(b2Fixture *fixture, b2ParticleSystem *particleSystem, int32 particleIndex) {

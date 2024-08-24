@@ -78,6 +78,10 @@ enum b2ParticleFlag
 	b2_particleContactFilterParticle = 1 << 17,
     /// particle experiences friction on tangential contact
     b2_frictionParticle= 1 << 18,
+    /// particle disappears when cartain total pressure is applied
+    b2_airParticle= 1<< 19,
+    /// cohesive particles stick to surfaces
+    b2_adhesiveParticle=1<<20,
 };
 
 /// Small color object for each particle

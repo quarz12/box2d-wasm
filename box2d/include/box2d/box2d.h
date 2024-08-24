@@ -36,7 +36,6 @@
 #include "b2_edge_shape.h"
 #include "b2_polygon_shape.h"
 #include "b2_arc_shape.h"
-#include "b2_pump.h"
 
 #include "b2_broad_phase.h"
 #include "b2_dynamic_tree.h"
@@ -62,4 +61,5 @@
 #include "b2_particle.h"
 #include "b2_particle_group.h"
 #include "b2_contact_filter.h"
+#include "b2_sensor.h"
 #endif

@@ -62,7 +62,8 @@ set(BOX2D_SOURCE_FILES
 	particle/b2_voronoi_diagram.cpp
 	rope/b2_rope.cpp
 		microfluidics/b2_contact_filter.cpp
-		microfluidics/b2_arc_shape.cpp)
+		microfluidics/b2_arc_shape.cpp
+		microfluidics/b2_sensor.cpp)
 
 set(BOX2D_HEADER_FILES
 	../include/box2d/b2_api.h
@@ -117,10 +118,10 @@ set(BOX2D_HEADER_FILES
 	../include/box2d/b2_world.h
 	../include/box2d/b2_world_callbacks.h
 	../include/box2d/box2d.h
-		../include/box2d/b2_pump.h
 		../include/box2d/b2_arc_shape.h
 		../include/box2d/debug.h
-		../include/box2d/b2_contact_filter.h)
+		../include/box2d/b2_contact_filter.h
+		../include/box2d/b2_sensor.h)
 
 add_library(box2d ${BOX2D_SOURCE_FILES} ${BOX2D_HEADER_FILES})
 target_include_directories(box2d
