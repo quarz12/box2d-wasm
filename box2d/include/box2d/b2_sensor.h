@@ -34,9 +34,6 @@ public:
         if(m_system== nullptr){
             print("system is nullptr");
         };
-        print("speed "+std::to_string(speedSensor));
-        print("pressure "+std::to_string(pressureSensor));
-        print("system "+std::to_string((int)&m_system));
     }
 
     void SensePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
@@ -47,7 +44,7 @@ public:
 
     float GetAvgSpeed();
 
-    b2Vec2 CalculateTheoreticalPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& contacts) const;
+    b2Vec2 CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& contacts) const;
 
     void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact> &contacts);
 

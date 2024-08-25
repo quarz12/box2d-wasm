@@ -98,7 +98,7 @@ struct B2_API b2FixtureDef
 	/// A sensor shape collects contact information but never generates a collision
 	/// response.
 	bool isSensor;
-
+    bool fluidSensor= false;
 	/// Contact filtering data.
 	b2Filter filter;
 
@@ -184,7 +184,7 @@ public:
 	 * Compute the distance from this fixture.
      * @param p point to check distance to
      * @param d pointer that will contain the distance
-     * @param n normalized vector pointer that will contain the direction
+     * @param n normalized vector pointer that will contain the direction from fixture to the point
      * @param childIndex index of shape in Type enum (fixture->GetShape()->GetType())
      */
 	void ComputeDistance(const b2Vec2& p, float* distance, b2Vec2* normal, int32 childIndex) const;
@@ -235,6 +235,8 @@ public:
 
 	/// Dump this fixture to the log file.
 	void Dump(int32 bodyIndex);
+
+    bool isFluidSensor= false;
 
 protected:
 

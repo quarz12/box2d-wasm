@@ -14,6 +14,8 @@ bool b2MicrofluidicsContactFilter::ShouldCollide(b2Fixture *fixture, b2ParticleS
     b2Shape::Type type = shape->GetType();
     b2Vec2 pos = m_system->GetPositionBuffer()[particleIndex];
     b2Transform tf = fixture->GetBody()->GetTransform();
+    if (!fixture->HasCollision())
+        return false;
     if (fixture->GetShape()->m_isLineSegment) {
         if (type == b2Shape::e_edge) {
             b2EdgeShape *edge = (b2EdgeShape *) shape;

@@ -129,6 +129,7 @@ interface b2Shape {
   attribute boolean m_isLineSegment;
   attribute b2Shape previousSegment;
   attribute b2Shape nextSegment;
+  attribute boolean isSensor;
 };
 
 interface b2FixtureUserData {
@@ -179,6 +180,7 @@ interface b2Fixture {
   void SetCollision(boolean hasCollision);
   boolean HasCollision();
   b2ParticleSystem GetNewParticleSystem();
+  attribute boolean isFluidSensor;
 };
 
 interface b2Transform {

@@ -200,7 +200,7 @@ b2Fixture* b2Body::CreateFixture(const b2FixtureDef* def)
 	// to be created at the beginning of the next time step.
 	m_world->m_newContacts = true;
 
-    if (fixture->IsSensor()){
+    if (fixture->isFluidSensor){
         b2Sensor* oldList=m_world->m_sensorList;
         b2Sensor* newList=(b2Sensor*)fixture->GetShape();
         newList->SetNext(oldList);
@@ -214,7 +214,7 @@ b2Fixture* b2Body::CreateFixture(const b2Shape* shape, float density)
 	b2FixtureDef def;
 	def.shape = shape;
 	def.density = density;
-    def.isSensor = shape->isSensor;
+    def.fluidSensor = shape->isSensor;
 	return CreateFixture(&def);
 }
 

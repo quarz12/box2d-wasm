@@ -68,7 +68,7 @@ void b2ArcShape::ComputeDistance(const b2Transform& transform, const b2Vec2& poi
     if (angleToEnd < 0)
         angleToEnd += 2.0f * b2_pi;
 
-    bool isWithinArc = false;
+    bool isWithinArc;
     if (angleToStart > angleToEnd) {
         isWithinArc = (angleToPoint <= angleToStart && angleToPoint >= angleToEnd);
     } else {

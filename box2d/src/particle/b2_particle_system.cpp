@@ -2405,7 +2405,7 @@ void b2ParticleSystem::UpdateBodyContacts() {
                 float invM = invAm + invBm + invBI * rpn * rpn;
 
                 //add new contact to buffer
-                b2ParticleBodyContact& contact =fixture->IsSensor() ? m_system->m_sensorContactBuffer.Append() : m_system->m_bodyContactBuffer.Append();
+                b2ParticleBodyContact& contact =fixture->isFluidSensor ? m_system->m_sensorContactBuffer.Append() : m_system->m_bodyContactBuffer.Append();
                 contact.index = particleIndex;
                 contact.body = b;
                 contact.fixture = fixture;
@@ -2503,7 +2503,7 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep &step) {
         // be performed, false otherwise.
         inline bool ShouldCollide(b2Fixture *const fixture,
                                   int32 particleIndex) {
-            if (!fixture->HasCollision() || fixture->IsSensor())
+            if (!fixture->HasCollision() || fixture->isFluidSensor)
                 return false;
             if (m_contactFilter) {
                 const uint32 *const flags = m_system->GetFlagsBuffer();
@@ -2710,8 +2710,6 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
         subStep.inv_dt *= step.particleIterations;
         UpdateContacts(false);
         UpdateBodyContacts();
-        //removes sensors from bodycontactbuffer, so it must be first
-        SolveSensor(subStep);
         ComputeWeight();
         SolveLayerChange(); //TODO will this process a particle in the same step in the new system?
         if (m_allGroupFlags & b2_particleGroupNeedsUpdateDepth) {
@@ -2720,6 +2718,8 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
         if (m_allParticleFlags & b2_reactiveParticle) {
             UpdatePairsAndTriadsWithReactiveParticles();
         }
+//        print("-1 -> velocity:"+m_velocityBuffer.data[0].ToString());
+//        print("-1 -> force:"+m_forceBuffer[0].ToString());
         if (m_hasForce) {
             SolveForce(subStep);
         }
@@ -2774,9 +2774,13 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
         if (m_allParticleFlags & b2_frictionParticle) {
             SolveFriction(subStep);
         }
+        print("2.5 -> velocity:"+m_velocityBuffer.data[0].ToString());
+        print("2.5 -> force:"+m_forceBuffer[0].ToString());
         if (m_allParticleFlags & b2_adhesiveParticle) {
             SolveAdhesion(subStep);
         }
+        print("3 -> velocity:"+m_velocityBuffer.data[0].ToString());
+        print("3 -> force:"+m_forceBuffer[0].ToString());
         // SolveCollision, SolveRigid and SolveWall should be called after
         // other force functions because they may require particles to have
         // specific velocities.
@@ -2788,10 +2792,14 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
             SolveWall();
         }
         // The particle positions can be updated only at the end of substep.
+        SolveSensor(subStep);
+//        print("4 -> velocity:"+m_velocityBuffer.data[0].ToString());
+//        print("4 -> force:"+m_forceBuffer[0].ToString());
         for (int32 i = 0; i < m_count; i++) {
 //            m_velocityBuffer.data[i].y=0;//for debugging, eliminates y movement
             m_positionBuffer.data[i] += subStep.dt * m_velocityBuffer.data[i]; //change particle position
         }
+        print("end step");
     }
 }
 
@@ -3410,45 +3418,83 @@ void b2ParticleSystem::SolveAdhesion(const b2TimeStep &step) {
     for (int32 i = 0; i < m_count; i++) {
         b2Vec2 pos = m_positionBuffer.data[i];
         b2AABB aabb;
-        aabb.upperBound = pos + (m_def.adhesionRadius / 2);
-        aabb.lowerBound = pos - (m_def.adhesionRadius / 2);
+        aabb.upperBound = pos + m_def.adhesionRadius;
+        aabb.lowerBound = pos - m_def.adhesionRadius;
         b2GrowableBuffer<b2ParticleBodyContact> contacts(m_world->m_blockAllocator);
+        print("upper:"+aabb.upperBound.ToString());
+        print("lower:"+aabb.lowerBound.ToString());
 
-        class callback : public b2QueryCallback {
+        class adhesionCallback : public b2QueryCallback {
         public:
             b2GrowableBuffer<b2ParticleBodyContact> *m_contacts;
             int32 index;
             b2Vec2 *m_point;
 
-            explicit callback(b2GrowableBuffer<b2ParticleBodyContact> *contacts, int32 i, b2Vec2 *point) {
+            explicit adhesionCallback(b2GrowableBuffer<b2ParticleBodyContact> *contacts, int32 i, b2Vec2 *point) {
                 m_contacts = contacts;
                 index = i;
                 m_point = point;
             };
-
+            bool ReportParticle(const b2ParticleSystem* particleSystem,
+                                int32 i) override {return false;};
             bool ReportFixture(b2Fixture *fixture) override {
-                if (fixture->HasCollision() && !fixture->IsSensor()) {
+                switch (fixture->GetType()) {
+                    case b2Shape::Type::e_edge:
+                        print("edge");
+                        break;
+                    case b2Shape::Type::e_arc:
+                        print("arc");
+                        break;
+                    default:
+                        break;
+                }
+                print("collision "+std::to_string(fixture->HasCollision())+ " sensor "+std::to_string(fixture->isFluidSensor));
+                if (fixture->HasCollision() && !fixture->isFluidSensor) {
                     b2ParticleBodyContact &contact = m_contacts->Append();
                     contact.index = index;
                     contact.fixture = fixture;
-                    fixture->ComputeDistance(*m_point, &contact.weight, &contact.normal,
-                                             fixture->GetShape()->GetType());
+                    fixture->ComputeDistance(*m_point, &contact.weight, &contact.normal, 0);
+                    if (contact.weight<0)
+                        print("fail");
+                    print(floatToString(contact.weight));
+                    print(contact.normal.ToString());
                     return true;
                 } else return false;
             }
-        } callback(&contacts, i, &pos);
-        m_world->QueryAABB(&callback, aabb);
+        } adhesionCallback(&contacts, i, &pos);
+        m_world->QueryAABB(&adhesionCallback, aabb);
         if (contacts.GetCount() == 0)
             continue;
-        b2ParticleBodyContact closest = contacts[0];
+        print(std::to_string(contacts.GetCount()));
+        float shortestDistance=abs(contacts[0].weight);
+        b2ParticleBodyContact* closest = &contacts[0];
         for (int j = 1; j < contacts.GetCount(); ++j) {
-            if (abs(contacts[j].weight) < closest.weight)
-                closest = contacts[j];
+            float diff=abs(contacts[j].weight) - shortestDistance;
+            if(abs(diff)<m_def.adhesionRadius*0.05){//as good as same distance
+                closest= nullptr;
+                continue;
+            }
+            if (diff<0)
+                closest = &contacts[j];
         }
-        float sign = closest.weight > 0 ? -1.0f : 1.0f;
-        if (abs(closest.weight) > m_def.adhesionRadius / 2)
+        if (closest== nullptr)
+            return;
+        switch (closest->fixture->GetType()) {
+            case b2Shape::Type::e_edge:
+                print("edge");
+                break;
+            case b2Shape::Type::e_arc:
+                print("arc");
+                break;
+            default:
+                break;
+        }
+//        float sign = closest.weight > 0 ? -1.0f : 1.0f;
+        if (abs(closest->weight) > m_def.adhesionRadius){
+            print("skipped");
             continue;
-        ParticleApplyForce(i, sign * closest.normal * ((m_def.adhesionRadius / 2) - abs(closest.weight)) *
+        }
+        ParticleApplyForce(i, closest->normal * -(m_def.adhesionRadius - abs(closest->weight)) *
                               m_def.adhesiveStrength);// radius-distance*direction -> 1 on surface, 0 in middle  * adhesive strength
     }//TODO constant force?
 }

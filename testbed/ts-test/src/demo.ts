@@ -26,6 +26,7 @@ const {
     b2_airParticle,
     b2_adhesiveParticle,
     b2Sensor,
+    b2CircleShape,
     b2ParticleSystem,
     //enum values are part of the base Box2D object
 } = box2d;
@@ -62,10 +63,6 @@ pauseBtn?.addEventListener("click", () => {
     const summonPartBtn = document.getElementById("summonPartBtn");
     summonPartBtn?.addEventListener("click", () => {
         summonParticles();
-    })
-    const summonParticleBtn = document.getElementById("summonParticleBtn");
-    summonParticleBtn?.addEventListener("click", () => {
-        summonParticle();
     })
     const fricBtn1 = document.getElementById("fricBtn1");
     fricBtn1?.addEventListener("click", () => {
@@ -127,12 +124,14 @@ const ground2 = world2.CreateBody(bd_ground);
     }
 }
 //world1
+let temp;
 {
     {//2nd line
         const line = new b2EdgeShape();
         line.SetTwoSided(new b2Vec2(2, 13), new b2Vec2(21, 13));
         ground.CreateFixture(line, 0);
     }
+
     {//1st line
         const line = new b2EdgeShape();
         line.SetTwoSided(new b2Vec2(0, 2), new b2Vec2(6, 2));
@@ -146,6 +145,11 @@ const ground2 = world2.CreateBody(bd_ground);
             arc2.SetTwoSided(new b2Vec2(21, 4), new b2Vec2(21, 2), new b2Vec2(23, 4));
             // arc2.AddConnection(line2);//all setprev setnext must be done before createfixture
             link(line2, arc2);
+            // const circle=new b2CircleShape();
+            // circle.m_hasCollision=false;
+            // circle.m_p=new b2Vec2(21,4);
+            // circle.m_radius=4;
+            // temp=ground.CreateFixture(circle,0);
             ground.CreateFixture(arc, 0);
             ground.CreateFixture(arc2, 0);
         }
@@ -184,23 +188,23 @@ const ground2 = world2.CreateBody(bd_ground);
         arc3.SetTwoSided(new b2Vec2(2, 15), new b2Vec2(0, 15), new b2Vec2(2, 13));
         ground.CreateFixture(arc3, 0);
     }
-    {
-        const l1 = new b2EdgeShape();
-        l1.SetTwoSided(new b2Vec2(2, 7), new b2Vec2(5, 7));
-        const l2 = new b2EdgeShape();
-        l2.SetTwoSided(new b2Vec2(2, 9), new b2Vec2(5, 9));
-        const arc = new b2ArcShape();
-        arc.SetTwoSided(new b2Vec2(5, 8), new b2Vec2(5, 7), new b2Vec2(5, 9));
-        let success;
-        success = arc.AddConnection(l1);
-        success = arc.AddConnection(l2);
-        success = l1.AddConnection(arc);
-        success = l2.AddConnection(arc);
-        ground.CreateFixture(l1, 0);
-        ground.CreateFixture(l2, 0);
-        ground.CreateFixture(arc, 0);
-
-    }
+    // {
+    //     const l1 = new b2EdgeShape();
+    //     l1.SetTwoSided(new b2Vec2(2, 7), new b2Vec2(5, 7));
+    //     const l2 = new b2EdgeShape();
+    //     l2.SetTwoSided(new b2Vec2(2, 9), new b2Vec2(5, 9));
+    //     const arc = new b2ArcShape();
+    //     arc.SetTwoSided(new b2Vec2(5, 8), new b2Vec2(5, 7), new b2Vec2(5, 9));
+    //     let success;
+    //     success = arc.AddConnection(l1);
+    //     success = arc.AddConnection(l2);
+    //     success = l1.AddConnection(arc);
+    //     success = l2.AddConnection(arc);
+    //     ground.CreateFixture(l1, 0);
+    //     ground.CreateFixture(l2, 0);
+    //     ground.CreateFixture(arc, 0);
+    //
+    // }
 }
 //world2
 {
@@ -259,23 +263,23 @@ const ground2 = world2.CreateBody(bd_ground);
         ground2.CreateFixture(arc, 0);
         ground2.CreateFixture(arc2, 0);
     }
-    {
-        const l1 = new b2EdgeShape();
-        l1.SetTwoSided(new b2Vec2(2, 7), new b2Vec2(5, 7));
-        const l2 = new b2EdgeShape();
-        l2.SetTwoSided(new b2Vec2(2, 9), new b2Vec2(5, 9));
-        const arc = new b2ArcShape();
-        arc.SetTwoSided(new b2Vec2(5, 8), new b2Vec2(5, 7), new b2Vec2(5, 9));
-        let success;
-        success = arc.AddConnection(l1);
-        success = arc.AddConnection(l2);
-        success = l1.AddConnection(arc);
-        success = l2.AddConnection(arc);
-        ground2.CreateFixture(l1, 0);
-        ground2.CreateFixture(l2, 0);
-        ground2.CreateFixture(arc, 0);
-
-    }
+    // {
+    //     const l1 = new b2EdgeShape();
+    //     l1.SetTwoSided(new b2Vec2(2, 7), new b2Vec2(5, 7));
+    //     const l2 = new b2EdgeShape();
+    //     l2.SetTwoSided(new b2Vec2(2, 9), new b2Vec2(5, 9));
+    //     const arc = new b2ArcShape();
+    //     arc.SetTwoSided(new b2Vec2(5, 8), new b2Vec2(5, 7), new b2Vec2(5, 9));
+    //     let success;
+    //     success = arc.AddConnection(l1);
+    //     success = arc.AddConnection(l2);
+    //     success = l1.AddConnection(arc);
+    //     success = l2.AddConnection(arc);
+    //     ground2.CreateFixture(l1, 0);
+    //     ground2.CreateFixture(l2, 0);
+    //     ground2.CreateFixture(arc, 0);
+    //
+    // }
 }
 // make particles
 const partSysDef = new b2ParticleSystemDef();
@@ -289,16 +293,23 @@ partSysDef.frictionRate = 0.0;
 partSysDef.viscousStrength = 1.0;
 partSysDef.maxAirPressure = 30;
 partSysDef.adhesiveStrength = 1;
-partSysDef.adhesionRadius = 2;
+partSysDef.adhesionRadius = 1.5;
 const particleSystem = world.CreateParticleSystem(partSysDef);
 const particleSystem2 = world2.CreateParticleSystem(partSysDef);
 const systems: Box2D.b2ParticleSystem[] = [];
 systems.push(particleSystem, particleSystem2);
+let sensor;
+{
+    let s = new b2Sensor();
+    s.Configure(true, true, particleSystem, 60);
+// sensor.SetTwoSided(new b2Vec2(23,5), new b2Vec2(25,5));
+    s.SetTwoSided(new b2Vec2(20, 0), new b2Vec2(20, 2));
+    sensor = ground.CreateFixture(s, 0);
+}
+let edge = new b2EdgeShape();
+edge.SetTwoSided(new b2Vec2(20, 0), new b2Vec2(20, 2));
+// ground.CreateFixture(edge, 0);
 
-let sensor = new b2Sensor();
-sensor.Configure(true, true, particleSystem, 60);
-sensor.SetTwoSided(new b2Vec2(5,0), new b2Vec2(5,2));
-let x = ground.CreateFixture(sensor, 0);
 
 let filter = new b2MicrofluidicsContactFilter();
 filter.SetParticleSystem(particleSystem);
@@ -329,16 +340,6 @@ function summonParticles() {
     pt.set_color(new b2ParticleColor(0, 100, 255, 255));
     // pt.linearVelocity=new b2Vec2(5,0);
     particleSystem.CreateParticleGroup(pt);
-}
-
-function summonParticle() {
-    const pt = new b2ParticleDef();
-    pt.flags = b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle | b2_airParticle;
-    //alpha is divided by 255 to get value between 0-1
-    pt.set_color(new b2ParticleColor(0, 100, 255, 255));
-    pt.set_position(new b2Vec2(5, 5));
-    // pt.velocity=new b2Vec2(10,0);
-    particleSystem.CreateParticle(pt);
 }
 
 function summonParticlexy(x: number, y: number) {
@@ -431,13 +432,11 @@ const drawCanvas = (ctx: CanvasRenderingContext2D, world: Box2D.b2World) => {
     ctx.restore();
 };
 
-/** @type {?number} */
-
 (function loop(prevMs) {
     const nowMs = window.performance.now();
     requestAnimationFrame(loop.bind(null, nowMs));
     let deltaMs = nowMs - prevMs;
-    deltaMs = 1 / 60 * 1000;
+    deltaMs = 1000/60;
     if (!isPaused) {
         step(deltaMs);
         drawCanvas(ctx, world);
@@ -445,12 +444,12 @@ const drawCanvas = (ctx: CanvasRenderingContext2D, world: Box2D.b2World) => {
     }
 }(window.performance.now()));
 
-Object.assign(window,{
+Object.assign(window, {
     particleSystem,
     ctx,
     world,
     systems,
     sensor,
-    x,
+    temp,
 })
 

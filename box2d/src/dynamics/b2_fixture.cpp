@@ -56,7 +56,8 @@ void b2Fixture::Create(b2BlockAllocator* allocator, b2Body* body, const b2Fixtur
 
 	m_filter = def->filter;
 
-	m_isSensor = def->isSensor;
+	isFluidSensor = def->fluidSensor;
+    m_isSensor=def->isSensor;
 
 	m_shape = def->shape->Clone(allocator);
 
