@@ -2711,7 +2711,7 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
         UpdateContacts(false);
         UpdateBodyContacts();
         //removes sensors from bodycontactbuffer, so it must be first
-        SolveSensor();
+        SolveSensor(subStep);
         ComputeWeight();
         SolveLayerChange(); //TODO will this process a particle in the same step in the new system?
         if (m_allGroupFlags & b2_particleGroupNeedsUpdateDepth) {
@@ -3453,7 +3453,7 @@ void b2ParticleSystem::SolveAdhesion(const b2TimeStep &step) {
     }//TODO constant force?
 }
 
-void b2ParticleSystem::SolveSensor() {
+void b2ParticleSystem::SolveSensor(b2TimeStep& step) {
     std::map<b2Fixture*, std::list<b2ParticleBodyContact>> map;
     for (int i = 0; i < m_sensorContactBuffer.GetCount(); ++i) {
         b2ParticleBodyContact contact = m_sensorContactBuffer[i];
@@ -3461,7 +3461,7 @@ void b2ParticleSystem::SolveSensor() {
     }
     for (std::pair<b2Fixture *, std::list<b2ParticleBodyContact>> KVPair: map) {
         b2Sensor *sensor = (b2Sensor *) KVPair.first->GetShape();
-        sensor->Solve(KVPair.second);
+        sensor->Solve(step, KVPair.second);
     }
 }
 

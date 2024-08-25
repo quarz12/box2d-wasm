@@ -716,6 +716,7 @@ public:
     /// move particle to a different particlesystem, returns index of particle in new system
     int MoveParticleToSystem(int particleIndex, b2ParticleSystem* newSystem);
 
+    b2ParticleSystemDef GetDef();
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
 public:
 	enum b2ExceptionType
@@ -757,6 +758,12 @@ private:
 	b2ExceptionType IsBufCopyValid(int startIndex, int numParticles,
 								   int copySize, int bufSize) const;
 #endif // LIQUIDFUN_EXTERNAL_LANGUAGE_API
+
+    float GetCriticalPressure(const b2TimeStep& step) const;
+
+    float m_particleDiameter;
+
+    float GetParticleInvMass() const;
 
 private:
 	friend class b2World;
@@ -1019,7 +1026,7 @@ private:
 	void SolveColorMixing();
 	void SolveZombie();
     void SolveFriction(const b2TimeStep& step);
-    void SolveSensor();
+    void SolveSensor(b2TimeStep& step);
 	/// Destroy all particles which have outlived their lifetimes set by
 	/// SetParticleLifetime().
 	void SolveLifetimes(const b2TimeStep& step);
@@ -1027,11 +1034,11 @@ private:
 
 	float GetCriticalVelocity(const b2TimeStep& step) const;
 	float GetCriticalVelocitySquared(const b2TimeStep& step) const;
-	float GetCriticalPressure(const b2TimeStep& step) const;
-	float GetParticleStride() const;
+
+    float GetParticleStride() const;
 	float GetParticleMass() const;
-	float GetParticleInvMass() const;
-	// Get the world's contact filter if any particles with the
+
+    // Get the world's contact filter if any particles with the
 	// b2_contactFilterParticle flag are present in the system.
 	b2ContactFilter* GetFixtureContactFilter() const;
 
@@ -1099,8 +1106,7 @@ private:
 	bool m_hasForce;
 	int32 m_iterationIndex;
 	float m_inverseDensity;
-	float m_particleDiameter;
-	float m_inverseDiameter;
+    float m_inverseDiameter;
 	float m_squaredDiameter;
     ///amount of particles in system
 	int32 m_count;
@@ -1177,8 +1183,12 @@ private:
 	b2World* m_world;
 	b2ParticleSystem* m_prev;
 	b2ParticleSystem* m_next;
+
 };
 
+inline b2ParticleSystemDef b2ParticleSystem::GetDef(){
+    return m_def;
+}
 inline void b2ParticleContact::SetIndices(int32 a, int32 b)
 {
 	b2Assert(a <= b2_maxParticleIndex && b <= b2_maxParticleIndex);

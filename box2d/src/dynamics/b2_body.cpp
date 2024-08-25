@@ -200,6 +200,12 @@ b2Fixture* b2Body::CreateFixture(const b2FixtureDef* def)
 	// to be created at the beginning of the next time step.
 	m_world->m_newContacts = true;
 
+    if (fixture->IsSensor()){
+        b2Sensor* oldList=m_world->m_sensorList;
+        b2Sensor* newList=(b2Sensor*)fixture->GetShape();
+        newList->SetNext(oldList);
+        m_world->m_sensorList=newList;
+    }
 	return fixture;
 }
 

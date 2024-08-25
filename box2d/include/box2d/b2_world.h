@@ -32,6 +32,7 @@
 #include "b2_time_step.h"
 #include "b2_world_callbacks.h"
 #include "b2_particle_system.h"
+#include "b2_sensor.h"
 
 struct b2AABB;
 struct b2BodyDef;
@@ -283,6 +284,10 @@ public:
 		return m_liquidFunVersionString;
 	}
 
+    b2Sensor* GetSensorList(){
+        return m_sensorList;
+    }
+
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
 public:
 	/// Constructor which takes direct floats.
@@ -315,6 +320,7 @@ private:
 	b2ContactManager m_contactManager;
 
 	b2Body* m_bodyList;
+    b2Sensor* m_sensorList;
 	b2Joint* m_jointList;
 	b2ParticleSystem* m_particleSystemList;
 

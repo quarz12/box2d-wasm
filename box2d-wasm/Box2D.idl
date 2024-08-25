@@ -99,6 +99,7 @@ interface b2World {
   void Dump();
   float GetGravityFriction();
   void SetGravityFriction(float gravityFriction);
+  b2Sensor GetSensorList();
 };
 
 enum b2ShapeType {
@@ -1447,5 +1448,6 @@ interface b2Sensor {
   float GetAvgSpeed();
   boolean IsPressureSensor();
   boolean IsSpeedSensor();
+  b2Sensor GetNext();
 };
-b2Sensor implements b2PolygonShape;
+b2Sensor implements b2EdgeShape;

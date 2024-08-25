@@ -297,7 +297,7 @@ systems.push(particleSystem, particleSystem2);
 
 let sensor = new b2Sensor();
 sensor.Configure(true, true, particleSystem, 60);
-sensor.SetAsBox(1, 1, new b2Vec2(5, 1), 0);
+sensor.SetTwoSided(new b2Vec2(5,0), new b2Vec2(5,2));
 let x = ground.CreateFixture(sensor, 0);
 
 let filter = new b2MicrofluidicsContactFilter();

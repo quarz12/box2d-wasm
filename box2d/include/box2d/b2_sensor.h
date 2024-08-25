@@ -14,7 +14,7 @@
 #include "b2_particle_system.h"
 
 
-class b2Sensor : public b2PolygonShape { //TODO use edgeshape?
+class b2Sensor : public b2EdgeShape { //TODO use edgeshape?
 public:
     bool pressureSensor= false;
     bool speedSensor= false;
@@ -39,15 +39,17 @@ public:
         print("system "+std::to_string((int)&m_system));
     }
 
-    void SensePressure(std::list<b2ParticleBodyContact> &contacts);
+    void SensePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
-    void SenseSpeed(std::list<b2ParticleBodyContact> &contacts);
+    void SenseSpeed(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
     float GetAvgPressure();
 
     float GetAvgSpeed();
 
-    void Solve(std::list<b2ParticleBodyContact> &contacts);
+    b2Vec2 CalculateTheoreticalPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& contacts) const;
+
+    void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact> &contacts);
 
     bool IsPressureSensor() const{ return pressureSensor;};
     bool IsSpeedSensor() const { return speedSensor;};
@@ -60,6 +62,12 @@ public:
         *clone = *this;
         return clone;
     }
+
+    inline b2Sensor* GetNext(){return m_next;}
+    inline void SetNext(b2Sensor* next){m_next=next;}
+
+private:
+    b2Sensor* m_next= nullptr;
 };
 
 class b2Gate : public b2EdgeShape {
@@ -90,7 +98,7 @@ class b2Valve : public b2Sensor {
         threshold = pressure;
     };
 
-    void Solve(std::list<b2ParticleBodyContact> &contacts);
+    void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact> &contacts);
 
     inline b2Shape* Clone(b2BlockAllocator* allocator) const override
     {
