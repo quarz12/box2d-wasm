@@ -2480,25 +2480,25 @@ void b2ParticleSystem::UpdateBodyContacts() {
             float diff=contact.weight - shortestDistance;
             if(diff==0){    //same distance, make sure force is only applied once
 //                // shapes are connected
-//                if (closest->fixture->GetShape()->previousSegment==contact.fixture->GetShape()){
-//                    b2Transform tmp;
-//                    if (closest->fixture->GetShape()->CloserToPrev(m_positionBuffer.data[contact.index],tmp)) {
-//                        closest = &contact;
-//                        continue;
-//                    } else
-//                        continue;
-//                } else if (closest->fixture->GetShape()->nextSegment==contact.fixture->GetShape()){
-//                    b2Transform tmp;
-//                    if (closest->fixture->GetShape()->CloserToNext(m_positionBuffer.data[contact.index],tmp)) {
-//                        closest = &contact;
-//                        continue;
-//                    } else
-//                        continue;
-//                } else { // not connected, corner or parallel
-//                    closest = nullptr;
-//                    continue;
-//                }
-                closest= -1;
+                if (contacts[closest].fixture->GetShape()->previousSegment==contact.fixture->GetShape()){
+                    b2Transform tmp;
+                    if (contacts[closest].fixture->GetShape()->CloserToPrev(m_positionBuffer.data[contact.index],tmp)) {
+                        closest = j;
+                        continue;
+                    } else
+                        continue;
+                } else if (contacts[closest].fixture->GetShape()->nextSegment==contact.fixture->GetShape()){
+                    b2Transform tmp;
+                    if (contacts[closest].fixture->GetShape()->CloserToNext(m_positionBuffer.data[contact.index],tmp)) {
+                        closest = j;
+                        continue;
+                    } else
+                        continue;
+                } else { // not connected, corner or parallel
+                    closest = -1;
+                    continue;
+                }
+//                closest= -1;
             }
             if (diff<0){
                 closest = j;
