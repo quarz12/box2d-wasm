@@ -13,6 +13,6 @@ export const createLayerChange = (shape1: Box2D.b2Shape, shape2: Box2D.b2Shape, 
 
 
 }
-export const link = (a: Box2D.b2ArcShape | Box2D.b2EdgeShape, b: Box2D.b2ArcShape | Box2D.b2EdgeShape): boolean => {
+export const link = (a: Box2D.b2Shape, b: Box2D.b2Shape): boolean => {
     return a.AddConnection(b) && b.AddConnection(a);
 }

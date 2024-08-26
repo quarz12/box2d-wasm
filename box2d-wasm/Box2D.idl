@@ -108,6 +108,7 @@ enum b2ShapeType {
   "b2Shape::e_polygon",
   "b2Shape::e_chain",
   "b2Shape::e_arc",
+  "b2Shape::e_sensor",
   "b2Shape::e_typeCount"
 };
 
@@ -1290,8 +1291,8 @@ interface b2ParticleSystemDef {
 	attribute float lifetimeGranularity;
 	attribute float frictionRate;
 	attribute float maxAirPressure;
-	attribute float adhesionRadius;
 	attribute float adhesiveStrength;
+	attribute float adhesionRadius;
 };
 
 [NoDelete]
@@ -1387,6 +1388,7 @@ interface b2ParticleSystem {
   void RayCast(b2RayCastCallback callback, [Const, Ref] b2Vec2 point1, [Const, Ref] b2Vec2 point2);
   void ComputeAABB(b2AABB aabb);
   long MoveParticleToSystem(long particleIndex, b2ParticleSystem newSystem);
+  [Const] b2ParticleBodyContact GetClosestFixtureContactBuffer();
 };
 
 // interface b2IntrusiveListNode {
@@ -1451,5 +1453,6 @@ interface b2Sensor {
   boolean IsPressureSensor();
   boolean IsSpeedSensor();
   b2Sensor GetNext();
+    void SetTwoSided([Const,Ref] b2Vec2 v1, [Const,Ref] b2Vec2 v2);
 };
-b2Sensor implements b2EdgeShape;
+b2Sensor implements b2Shape;

@@ -110,6 +110,7 @@
   },
   "exclude": [
     "webpack.config.js",
-    "build"
+    "build",
+    "other"
   ]
 }

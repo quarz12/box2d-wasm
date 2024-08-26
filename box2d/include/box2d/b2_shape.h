@@ -58,8 +58,8 @@ public:
 		e_polygon = 2,
 		e_chain = 3,
         e_arc=4,
-		e_typeCount = 5,
-
+        e_sensor=5,
+		e_typeCount = 6,
 	};
 
 	virtual ~b2Shape() {}
@@ -71,7 +71,7 @@ public:
 	/// @return the shape type.
 	Type GetType() const;
 
-	/// Get the number of child primitives.
+	/// Get the number of child primitives / fixtures.
 	virtual int32 GetChildCount() const = 0;
 
 	/// Test a point for containment in this shape. This only works for convex shapes.

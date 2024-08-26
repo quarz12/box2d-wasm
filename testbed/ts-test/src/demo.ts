@@ -101,16 +101,23 @@ const bd_ground = new b2BodyDef();
 const ground = world.CreateBody(bd_ground);
 const ground2 = world2.CreateBody(bd_ground);
 //edges
+let edge4;
 {
-    let corners = [new b2Vec2(0, 21), new b2Vec2(0, 0), new b2Vec2(25, 0), new b2Vec2(25, 21)];
-    for (let i = 0; i < corners.length; i++) {
-        let edge = new b2EdgeShape();
-        if (!(i === corners.length - 1))
-            edge.SetTwoSided(corners[i], corners[i + 1]);
-        else
-            edge.SetTwoSided(corners[i], corners[0]);
-        let fix = ground.CreateFixture(edge, 0);
-    }
+    let corners = [new b2Vec2(0, 0), new b2Vec2(0, 21), new b2Vec2(25, 21), new b2Vec2(25, 0)];
+    let edge1 = new b2EdgeShape();
+    edge1.SetTwoSided(corners[0], corners[1]);
+    let fix1 = ground.CreateFixture(edge1, 0);
+
+    let edge2 = new b2EdgeShape();
+    edge2.SetTwoSided(corners[1], corners[2]);
+    let fix2 = ground.CreateFixture(edge2, 0);
+
+    let edge3 = new b2EdgeShape();
+    edge3.SetTwoSided(corners[2], corners[3]);
+    let fix3 = ground.CreateFixture(edge3, 0);
+
+    edge4 = new b2EdgeShape();
+    edge4.SetTwoSided(new b2Vec2(21,0), corners[0]);
 }
 {
     let corners = [new b2Vec2(0, 21), new b2Vec2(0, 0), new b2Vec2(25, 0), new b2Vec2(25, 21)];
@@ -125,6 +132,7 @@ const ground2 = world2.CreateBody(bd_ground);
 }
 //world1
 let temp;
+    let a;
 {
     {//2nd line
         const line = new b2EdgeShape();
@@ -141,16 +149,18 @@ let temp;
         {//make top arc
             const arc = new b2ArcShape();
             arc.SetTwoSided(new b2Vec2(21, 4), new b2Vec2(21, 0), new b2Vec2(25, 4));
+            link(edge4,arc);
+            temp = ground.CreateFixture(edge4, 0);
             const arc2 = new b2ArcShape();
             arc2.SetTwoSided(new b2Vec2(21, 4), new b2Vec2(21, 2), new b2Vec2(23, 4));
             // arc2.AddConnection(line2);//all setprev setnext must be done before createfixture
-            link(line2, arc2);
             // const circle=new b2CircleShape();
             // circle.m_hasCollision=false;
             // circle.m_p=new b2Vec2(21,4);
             // circle.m_radius=4;
             // temp=ground.CreateFixture(circle,0);
-            ground.CreateFixture(arc, 0);
+            a=ground.CreateFixture(arc, 0);
+            link(temp.GetShape(), a.GetShape());
             ground.CreateFixture(arc2, 0);
         }
         let f = ground.CreateFixture(line, 0);
@@ -292,8 +302,9 @@ partSysDef.surfaceTensionPressureStrength = 0.005;
 partSysDef.frictionRate = 0.0;
 partSysDef.viscousStrength = 1.0;
 partSysDef.maxAirPressure = 30;
-partSysDef.adhesiveStrength = 1;
-partSysDef.adhesionRadius = 1.5;
+//1 results in equal force to pressure
+partSysDef.adhesiveStrength = 0.5;
+partSysDef.adhesionRadius=2;
 const particleSystem = world.CreateParticleSystem(partSysDef);
 const particleSystem2 = world2.CreateParticleSystem(partSysDef);
 const systems: Box2D.b2ParticleSystem[] = [];
@@ -388,18 +399,6 @@ function summonLine() {
     pt.set_color(new b2ParticleColor(0, 100, 255, 255));
     pt.linearVelocity = new b2Vec2(2, 0);
     particleSystem.CreateParticleGroup(pt);
-    // let p=new b2ParticleGroupDef();
-    // p.stride=0.2;
-    // p.flags=b2_staticPressureParticle&b2_viscousParticle;
-    // shape = new b2EdgeShape();
-    // shape.SetTwoSided(new b2Vec2(4,13.100000381469727),new b2Vec2(15,13.100000381469727));  //particle spawn area| len/2,height/2, center, angle
-    // p.shape = shape;
-    // p.stride=0.19;
-    // //alpha is divided by 255 to get value between 0-1
-    // p.set_color(new b2ParticleColor(0, 100, 255, 255));
-    // p.linearVelocity=new b2Vec2(2,0);
-    // particleSystem.CreateParticleGroup(p);
-
 }
 
 function applyForce(x: number, y: number) {
@@ -451,5 +450,7 @@ Object.assign(window, {
     systems,
     sensor,
     temp,
+    edge4,
+    a,
 })
 

@@ -1214,21 +1214,31 @@ void b2World::DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color
 		break;
 
     case b2Shape::e_arc:
-    {
-        b2ArcShape* arc = (b2ArcShape*)fixture->GetShape();
-        b2Vec2 start = b2Mul(xf, arc->m_vertex1);
-        b2Vec2 end = b2Mul(xf, arc->m_vertex2);
-        b2Vec2 center = b2Mul(xf, arc->m_center);
-        m_debugDraw->DrawArc(center,arc->m_radius,start, end, color);
+        {
+            b2ArcShape* arc = (b2ArcShape*)fixture->GetShape();
+            b2Vec2 start = b2Mul(xf, arc->m_vertex1);
+            b2Vec2 end = b2Mul(xf, arc->m_vertex2);
+            b2Vec2 center = b2Mul(xf, arc->m_center);
+            m_debugDraw->DrawArc(center,arc->m_radius,start, end, color);
 
-        if (arc->previousSegment == nullptr)
-            m_debugDraw->DrawPoint(start, 4.0f, color);
-        if (arc->nextSegment == nullptr)
-            m_debugDraw->DrawPoint(end, 4.0f, color);
-    }
+            if (arc->previousSegment == nullptr)
+                m_debugDraw->DrawPoint(start, 4.0f, color);
+            if (arc->nextSegment == nullptr)
+                m_debugDraw->DrawPoint(end, 4.0f, color);
+        }
+        break;
+    case b2Shape::e_sensor:
+        {
+            b2Sensor* edge = (b2Sensor*)fixture->GetShape();
+            b2Vec2 v1 = b2Mul(xf, edge->m_vertex1);
+            b2Vec2 v2 = b2Mul(xf, edge->m_vertex2);
+            b2Color sensorColor;
+            sensorColor.Set(color.r,color.g,color.b,color.a/2);
+            m_debugDraw->DrawSegment(v1, v2, sensorColor);
+        }
         break;
 	default:
-	break;
+	    break;
 	}
 }
 

@@ -14,7 +14,7 @@
 #include "b2_particle_system.h"
 
 
-class b2Sensor : public b2EdgeShape { //TODO use edgeshape?
+class b2Sensor : public b2Shape {
 public:
     bool pressureSensor= false;
     bool speedSensor= false;
@@ -24,6 +24,8 @@ public:
 
     b2Sensor() {
         isSensor = true;
+        m_type = e_sensor;
+        m_radius = 0.0f;
     };
 
     inline void Configure(bool speed, bool pressure, b2ParticleSystem* system, int32 intervalSteps){
@@ -62,6 +64,34 @@ public:
 
     inline b2Sensor* GetNext(){return m_next;}
     inline void SetNext(b2Sensor* next){m_next=next;}
+
+/// Set this as an isolated edge. Collision is two-sided.
+    void SetTwoSided(const b2Vec2& v1, const b2Vec2& v2);
+
+
+    /// @see b2Shape::GetChildCount
+    inline int32 GetChildCount() const override {return 1;}
+
+    /// @see b2Shape::TestPoint
+    bool TestPoint(const b2Transform& transform, const b2Vec2& p) const override;
+
+    /// @see b2Shape::ComputeDistance
+    void ComputeDistance(const b2Transform& xf, const b2Vec2& p, float* distance, b2Vec2* normal, int32 childIndex) const override;
+
+    /// Implement b2Shape.
+    bool RayCast(b2RayCastOutput* output, const b2RayCastInput& input,
+                 const b2Transform& transform, int32 childIndex) const override;
+
+    /// @see b2Shape::ComputeAABB
+    void ComputeAABB(b2AABB* aabb, const b2Transform& transform, int32 childIndex) const override;
+
+    /// @see b2Shape::ComputeMass
+    void ComputeMass(b2MassData* massData, float density) const override;
+
+#if LIQUIDFUN_EXTERNAL_LANGUAGE_API
+    /// Set this as an isolated edge, with direct floats.
+	void Set(float vx1, float vy1, float vx2, float vy2);
+#endif // LIQUIDFUN_EXTERNAL_LANGUAGE_API
 
 private:
     b2Sensor* m_next= nullptr;

@@ -10,12 +10,12 @@ bool b2MicrofluidicsContactFilter::ShouldCollide(b2Fixture *fixtureA, b2Fixture 
 }
 
 bool b2MicrofluidicsContactFilter::ShouldCollide(b2Fixture *fixture, b2ParticleSystem *particleSystem, int32 particleIndex) {
+    if (!fixture->HasCollision())
+        return false;
     b2Shape *shape = fixture->GetShape();
     b2Shape::Type type = shape->GetType();
     b2Vec2 pos = m_system->GetPositionBuffer()[particleIndex];
     b2Transform tf = fixture->GetBody()->GetTransform();
-    if (!fixture->HasCollision())
-        return false;
     if (fixture->GetShape()->m_isLineSegment) {
         if (type == b2Shape::e_edge) {
             b2EdgeShape *edge = (b2EdgeShape *) shape;

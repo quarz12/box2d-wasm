@@ -182,7 +182,6 @@ struct B2_API b2ParticleSystemDef
 		lifetimeGranularity = 1.0f / 60.0f;
         frictionRate=0.0f;
         maxAirPressure=30.0f;
-        adhesionRadius=1.0f;
         adhesiveStrength=0.0f;
 	}
 
@@ -288,10 +287,9 @@ struct B2_API b2ParticleSystemDef
     float frictionRate;
     /// pressure at which air particles disappear
     float maxAirPressure;
-    /// radius in which adhesive forces apply
-    float adhesionRadius;
     /// attraction strength to closest fixture
     float adhesiveStrength;
+    float adhesionRadius;
 };
 
 
@@ -764,6 +762,7 @@ private:
     float m_particleDiameter;
 
     float GetParticleInvMass() const;
+    inline const b2ParticleBodyContact* GetClosestFixtureContactBuffer() const {return m_closestFixtureContactBuffer.Data();}
 
 private:
 	friend class b2World;
@@ -1037,7 +1036,6 @@ private:
 
     float GetParticleStride() const;
 	float GetParticleMass() const;
-
     // Get the world's contact filter if any particles with the
 	// b2_contactFilterParticle flag are present in the system.
 	b2ContactFilter* GetFixtureContactFilter() const;
@@ -1158,6 +1156,7 @@ private:
 	b2GrowableBuffer<b2ParticleContact> m_contactBuffer;
     ///contacts between particles and bodies in this step | updateBodyContacts
 	b2GrowableBuffer<b2ParticleBodyContact> m_bodyContactBuffer;
+    b2GrowableBuffer<b2ParticleBodyContact> m_closestFixtureContactBuffer;
     b2GrowableBuffer<b2ParticleBodyContact> m_sensorContactBuffer;
 	b2GrowableBuffer<b2ParticlePair> m_pairBuffer;
 	b2GrowableBuffer<b2ParticleTriad> m_triadBuffer;
