@@ -29,6 +29,7 @@
 #include "b2_collision.h"
 #include <stdexcept>
 
+class b2Sensor;//forward declaration
 class b2BlockAllocator;
 
 /// This holds the mass data computed for a shape.
@@ -127,6 +128,7 @@ public:
     inline virtual bool AddConnection(b2Shape& next){return false;};
     bool m_isLineSegment=false;
     bool isSensor=false;
+    inline virtual b2Sensor* AsSensor(){return nullptr;};
 };
 
 inline b2Shape::Type b2Shape::GetType() const

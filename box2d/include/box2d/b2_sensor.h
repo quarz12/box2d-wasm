@@ -46,7 +46,7 @@ public:
 
     float GetAvgSpeed();
 
-    b2Vec2 CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& contacts) const;
+    b2Vec2 CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const;
 
     void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact> &contacts);
 
@@ -87,6 +87,11 @@ public:
 
     /// @see b2Shape::ComputeMass
     void ComputeMass(b2MassData* massData, float density) const override;
+
+    b2Sensor* AsSensor() override {return (b2Sensor*) this;};
+
+    inline int32 SampleSize() {return pressureSamples.size();};
+
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
     /// Set this as an isolated edge, with direct floats.

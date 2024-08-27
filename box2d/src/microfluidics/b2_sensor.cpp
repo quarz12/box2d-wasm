@@ -48,30 +48,39 @@ float b2Sensor::GetAvgSpeed() {
     return std::accumulate(speedSamples.begin(), speedSamples.end(), 0.0) / speedSamples.size();
 }
 
-b2Vec2 b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact> &contacts) const {
-    unsigned long length = contacts.size();
+b2Vec2 b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact> &observations) const {
+    unsigned long length = observations.size();
     if (length == 0)
         return b2Vec2_zero;
-    float criticalPressure = m_system->GetCriticalPressure(step);
-    float pressurePerWeight = m_system->GetDef().pressureStrength * criticalPressure;
-    // applies pressure between each particle & body in contact
-    float velocityPerPressure = step.dt / (m_system->GetDef().density * m_system->m_particleDiameter);
-    b2Vec2 pressure;
-    for (b2ParticleBodyContact contact: contacts) {
-//        int32 a = contact.index;
-//        b2Body *b = contact.body;
-        float w = contact.weight;
-        float m = contact.mass;
-        b2Vec2 n = contact.normal;
-//        b2Vec2 p = m_system->GetPositionBuffer()[a];
-        float h = pressurePerWeight * w;
-        b2Vec2 f = velocityPerPressure * w * m * h * n;
-//        b2Vec2 force = -m_system->GetParticleInvMass() * f;
-//        m_velocityBuffer.data[a] -= GetParticleInvMass() * f;   //recoil particle
-        pressure += f;
-//        b->ApplyLinearImpulse(f, p, true);  only take f for now, ignores point of pressure
+    std::list<int32> particles;
+    for (b2ParticleBodyContact observation: observations) {
+        particles.push_back(observation.index);
     }
-    return pressure / length;
+    std::list<b2ParticleContact> contacts;
+    auto allContacts=m_system->GetContacts();
+    for (int32 particleIndex: particles) {
+        for (int i = 0; i < m_system->GetContactCount(); ++i) {
+            b2ParticleContact contact = allContacts[i];
+            if (contact.GetIndexA()==particleIndex||contact.GetIndexB()==particleIndex)
+                contacts.push_back(contact);
+        }
+    }
+    b2Vec2 pressure;
+    std::map<int32,float> map;
+    float velocityPerPressure = step.dt / (m_system->GetDef().density * m_system->m_particleDiameter);
+    for (auto contact:contacts) {
+        int32 a = contact.GetIndexA();
+        int32 b = contact.GetIndexB();
+        float w = contact.GetWeight();
+        b2Vec2 n = contact.GetNormal();
+        float h = map[a] + map[b];
+        b2Vec2 f = velocityPerPressure * w * h * n;
+        if (contains(particles,a))
+            pressure -= f;
+        if (contains(particles,b))
+            pressure += f;
+    }
+    return pressure;
 }
 
 void b2Sensor::SetTwoSided(const b2Vec2& v1, const b2Vec2& v2)
@@ -222,10 +231,12 @@ void b2Valve::Solve(b2TimeStep &step, std::list<b2ParticleBodyContact> &contacts
 
 void b2Gate::open() {
     //TODO
+    m_hasCollision= false;
     isClosed = false;
 }
 
 void b2Gate::close() {
     //TODO
+    m_hasCollision= true;
     isClosed = true;
 }

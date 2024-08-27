@@ -29,6 +29,7 @@
 #include "b2_settings.h"
 #include "debug.h"
 #include <string>
+#include <list>
 /// This function is used to ensure that a floating point number is not a NaN or infinity.
 inline bool b2IsValid(float x)
 {
@@ -836,6 +837,9 @@ inline void lineFromPointAndVector(b2Vec2& p, b2Vec2& v, float& m, float& c) {
         c = p.y - m * p.x;
     }
 }
-
+template <typename T>
+inline bool contains(std::list<T> list,T item) {
+    return std::find(list.begin(), list.end(), item) != list.end();
+};
 
 #endif

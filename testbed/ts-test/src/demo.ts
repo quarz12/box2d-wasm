@@ -431,7 +431,7 @@ const drawCanvas = (ctx: CanvasRenderingContext2D, world: Box2D.b2World) => {
     ctx.restore();
 };
 
-(function loop(prevMs) {
+(function loop(prevMs) {//TODO allow only 1 frame every deltaMs
     const nowMs = window.performance.now();
     requestAnimationFrame(loop.bind(null, nowMs));
     let deltaMs = nowMs - prevMs;
