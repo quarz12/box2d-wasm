@@ -2408,11 +2408,13 @@ void b2ParticleSystem::UpdateBodyContacts() {
                 float invM = invAm + invBm + invBI * rpn * rpn;
 
                 //add new contact to buffer
-                b2ParticleBodyContact& contact =fixture->isFluidSensor ? m_system->m_sensorContactBuffer.Append() : m_system->m_bodyContactBuffer.Append();
+                b2ParticleBodyContact &contact = fixture->isFluidSensor ? m_system->m_sensorContactBuffer.Append()
+                                                                        : m_system->m_bodyContactBuffer.Append();
                 contact.index = particleIndex;
                 contact.body = b;
                 contact.fixture = fixture;
-                contact.weight = 1 - d *  m_system->m_inverseDiameter;//(1/m_system->m_def.radius);//m_system->m_inverseDiameter;
+                contact.weight =
+                        1 - d * m_system->m_inverseDiameter;//(1/m_system->m_def.radius);//m_system->m_inverseDiameter;
                 contact.normal = -n;
                 contact.mass = invM > 0 ? 1 / invM : 0;
                 m_system->DetectStuckParticle(particleIndex);
@@ -2445,77 +2447,59 @@ void b2ParticleSystem::UpdateBodyContacts() {
             b2GrowableBuffer<b2ParticleBodyContact> *m_contacts;
             int32 index;
             b2Vec2 *m_point;
-            b2ParticleSystem* m_system;
+            b2ParticleSystem *m_system;
+            b2ContactFilter *m_filter;
 
             UpdateAdhesionContactsCallback(b2GrowableBuffer<b2ParticleBodyContact> *contacts, int32 i,
-                                                    b2Vec2 *point,b2ParticleSystem* system) {
+                                           b2Vec2 *point, b2ParticleSystem *system) {
                 m_contacts = contacts;
                 index = i;
                 m_point = point;
-                m_system=system;
+                m_system = system;
+                m_filter = system->GetFixtureContactFilter();
             };
 
             bool ReportParticle(const b2ParticleSystem *particleSystem,
                                 int32 i) override { return false; };
 
             bool ReportFixture(b2Fixture *fixture) override {
-                if (fixture->HasCollision() && !fixture->isFluidSensor) {
+                if (m_filter->ShouldCollide(fixture, m_system, index) && !fixture->isFluidSensor) {
                     b2ParticleBodyContact &contact = m_contacts->Append();
                     contact.index = index;
                     contact.fixture = fixture;
                     fixture->ComputeDistance(*m_point, &contact.weight, &contact.normal, 0);
-                    print(floatToString(contact.weight));
-                    print(contact.normal.ToString());
-                    return true;
-                } else return true;
+                }
+                return true;
             }
         } adhesionCallback(&contacts, i, &pos, this);
         m_world->QueryAABB(&adhesionCallback, aabb2);
         if (contacts.GetCount() == 0)
             continue;
-        float shortestDistance=contacts[0].weight;
-        int closest=0;
+        float shortestDistance = contacts[0].weight;
+        int closest = 0;
         for (int j = 1; j < contacts.GetCount(); ++j) {
-            b2ParticleBodyContact contact=contacts[j];
-            float diff=contact.weight - shortestDistance;
-            if(diff==0){    //same distance, make sure force is only applied once
-//                // shapes are connected
-                if (contacts[closest].fixture->GetShape()->previousSegment==contact.fixture->GetShape()){
-                    b2Transform tmp;
-                    if (contacts[closest].fixture->GetShape()->CloserToPrev(m_positionBuffer.data[contact.index],tmp)) {
-                        closest = j;
-                        continue;
-                    } else
-                        continue;
-                } else if (contacts[closest].fixture->GetShape()->nextSegment==contact.fixture->GetShape()){
-                    b2Transform tmp;
-                    if (contacts[closest].fixture->GetShape()->CloserToNext(m_positionBuffer.data[contact.index],tmp)) {
-                        closest = j;
-                        continue;
-                    } else
-                        continue;
-                } else { // not connected, corner or parallel
-                    closest = -1;
-                    continue;
-                }
-//                closest= -1;
+            b2ParticleBodyContact contact = contacts[j];
+            float diff = contact.weight - shortestDistance;
+            if (diff == 0) {    //same distance, parallel or corner, not connected, connected ones getting filtered by contactfilter
+                closest = -1;
+                continue;
             }
-            if (diff<0){
+            if (diff < 0) {
                 closest = j;
-                shortestDistance=contact.weight;
+                shortestDistance = contact.weight;
                 continue;
             }
         }
-        if (closest== -1)//adhesion cancels out
+        if (closest == -1)//adhesion cancels out
             continue;
-        if (contacts[closest].weight > m_def.adhesionRadius){
+        if (contacts[closest].weight > m_def.adhesionRadius) {
             continue;
         }
-        b2ParticleBodyContact& c=m_closestFixtureContactBuffer.Append();
-        c.index=contacts[closest].index;
-        c.weight=contacts[closest].weight;
-        c.fixture=contacts[closest].fixture;
-        c.normal=contacts[closest].normal;
+        b2ParticleBodyContact &c = m_closestFixtureContactBuffer.Append();
+        c.index = contacts[closest].index;
+        c.weight = contacts[closest].weight;
+        c.fixture = contacts[closest].fixture;
+        c.normal = contacts[closest].normal;
     }
     //--------------------------------------
     if (m_def.strictContactCheck) {
@@ -3400,10 +3384,6 @@ void b2ParticleSystem::SolveViscous() {
             b2Vec2 v = b->GetLinearVelocityFromWorldPoint(p) -
                        m_velocityBuffer.data[a];
             b2Vec2 f = viscousStrength * m * w * v;
-//            print("m:"+std::to_string(m));
-//            print("w:"+std::to_string(w));
-//            print("v:"+v.ToString());
-//            print("f:"+f.ToString());
             m_velocityBuffer.data[a] += GetParticleInvMass() * f;
             b->ApplyLinearImpulse(-f, p, true);
         }
@@ -3494,49 +3474,17 @@ void b2ParticleSystem::SolveForce(const b2TimeStep &step) {
 }
 
 void b2ParticleSystem::SolveAdhesion(const b2TimeStep &step) {
-    //must be after SolvePressure
-//    for (int i = 0; i < m_bodyContactBuffer.GetCount(); ++i) {
-//        b2ParticleBodyContact contact=m_bodyContactBuffer[i];
-//        m_velocityBuffer.data[contact.index] +=contact.normal*m_def.adhesiveStrength*contact.weight;
-//        print("weight"+floatToString(contact.weight));
-//        print("applied "+(contact.normal*m_def.adhesiveStrength*contact.weight).ToString());
-//    }
-//    for (int32 i = 0; i < m_count; i++) {
-//            m_accumulationBuffer[i] = 0;
-//    }
-//    float criticalPressure = GetCriticalPressure(step);
-//    float pressurePerWeight = m_def.pressureStrength * criticalPressure;
-//    float velocityPerPressure = step.dt / (m_def.density * m_particleDiameter);
-//    for (int32 k = 0; k < m_bodyContactBuffer.GetCount(); k++) {
-//        const b2ParticleBodyContact &contact = m_bodyContactBuffer[k];
-//        int32 a = contact.index;
-//        float w = contact.weight;
-//        float m = contact.mass;
-//        b2Vec2 n = contact.normal;
-//        float h = m_accumulationBuffer[a] + pressurePerWeight * w;
-//        b2Vec2 force = velocityPerPressure * w * m * h * n;
-//        m_velocityBuffer.data[a] += GetParticleInvMass() * force*m_def.adhesiveStrength;   //recoil particle
-//        print("weight: "+floatToString(contact.weight));
-//        print("applied "+(GetParticleInvMass() * force*m_def.adhesiveStrength).ToString());
-//
-//    }
-//
-//
-
-    print("adhesion:");
     for (int i = 0; i < m_closestFixtureContactBuffer.GetCount(); ++i) {
-        b2ParticleBodyContact closest=m_closestFixtureContactBuffer[i];
-        print("distance:"+floatToString(closest.weight));
-        print("normal:"+closest.normal.ToString());
+        b2ParticleBodyContact closest = m_closestFixtureContactBuffer[i];
         ParticleApplyForce(closest.index, closest.normal * -(m_def.adhesionRadius - closest.weight) *
-                              m_def.adhesiveStrength);// radius-distance*direction -> 1 on surface, 0 in middle  * adhesive strength
-        print("applied:"+(-closest.normal * (m_def.adhesionRadius - closest.weight) *
-                         m_def.adhesiveStrength).ToString());
+                                          m_def.adhesiveStrength);// radius-distance*direction -> 1 on surface, 0 in middle  * adhesive strength
+//        print("applied:" + (-closest.normal * (m_def.adhesionRadius - closest.weight) *
+//                            m_def.adhesiveStrength).ToString());
     }//TODO constant force?
 }
 
-void b2ParticleSystem::SolveSensor(b2TimeStep& step) {
-    std::map<b2Fixture*, std::list<b2ParticleBodyContact>> map;
+void b2ParticleSystem::SolveSensor(b2TimeStep &step) {
+    std::map<b2Fixture *, std::list<b2ParticleBodyContact>> map;
     for (int i = 0; i < m_sensorContactBuffer.GetCount(); ++i) {
         b2ParticleBodyContact contact = m_sensorContactBuffer[i];
         map[contact.fixture].push_back(contact);

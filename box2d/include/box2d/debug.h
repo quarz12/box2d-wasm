@@ -13,6 +13,11 @@
 #include <sstream>
 #include <iomanip>
 
+template <typename... Args>
+auto str(Args&&... args) -> decltype(std::to_string(std::forward<Args>(args)...)) {
+    return std::to_string(std::forward<Args>(args)...);
+}
+
 inline void print(const std::string &str) {
     EM_ASM({
         console.log(UTF8ToString($0));
@@ -20,6 +25,6 @@ inline void print(const std::string &str) {
 };
 inline std::string floatToString(float value) {
     std::ostringstream out;
-    out << std::setprecision(std::numeric_limits<float>::max_digits10) << value;
+    out << std::setprecision(std::numeric_limits<float>::max_digits10)<< value;
     return out.str();
 }
