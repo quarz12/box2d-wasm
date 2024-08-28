@@ -62,4 +62,5 @@
 #include "b2_particle_group.h"
 #include "b2_contact_filter.h"
 #include "b2_sensor.h"
+#include "b2_force_field.h"
 #endif

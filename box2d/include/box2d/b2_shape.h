@@ -128,6 +128,7 @@ public:
     inline virtual bool AddConnection(b2Shape& next){return false;};
     bool m_isLineSegment=false;
     bool isSensor=false;
+    bool m_isObserver= false;
     inline virtual b2Sensor* AsSensor(){return nullptr;};
 };
 

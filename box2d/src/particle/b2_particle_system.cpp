@@ -377,7 +377,7 @@ b2ParticleSystem::b2ParticleSystem(const b2ParticleSystemDef *def,
         m_contactBuffer(world->m_blockAllocator),
         m_bodyContactBuffer(world->m_blockAllocator),
         m_closestFixtureContactBuffer(world->m_blockAllocator),
-        m_sensorContactBuffer(world->m_blockAllocator),
+        m_ObserverContactBuffer(world->m_blockAllocator),
         m_pairBuffer(world->m_blockAllocator),
         m_triadBuffer(world->m_blockAllocator) {
     b2Assert(def);
@@ -2365,7 +2365,7 @@ void b2ParticleSystem::UpdateBodyContacts() {
     }
     m_bodyContactBuffer.SetCount(0);
     m_stuckParticleBuffer.SetCount(0);
-    m_sensorContactBuffer.SetCount(0);
+    m_ObserverContactBuffer.SetCount(0);
     m_closestFixtureContactBuffer.SetCount(0);
 
     class UpdateBodyContactsCallback : public b2FixtureParticleQueryCallback {
@@ -2408,7 +2408,7 @@ void b2ParticleSystem::UpdateBodyContacts() {
                 float invM = invAm + invBm + invBI * rpn * rpn;
 
                 //add new contact to buffer
-                b2ParticleBodyContact &contact = fixture->isFluidSensor ? m_system->m_sensorContactBuffer.Append()
+                b2ParticleBodyContact &contact = fixture->GetShape()->m_isObserver ? m_system->m_ObserverContactBuffer.Append()
                                                                         : m_system->m_bodyContactBuffer.Append();
                 contact.index = particleIndex;
                 contact.body = b;
@@ -2463,7 +2463,7 @@ void b2ParticleSystem::UpdateBodyContacts() {
                                 int32 i) override { return false; };
 
             bool ReportFixture(b2Fixture *fixture) override {
-                if (m_filter->ShouldCollide(fixture, m_system, index) && !fixture->isFluidSensor) {
+                if (m_filter->ShouldCollide(fixture, m_system, index) && !fixture->GetShape()->m_isObserver) {
                     b2ParticleBodyContact &contact = m_contacts->Append();
                     contact.index = index;
                     contact.fixture = fixture;
@@ -2575,7 +2575,7 @@ void b2ParticleSystem::SolveCollision(const b2TimeStep &step) {
         // be performed, false otherwise.
         inline bool ShouldCollide(b2Fixture *const fixture,
                                   int32 particleIndex) {
-            if (fixture->isFluidSensor)
+            if (fixture->GetShape()->m_isObserver)
                 return false;
             if (m_contactFilter) {
                 const uint32 *const flags = m_system->GetFlagsBuffer();
@@ -3486,9 +3486,10 @@ void b2ParticleSystem::SolveAdhesion(const b2TimeStep &step) {
 void b2ParticleSystem::SolveSensor(b2TimeStep &step) {
     //must be after SolveStaticPressure
     std::map<b2Fixture *, std::list<b2ParticleBodyContact>> map;
-    for (int i = 0; i < m_sensorContactBuffer.GetCount(); ++i) {
-        b2ParticleBodyContact contact = m_sensorContactBuffer[i];
-        map[contact.fixture].push_back(contact);
+    for (int i = 0; i < m_ObserverContactBuffer.GetCount(); ++i) {
+        b2ParticleBodyContact contact = m_ObserverContactBuffer[i];
+        if (contact.fixture->GetShape()->isSensor)
+            map[contact.fixture].push_back(contact);
     }
     for (std::pair<b2Fixture *, std::list<b2ParticleBodyContact>> KVPair: map) {
         b2Sensor *sensor = (b2Sensor *) KVPair.first->GetShape();

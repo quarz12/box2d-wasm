@@ -1157,7 +1157,7 @@ private:
     ///contacts between particles and bodies in this step | updateBodyContacts
 	b2GrowableBuffer<b2ParticleBodyContact> m_bodyContactBuffer;
     b2GrowableBuffer<b2ParticleBodyContact> m_closestFixtureContactBuffer;
-    b2GrowableBuffer<b2ParticleBodyContact> m_sensorContactBuffer;
+    b2GrowableBuffer<b2ParticleBodyContact> m_ObserverContactBuffer;
 	b2GrowableBuffer<b2ParticlePair> m_pairBuffer;
 	b2GrowableBuffer<b2ParticleTriad> m_triadBuffer;
 
