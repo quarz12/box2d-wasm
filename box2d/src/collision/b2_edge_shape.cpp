@@ -202,7 +202,7 @@ bool b2EdgeShape::CloserToNext(b2Vec2& point, b2Transform& tf) const {
         return this < nextSegment;
     }
     return distanceNext<distanceThis;
-    //TODO check Angle
+    //TODO check Angle might be enough to do edge-edge
 }
 
 bool b2EdgeShape::CloserToPrev(b2Vec2& point, b2Transform& tf) const {

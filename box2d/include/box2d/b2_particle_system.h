@@ -763,7 +763,7 @@ private:
 
     float GetParticleInvMass() const;
     inline const b2ParticleBodyContact* GetClosestFixtureContactBuffer() const {return m_closestFixtureContactBuffer.Data();}
-
+    inline const float* GetStaticPressureBuffer() const {return m_staticPressureBuffer;};
 private:
 	friend class b2World;
 	friend class b2ParticleGroup;

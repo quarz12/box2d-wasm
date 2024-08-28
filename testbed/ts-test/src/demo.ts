@@ -297,14 +297,15 @@ partSysDef.radius = 0.2;
 partSysDef.dampingStrength = 0;//.5;
 partSysDef.pressureStrength = 0.1; //prevents laminar flow
 partSysDef.staticPressureStrength = 0.1;
-partSysDef.surfaceTensionNormalStrength = 0.005;
-partSysDef.surfaceTensionPressureStrength = 0.005;
-partSysDef.frictionRate = 0.0;
+partSysDef.surfaceTensionNormalStrength = 0.05;
+partSysDef.surfaceTensionPressureStrength = 0.05;
+partSysDef.frictionRate = 0.0; // irrelevant?
 partSysDef.viscousStrength = 1.0;
 partSysDef.maxAirPressure = 30;
 //1 results in equal force to pressure
 partSysDef.adhesiveStrength = 0.5;
-partSysDef.adhesionRadius=2;
+partSysDef.adhesionRadius=1;
+partSysDef.staticPressureIterations=10;
 const particleSystem = world.CreateParticleSystem(partSysDef);
 const particleSystem2 = world2.CreateParticleSystem(partSysDef);
 const systems: Box2D.b2ParticleSystem[] = [];
@@ -314,7 +315,7 @@ let sensor;
     let s = new b2Sensor();
     s.Configure(true, true, particleSystem, 60);
 // sensor.SetTwoSided(new b2Vec2(23,5), new b2Vec2(25,5));
-    s.SetTwoSided(new b2Vec2(20, 0), new b2Vec2(20, 2));
+    s.SetTwoSided(new b2Vec2(10, 0), new b2Vec2(10, 2));
     sensor = ground.CreateFixture(s, 0);
 }
 let edge = new b2EdgeShape();

@@ -46,7 +46,7 @@ public:
 
     float GetAvgSpeed();
 
-    b2Vec2 CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const;
+    float CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const;
 
     void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact> &contacts);
 
@@ -90,7 +90,7 @@ public:
 
     b2Sensor* AsSensor() override {return (b2Sensor*) this;};
 
-    inline int32 SampleSize() {return pressureSamples.size();};
+    inline int32 GetSampleSize() const {return pressureSamples.size();};
 
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API

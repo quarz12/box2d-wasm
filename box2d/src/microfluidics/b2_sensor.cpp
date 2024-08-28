@@ -6,8 +6,7 @@
 #include "box2d/b2_body.h"
 
 void b2Sensor::SensePressure(b2TimeStep &step, std::list<b2ParticleBodyContact> &contacts) {
-    //todo nicht particlebodycontacts sondern particle particle für particles in kontakt mit body
-    float pressure = CalculateTheoreticalAvgPressure(step, contacts).Length();
+    float pressure = CalculateTheoreticalAvgPressure(step, contacts);
     pressureSamples.push_back(pressure);
     if (pressureSamples.size() > intervalTimeSteps && intervalTimeSteps > 0)
         pressureSamples.pop_front();
@@ -48,10 +47,10 @@ float b2Sensor::GetAvgSpeed() {
     return std::accumulate(speedSamples.begin(), speedSamples.end(), 0.0) / speedSamples.size();
 }
 
-b2Vec2 b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact> &observations) const {
+float b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact> &observations) const {
     unsigned long length = observations.size();
     if (length == 0)
-        return b2Vec2_zero;
+        return 0;
     std::list<int32> particles;
     for (b2ParticleBodyContact observation: observations) {
         particles.push_back(observation.index);
@@ -61,26 +60,47 @@ b2Vec2 b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2Pa
     for (int32 particleIndex: particles) {
         for (int i = 0; i < m_system->GetContactCount(); ++i) {
             b2ParticleContact contact = allContacts[i];
-            if (contact.GetIndexA()==particleIndex||contact.GetIndexB()==particleIndex)
+            if (contact.GetIndexA()==particleIndex||contact.GetIndexB()==particleIndex) {
                 contacts.push_back(contact);
+            }
         }
     }
-    b2Vec2 pressure;
-    std::map<int32,float> map;
+    //remove duplicates
+    contacts.sort([](const b2ParticleContact& a, b2ParticleContact& b)->bool {
+        if (a.GetIndexA() == b.GetIndexA()) {
+            return a.GetIndexB() < b.GetIndexB();
+        }
+        return a.GetIndexA() < b.GetIndexA();
+    });
+    contacts.unique();
+//    for (auto c:contacts) {
+//        print("found "+str(c.GetIndexA())+" "+str(c.GetIndexB()));
+//    }
+    std::map<int32,float> accBuffer;
+    std::map<int32,float> pressureBuffer;
+    auto staticPressureBuffer=m_system->GetStaticPressureBuffer();
+    for (int i = 0; i < m_system->GetParticleCount(); ++i) {
+        if (contains(particles, i))
+            accBuffer[i]=staticPressureBuffer[i];
+    }
     float velocityPerPressure = step.dt / (m_system->GetDef().density * m_system->m_particleDiameter);
     for (auto contact:contacts) {
         int32 a = contact.GetIndexA();
         int32 b = contact.GetIndexB();
         float w = contact.GetWeight();
         b2Vec2 n = contact.GetNormal();
-        float h = map[a] + map[b];
+        float h = accBuffer[a] + accBuffer[b];
         b2Vec2 f = velocityPerPressure * w * h * n;
         if (contains(particles,a))
-            pressure -= f;
+            pressureBuffer[a] += f.Length();
         if (contains(particles,b))
-            pressure += f;
+            pressureBuffer[b] += f.Length();
     }
-    return pressure;
+    float pressure = 0;
+    for (auto KVPair:pressureBuffer) {
+        pressure+=KVPair.second;
+    }
+    return pressure/pressureBuffer.size();
 }
 
 void b2Sensor::SetTwoSided(const b2Vec2& v1, const b2Vec2& v2)

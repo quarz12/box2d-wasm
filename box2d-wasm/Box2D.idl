@@ -1455,6 +1455,6 @@ interface b2Sensor {
   boolean IsSpeedSensor();
   b2Sensor GetNext();
   void SetTwoSided([Const,Ref] b2Vec2 v1, [Const,Ref] b2Vec2 v2);
-  long SampleSize();
+  long GetSampleSize();
 };
 b2Sensor implements b2Shape;

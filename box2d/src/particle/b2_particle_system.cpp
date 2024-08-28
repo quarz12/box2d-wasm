@@ -3015,7 +3015,7 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep &step) {
         b2Vec2 n = contact.GetNormal();
         float h = m_accumulationBuffer[a] + m_accumulationBuffer[b];
         b2Vec2 f = velocityPerPressure * w * h * n;
-        m_velocityBuffer.data[a] -= f;
+        m_velocityBuffer.data[a] -= f;//TODO use particleapplyfoce, might affect solvecollision?
         m_velocityBuffer.data[b] += f;
     }
 }
@@ -3484,6 +3484,7 @@ void b2ParticleSystem::SolveAdhesion(const b2TimeStep &step) {
 }
 
 void b2ParticleSystem::SolveSensor(b2TimeStep &step) {
+    //must be after SolveStaticPressure
     std::map<b2Fixture *, std::list<b2ParticleBodyContact>> map;
     for (int i = 0; i < m_sensorContactBuffer.GetCount(); ++i) {
         b2ParticleBodyContact contact = m_sensorContactBuffer[i];
@@ -4174,6 +4175,7 @@ void b2ParticleSystem::ParticleApplyForce(int32 index, const b2Vec2 &force) {
         ForceCanBeApplied(m_flagsBuffer.data[index])) {
         PrepareForceBuffer();
         m_forceBuffer[index] += force;
+        m_totalForceBuffer[index] += force.Length();
     }
 }
 
