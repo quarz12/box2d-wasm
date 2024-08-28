@@ -59,8 +59,7 @@ public:
 		e_polygon = 2,
 		e_chain = 3,
         e_arc=4,
-        e_sensor=5,
-		e_typeCount = 6,
+		e_typeCount = 5,
 	};
 
 	virtual ~b2Shape() {}

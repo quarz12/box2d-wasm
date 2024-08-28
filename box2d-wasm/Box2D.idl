@@ -108,7 +108,6 @@ enum b2ShapeType {
   "b2Shape::e_polygon",
   "b2Shape::e_chain",
   "b2Shape::e_arc",
-  "b2Shape::e_sensor",
   "b2Shape::e_typeCount"
 };
 
@@ -1454,7 +1453,6 @@ interface b2Sensor {
   boolean IsPressureSensor();
   boolean IsSpeedSensor();
   b2Sensor GetNext();
-  void SetTwoSided([Const,Ref] b2Vec2 v1, [Const,Ref] b2Vec2 v2);
   long GetSampleSize();
 };
-b2Sensor implements b2Shape;
+b2Sensor implements b2EdgeShape;

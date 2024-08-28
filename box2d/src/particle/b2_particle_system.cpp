@@ -3484,7 +3484,7 @@ void b2ParticleSystem::SolveAdhesion(const b2TimeStep &step) {
 }
 
 void b2ParticleSystem::SolveSensor(b2TimeStep &step) {
-    //must be after SolveStaticPressure
+    //must be last step to correctly find speed
     std::map<b2Fixture *, std::list<b2ParticleBodyContact>> map;
     for (int i = 0; i < m_ObserverContactBuffer.GetCount(); ++i) {
         b2ParticleBodyContact contact = m_ObserverContactBuffer[i];
