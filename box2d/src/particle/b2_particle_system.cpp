@@ -31,6 +31,7 @@
 #include <algorithm>
 #include "box2d/debug.h"
 #include "box2d/b2_sensor.h"
+#include "box2d/b2_force_field.h"
 #include <map>
 #include <list>
 
@@ -2863,10 +2864,12 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
         if (m_allParticleFlags & b2_wallParticle) {
             SolveWall();
         }
-        // The particle positions can be updated only at the end of substep.
+        SolveForceField(subStep);
+        //sensors must be updated at the end of the step to account for all forces
         SolveSensor(subStep);
 //        print("4 -> velocity:"+m_velocityBuffer.data[0].ToString());
 //        print("4 -> force:"+m_forceBuffer[0].ToString());
+        // The particle positions can be updated only at the end of substep.
         for (int32 i = 0; i < m_count; i++) {
 //            m_velocityBuffer.data[i].y=0;//for debugging, eliminates y movement
             m_positionBuffer.data[i] += subStep.dt * m_velocityBuffer.data[i]; //change particle position
@@ -3496,6 +3499,20 @@ void b2ParticleSystem::SolveSensor(b2TimeStep &step) {
         sensor->Solve(step, KVPair.second);
     }
 }
+
+void b2ParticleSystem::SolveForceField(b2TimeStep& step){
+    std::map<b2Fixture *, std::list<b2ParticleBodyContact>> map;
+    for (int i = 0; i < m_ObserverContactBuffer.GetCount(); ++i) {
+        b2ParticleBodyContact contact = m_ObserverContactBuffer[i];
+        if (contact.fixture->GetShape()->isForceField)
+            map[contact.fixture].push_back(contact);
+    }
+    for (std::pair<b2Fixture *, std::list<b2ParticleBodyContact>> KVPair: map) {
+        b2ForceField* ff = (b2ForceField *) KVPair.first->GetShape();
+        ff->Solve(step, KVPair.second);
+    }
+}
+
 
 void b2ParticleSystem::SolveColorMixing() {
     // mixes color between contacting particles

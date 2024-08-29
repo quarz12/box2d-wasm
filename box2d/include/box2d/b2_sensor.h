@@ -11,7 +11,7 @@
 #include <numeric>
 struct b2ParticleBodyContact;
 class b2ParticleSystem;
-
+class b2Valve;
 class b2Sensor : public b2EdgeShape {
 public:
     bool pressureSensor= false;
@@ -21,7 +21,7 @@ public:
     std::list<float> pressureSamples{}, speedSamples{};
     int32 intervalTimeSteps;
     b2ParticleSystem *m_system;
-
+    bool isValve= false;
     b2Sensor() {
         isSensor = true;
         m_isObserver=true;
@@ -63,6 +63,7 @@ public:
 
     inline int32 GetSampleSize() const {return pressureSamples.size();};
 
+    virtual inline b2Valve* AsValve(){return nullptr;};
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
     /// Set this as an isolated edge, with direct floats.
@@ -75,35 +76,44 @@ private:
 
 class b2Gate : public b2EdgeShape {
 public:
-    inline bool isOpen() const { return !isClosed; }
+    b2Gate(){
+        isGate= true;
+    };
+    inline bool IsOpen() const { return !isClosed; }
 
-    void open();
+    void Open();
 
-    void close();
+    void Close();
 
+    b2Gate* Clone(b2BlockAllocator* allocator) const override;
+    inline b2Gate* AsGate() override {return this;};
 private:
     bool isClosed = false;
 };
 
 class b2Valve : public b2Sensor {
-
-    inline void Configure(bool speed, bool pressure, b2ParticleSystem* system, int32 intervalSteps, b2Gate* connectedGate){
-        this->b2Sensor::Configure(speed, pressure, system, intervalSteps);
+public:
+    inline void Configure(bool pressure, b2ParticleSystem* system, int32 intervalSteps, b2Gate* connectedGate, float threshold){
+        this->b2Sensor::Configure(false, pressure, system, intervalSteps);
         gate=connectedGate;
+        m_threshold=threshold;
+        isValve= true;
     }
 
     b2Gate *gate;
-    float threshold = 0;
+    float m_threshold = 0;
 
-    inline void setGate(b2Gate *g) { gate = g; };
+    inline void SetGate(b2Gate *g) { gate = g; };
 
-    inline void setThreshold(float pressure) {
-        threshold = pressure;
+    inline void SetThreshold(float pressure) {
+        m_threshold = pressure;
     };
 
     void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact> &contacts);
 
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
+
+    inline b2Valve* AsValve() override {return this;}
 };
 
 #endif //BOX2D_B2SENSOR_H

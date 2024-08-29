@@ -130,7 +130,12 @@ interface b2Shape {
   attribute b2Shape previousSegment;
   attribute b2Shape nextSegment;
   attribute boolean isSensor;
+  attribute boolean m_isObserver;
+  attribute boolean isForceField;
+  attribute boolean isGate;
   b2Sensor AsSensor();
+  b2ForceField AsForceField();
+  b2Gate AsGate();
 };
 
 interface b2FixtureUserData {
@@ -178,7 +183,6 @@ interface b2Fixture {
   void SetLayerChange(b2ParticleSystem newSystem);
   boolean IsLayerChange();
   void RemoveLayerChange();
-  void SetCollision(boolean hasCollision);
   boolean HasCollision();
   b2ParticleSystem GetNewParticleSystem();
   attribute boolean isFluidSensor;
@@ -1454,11 +1458,31 @@ interface b2Sensor {
   boolean IsSpeedSensor();
   b2Sensor GetNext();
   long GetSampleSize();
+  b2Valve AsValve();
+  attribute boolean isValve;
 };
 b2Sensor implements b2EdgeShape;
 
 interface b2ForceField {
     void b2ForceField();
-    void Configure([Ref]b2Vec2 force, boolean isTimed, float duration)
-}
+    void Configure([Ref]b2Vec2 force, boolean isTimed, float durationSeconds, b2ParticleSystem system);
+    attribute float m_remainingDuration;
+    void ResetTimer();
+};
 b2ForceField implements b2PolygonShape;
+
+interface b2Gate {
+    void b2Gate();
+    void Open();
+    void Close();
+    boolean IsOpen();
+};
+b2Gate implements b2EdgeShape;
+
+interface b2Valve {
+    void b2Valve();
+    void Configure(boolean pressure, b2ParticleSystem system, long intervalSteps, b2Gate connectedGate, float threshold);
+    void SetGate(b2Gate g);
+    void SetThreshold(float threshold);
+};
+b2Valve implements b2Sensor;

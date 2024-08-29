@@ -277,7 +277,6 @@ protected:
     /// if true, particles in contact get moved to m_newParticleSystem
     bool m_hasLayerChange;
     b2ParticleSystem* m_newParticleSystem;
-    bool m_hasCollision;
 
 	b2FixtureUserData m_userData;
 };
@@ -305,7 +304,7 @@ inline bool b2Fixture::IsSensor() const
 inline void b2Fixture::SetLayerChange(b2ParticleSystem* newSystem)
 {
     m_hasLayerChange= true;
-    m_hasCollision= false;
+    GetShape()->m_hasCollision= false;
     m_newParticleSystem=newSystem;
 }
 
@@ -419,11 +418,8 @@ inline b2ParticleSystem* b2Fixture::GetNewParticleSystem() const {
 }
 
 inline bool b2Fixture::HasCollision() const {
-    return m_hasCollision;
+    return GetShape()->m_hasCollision;
 }
 
-inline void b2Fixture::SetCollision(bool hasCollision) {
-    m_hasCollision=hasCollision;
-}
 
 #endif

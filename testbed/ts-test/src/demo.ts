@@ -26,8 +26,9 @@ const {
     b2_airParticle,
     b2_adhesiveParticle,
     b2Sensor,
-    b2CircleShape,
+    b2ForceField,
     b2ParticleSystem,
+    b2Gate,
     //enum values are part of the base Box2D object
 } = box2d;
 /** @type {HTMLCanvasElement} */
@@ -318,10 +319,14 @@ let sensor;
     s.SetTwoSided(new b2Vec2(10, 0), new b2Vec2(10, 2));
     sensor = ground.CreateFixture(s, 0);
 }
-let edge = new b2EdgeShape();
-edge.SetTwoSided(new b2Vec2(20, 0), new b2Vec2(20, 2));
-// ground.CreateFixture(edge, 0);
+let ff = new b2ForceField();
+ff.SetAsBox(0.1,1,new b2Vec2(10,1),0);
+ff.Configure(new b2Vec2(-50,0),true,3,particleSystem);
+let f=ground.CreateFixture(ff, 0);
 
+let gate=new b2Gate();
+gate.SetTwoSided(new b2Vec2(9,0),new b2Vec2(9,2));
+let fg=ground.CreateFixture(gate,0);
 
 let filter = new b2MicrofluidicsContactFilter();
 filter.SetParticleSystem(particleSystem);
@@ -453,5 +458,7 @@ Object.assign(window, {
     temp,
     edge4,
     a,
+    f,
+    fg,
 })
 

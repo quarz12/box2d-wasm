@@ -30,7 +30,9 @@
 #include <stdexcept>
 
 class b2Sensor;//forward declaration
+class b2ForceField;
 class b2BlockAllocator;
+class b2Gate;
 
 /// This holds the mass data computed for a shape.
 struct B2_API b2MassData
@@ -130,7 +132,10 @@ public:
     bool m_isObserver= false;
     bool isSensor=false;
     bool isForceField= false;
+    bool isGate= false;
     inline virtual b2Sensor* AsSensor(){return nullptr;};
+    inline virtual b2ForceField* AsForceField(){return nullptr;};
+    inline virtual b2Gate* AsGate(){return nullptr;};
 };
 
 inline b2Shape::Type b2Shape::GetType() const

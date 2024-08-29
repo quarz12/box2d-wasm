@@ -1026,6 +1026,7 @@ private:
 	void SolveZombie();
     void SolveFriction(const b2TimeStep& step);
     void SolveSensor(b2TimeStep& step);
+    void SolveForceField(b2TimeStep& step);
 	/// Destroy all particles which have outlived their lifetimes set by
 	/// SetParticleLifetime().
 	void SolveLifetimes(const b2TimeStep& step);
