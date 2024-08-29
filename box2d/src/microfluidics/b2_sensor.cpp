@@ -4,6 +4,7 @@
 
 #include "box2d/b2_sensor.h"
 #include "box2d/b2_body.h"
+#include "box2d/b2_particle_system.h"
 
 void b2Sensor::SensePressure(b2TimeStep &step, std::list<b2ParticleBodyContact> &contacts) {
     float pressure = CalculateTheoreticalAvgPressure(step, contacts);
@@ -104,6 +105,15 @@ float b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2Par
     return pressure/pressureBuffer.size();
 }
 
+b2Shape *b2Sensor::Clone(b2BlockAllocator *allocator) const {
+    {
+        void* mem = allocator->Allocate(sizeof(b2Sensor));
+        b2Sensor* clone = new (mem) b2Sensor;
+        *clone = *this;
+        return clone;
+    }
+}
+
 
 void b2Valve::Solve(b2TimeStep &step, std::list<b2ParticleBodyContact> &contacts) {
     this->b2Sensor::Solve(step, contacts); //todo verify
@@ -113,6 +123,15 @@ void b2Valve::Solve(b2TimeStep &step, std::list<b2ParticleBodyContact> &contacts
     } else {
         if (!gate->isOpen())
             gate->open();
+    }
+}
+
+b2Shape *b2Valve::Clone(b2BlockAllocator *allocator) const {
+    {
+        void* mem = allocator->Allocate(sizeof(b2Valve));
+        b2Valve* clone = new (mem) b2Valve;
+        *clone = *this;
+        return clone;
     }
 }
 

@@ -28,8 +28,7 @@
 #include "b2_body.h"
 #include "b2_collision.h"
 #include "b2_shape.h"
-#include "b2_particle_system.h"
-
+class b2ParticleSystem;
 class b2BlockAllocator;
 class b2Body;
 class b2BroadPhase;

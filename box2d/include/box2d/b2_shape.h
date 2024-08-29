@@ -126,8 +126,10 @@ public:
     /// false if shapes are not connected, overwrites previous shape if point is already connected
     inline virtual bool AddConnection(b2Shape& next){return false;};
     bool m_isLineSegment=false;
-    bool isSensor=false;
+    /// precondition for isSensor and isForceField, observers have no collision and contacts are only processed in their class
     bool m_isObserver= false;
+    bool isSensor=false;
+    bool isForceField= false;
     inline virtual b2Sensor* AsSensor(){return nullptr;};
 };
 

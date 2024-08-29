@@ -1456,3 +1456,9 @@ interface b2Sensor {
   long GetSampleSize();
 };
 b2Sensor implements b2EdgeShape;
+
+interface b2ForceField {
+    void b2ForceField();
+    void Configure([Ref]b2Vec2 force, boolean isTimed, float duration)
+}
+b2ForceField implements b2PolygonShape;

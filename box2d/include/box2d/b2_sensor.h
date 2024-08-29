@@ -5,14 +5,12 @@
 #ifndef BOX2D_B2SENSOR_H
 #define BOX2D_B2SENSOR_H
 #pragma once
-#include "b2_polygon_shape.h"
-#include "b2_time_step.h"
-#include "b2_particle_system.h"
-#include <list>
 #include "b2_edge_shape.h"
+#include "b2_time_step.h"
+#include <list>
 #include <numeric>
-#include "b2_particle_system.h"
-
+class b2ParticleBodyContact;
+class b2ParticleSystem;
 
 class b2Sensor : public b2EdgeShape {
 public:
@@ -54,13 +52,7 @@ public:
     bool IsSpeedSensor() const { return speedSensor;};
 
 
-    inline b2Shape* Clone(b2BlockAllocator* allocator) const override
-    {
-        void* mem = allocator->Allocate(sizeof(b2Sensor));
-        b2Sensor* clone = new (mem) b2Sensor;
-        *clone = *this;
-        return clone;
-    }
+    b2Shape* Clone(b2BlockAllocator* allocator) const override;
 
     inline b2Sensor* GetNext(){return m_next;}
     inline void SetNext(b2Sensor* next){m_next=next;}
@@ -109,13 +101,7 @@ class b2Valve : public b2Sensor {
 
     void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact> &contacts);
 
-    inline b2Shape* Clone(b2BlockAllocator* allocator) const override
-    {
-        void* mem = allocator->Allocate(sizeof(b2Valve));
-        b2Valve* clone = new (mem) b2Valve;
-        *clone = *this;
-        return clone;
-    }
+    b2Shape* Clone(b2BlockAllocator* allocator) const override;
 };
 
 #endif //BOX2D_B2SENSOR_H
