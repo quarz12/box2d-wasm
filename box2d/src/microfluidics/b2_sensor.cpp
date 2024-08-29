@@ -7,25 +7,32 @@
 #include "box2d/b2_particle_system.h"
 
 void b2Sensor::SensePressure(b2TimeStep &step, std::list<b2ParticleBodyContact> &contacts) {
-    float pressure = CalculateTheoreticalAvgPressure(step, contacts);
-    pressureSamples.push_back(pressure);
-    if (pressureSamples.size() > intervalTimeSteps && intervalTimeSteps > 0)
+    float sample = CalculateTheoreticalAvgPressure(step, contacts);
+    pressureSamples.push_back(sample);
+    avg_pressure+=sample/intervalTimeSteps;
+    if (pressureSamples.size() > intervalTimeSteps && intervalTimeSteps > 0) {
+        avg_pressure-=pressureSamples.front()/intervalTimeSteps;
         pressureSamples.pop_front();
+    }
 }
 
 void b2Sensor::SenseSpeed(b2TimeStep &step, std::list<b2ParticleBodyContact> &contacts) {
     b2Vec2 velocity;
+    print("-----------------------------------------------");
     for (b2ParticleBodyContact contact: contacts) {
-//        print("-----------------------------------------------");
-//        print(m_system->GetVelocityBuffer()[contact.index].ToString());
+        print(m_system->GetVelocityBuffer()[contact.index].ToString());
 //        print((m_system->GetVelocityBuffer()[contact.index]*step.dt).ToString());
         velocity += m_system->GetVelocityBuffer()[contact.index];
     }
-    float avgSpeed = contacts.size() > 0 ? velocity.Length() / contacts.size() : 0;
-    print("speed: "+ str(avgSpeed));
-    speedSamples.push_back(avgSpeed);
-    if (speedSamples.size() > intervalTimeSteps && intervalTimeSteps > 0)
+    print("-----------------------------------------------");
+    float sample = !contacts.empty() ? velocity.Length() / contacts.size() : 0;
+    print("speed: "+ str(sample));
+    speedSamples.push_back(sample);
+    avg_speed+=sample/intervalTimeSteps;
+    if (speedSamples.size() > intervalTimeSteps && intervalTimeSteps > 0){
+        avg_speed-=speedSamples.front()/intervalTimeSteps;
         speedSamples.pop_front();
+    }
 }
 
 void b2Sensor::Solve(b2TimeStep &step, std::list<b2ParticleBodyContact> &contacts) {
@@ -37,16 +44,16 @@ void b2Sensor::Solve(b2TimeStep &step, std::list<b2ParticleBodyContact> &contact
     }
 }
 
-float b2Sensor::GetAvgPressure() {
-    if (pressureSamples.empty())
-        return 0;
-    return std::accumulate(pressureSamples.begin(), pressureSamples.end(), 0.0) / pressureSamples.size();
+float b2Sensor::GetAvgPressure() const {
+    if (pressureSamples.size()==intervalTimeSteps)
+        return avg_pressure;
+    else return 0;
 }
 
-float b2Sensor::GetAvgSpeed() {
-    if (speedSamples.empty())
-        return 0;
-    return std::accumulate(speedSamples.begin(), speedSamples.end(), 0.0) / speedSamples.size();
+float b2Sensor::GetAvgSpeed() const {
+    if (speedSamples.size()==intervalTimeSteps)
+        return avg_speed;
+    else return 0;
 }
 
 float b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact> &observations) const {

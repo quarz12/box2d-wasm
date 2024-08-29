@@ -9,13 +9,15 @@
 #include "b2_time_step.h"
 #include <list>
 #include <numeric>
-class b2ParticleBodyContact;
+struct b2ParticleBodyContact;
 class b2ParticleSystem;
 
 class b2Sensor : public b2EdgeShape {
 public:
     bool pressureSensor= false;
     bool speedSensor= false;
+    float avg_pressure=0;
+    float avg_speed=0;
     std::list<float> pressureSamples{}, speedSamples{};
     int32 intervalTimeSteps;
     b2ParticleSystem *m_system;
@@ -40,9 +42,9 @@ public:
 
     void SenseSpeed(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
-    float GetAvgPressure();
+    float GetAvgPressure() const;
 
-    float GetAvgSpeed();
+    float GetAvgSpeed() const;
 
     float CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const;
 
