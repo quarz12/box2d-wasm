@@ -172,26 +172,27 @@ void b2Valve::SetForceField(float forceStrength, bool isTimed, b2Body* body, b2P
     width = radius;
     height = (gate->m_vertex1 - gate->m_vertex2).Length();
     b2Vec2 gateCenter = gate->m_vertex2 + (gate->m_vertex1 - gate->m_vertex2) / 2;
-//    print("gatecenter:" + gateCenter.ToString());
     b2Vec2 invertedForce = -orthogonal * forceStrength;
     b2Vec2 force = orthogonal * forceStrength;
     distanceToGate = radius;
     { //ff1
         b2Vec2 ff1Center = gateCenter + orthogonal * (distanceToGate + width);
-//        print("ff1center:" + ff1Center.ToString());
-//        print("ff1force:" + force.ToString());
         ff1.SetAsBox(width / 2, height / 2, ff1Center, 0);
-        ff1.Configure(force, true, 0.2, system);
+        if (isTimed)
+            ff1.Configure(force, true, 0.2, system);
+        else
+            ff1.Configure(force, false,0,system);
         b2Fixture* fixture = body->CreateFixture(&ff1, 0);
         m_ff1 = fixture->GetShape()->AsForceField();
         m_ff1->Deactivate();
     }
     { //ff2
         b2Vec2 ff2Center = gateCenter - orthogonal * (distanceToGate + width);
-//        print("ff2center:" + ff2Center.ToString());
-//        print("ff2force:" + invertedForce.ToString());
         ff2.SetAsBox(width / 2, height / 2, ff2Center, 0);
-        ff2.Configure(invertedForce, true, 0.2, system);
+        if (isTimed)
+            ff2.Configure(invertedForce, true, 0.2, system);
+        else
+            ff2.Configure(force, false,0,system);
         b2Fixture* fixture = body->CreateFixture(&ff2, 0);
         m_ff2 = fixture->GetShape()->AsForceField();
         m_ff2->Deactivate();

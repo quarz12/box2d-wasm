@@ -332,7 +332,7 @@ let v=new b2Valve;
 gate=fg.GetShape().AsGate();
 v.Configure(particleSystem,60,gate,4);
 v.SetTwoSided(new b2Vec2(15,0),new b2Vec2(15,2));
-v.SetForceField(100,false, ground, particleSystem);
+v.SetForceField(100,true, ground, particleSystem);
 let valve=ground.CreateFixture(v,0);
 let filter = new b2MicrofluidicsContactFilter();
 filter.SetParticleSystem(particleSystem);
