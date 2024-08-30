@@ -5,6 +5,8 @@
 #include "box2d/b2_sensor.h"
 #include "box2d/b2_body.h"
 #include "box2d/b2_particle_system.h"
+#include "box2d/b2_force_field.h"
+#include "box2d/b2_fixture.h"
 
 void b2Sensor::SensePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts) {
     float sample = CalculateTheoreticalAvgPressure(step, contacts);
@@ -120,14 +122,27 @@ b2Shape* b2Sensor::Clone(b2BlockAllocator* allocator) const {
 }
 
 
-void b2Valve::Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts) {
-    this->b2Sensor::Solve(step, contacts); //todo verify
-    if (pressureSamples.size() > intervalTimeSteps && GetAvgPressure() > m_threshold) {
-        if (gate->IsOpen())
+void b2Valve::Update() {
+    if (pressureSamples.size() >= intervalTimeSteps && GetAvgPressure() > m_threshold) {
+        if (gate->IsOpen()) {
             gate->Close();
+            if (m_hasForceField) {
+                if (m_ff1 != nullptr)
+                    m_ff1->Activate();
+                if (m_ff2 != nullptr)
+                    m_ff2->Activate();
+            }
+        }
     } else {
-        if (!gate->IsOpen())
+        if (!gate->IsOpen()) {
             gate->Open();
+            if (m_hasForceField) {
+                if (m_ff1 != nullptr)
+                    m_ff1->Deactivate();
+                if (m_ff2 != nullptr)
+                    m_ff2->Deactivate();
+            }
+        }
     }
 }
 
@@ -136,6 +151,51 @@ b2Shape* b2Valve::Clone(b2BlockAllocator* allocator) const {
     b2Valve* clone = new(mem) b2Valve;
     *clone = *this;
     return clone;
+}
+
+void b2Valve::Configure(b2ParticleSystem* system, int32 intervalSteps, b2Gate* connectedGate, float threshold) {
+    this->b2Sensor::Configure(false, true, system, intervalSteps);
+    gate = connectedGate;
+    m_threshold = threshold;
+}
+
+void b2Valve::SetForceField(float forceStrength, bool isTimed, b2Body* body, b2ParticleSystem* system) {
+    m_hasForceField = true;
+    float radius = m_system->GetDef().radius;
+    b2ForceField ff1, ff2;
+    b2Vec2 surfaceTangent = gate->m_vertex1 - gate->m_vertex2;
+    b2Vec2 orthogonal;
+    orthogonal.x = -surfaceTangent.y;
+    orthogonal.y = surfaceTangent.x;
+    orthogonal.Normalize();
+    float width, height, distanceToGate;
+    width = radius;
+    height = (gate->m_vertex1 - gate->m_vertex2).Length();
+    b2Vec2 gateCenter = gate->m_vertex2 + (gate->m_vertex1 - gate->m_vertex2) / 2;
+//    print("gatecenter:" + gateCenter.ToString());
+    b2Vec2 invertedForce = -orthogonal * forceStrength;
+    b2Vec2 force = orthogonal * forceStrength;
+    distanceToGate = radius;
+    { //ff1
+        b2Vec2 ff1Center = gateCenter + orthogonal * (distanceToGate + width);
+//        print("ff1center:" + ff1Center.ToString());
+//        print("ff1force:" + force.ToString());
+        ff1.SetAsBox(width / 2, height / 2, ff1Center, 0);
+        ff1.Configure(force, true, 0.2, system);
+        b2Fixture* fixture = body->CreateFixture(&ff1, 0);
+        m_ff1 = fixture->GetShape()->AsForceField();
+        m_ff1->Deactivate();
+    }
+    { //ff2
+        b2Vec2 ff2Center = gateCenter - orthogonal * (distanceToGate + width);
+//        print("ff2center:" + ff2Center.ToString());
+//        print("ff2force:" + invertedForce.ToString());
+        ff2.SetAsBox(width / 2, height / 2, ff2Center, 0);
+        ff2.Configure(invertedForce, true, 0.2, system);
+        b2Fixture* fixture = body->CreateFixture(&ff2, 0);
+        m_ff2 = fixture->GetShape()->AsForceField();
+        m_ff2->Deactivate();
+    }
 }
 
 void b2Gate::Open() {

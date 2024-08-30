@@ -3497,6 +3497,10 @@ void b2ParticleSystem::SolveSensor(b2TimeStep &step) {
     for (std::pair<b2Fixture *, std::list<b2ParticleBodyContact>> KVPair: map) {
         b2Sensor *sensor = (b2Sensor *) KVPair.first->GetShape();
         sensor->Solve(step, KVPair.second);
+        if (sensor->isValve){
+            b2Valve* valve=(b2Valve*) sensor;
+            valve->Update();
+        }
     }
 }
 

@@ -12,6 +12,8 @@
 struct b2ParticleBodyContact;
 class b2ParticleSystem;
 class b2Valve;
+class b2ForceField;
+class b2Body;
 class b2Sensor : public b2EdgeShape {
 public:
     bool pressureSensor= false;
@@ -78,6 +80,8 @@ class b2Gate : public b2EdgeShape {
 public:
     b2Gate(){
         isGate= true;
+        isClosed= false;
+        m_hasCollision= false;
     };
     inline bool IsOpen() const { return !isClosed; }
 
@@ -87,29 +91,37 @@ public:
 
     b2Gate* Clone(b2BlockAllocator* allocator) const override;
     inline b2Gate* AsGate() override {return this;};
+
 private:
-    bool isClosed = false;
+    bool isClosed;
 };
 
 class b2Valve : public b2Sensor {
 public:
-    inline void Configure(bool pressure, b2ParticleSystem* system, int32 intervalSteps, b2Gate* connectedGate, float threshold){
-        this->b2Sensor::Configure(false, pressure, system, intervalSteps);
-        gate=connectedGate;
-        m_threshold=threshold;
+    b2Valve(){
         isValve= true;
     }
+    void Configure(b2ParticleSystem* system, int32 intervalSteps, b2Gate* connectedGate, float threshold);
 
     b2Gate *gate;
     float m_threshold = 0;
+    bool m_hasForceField= false;
+    b2ForceField* m_ff1;
+    b2ForceField* m_ff2;
 
+    void SetForceField(float forceStrength, bool isTimed, b2Body* body, b2ParticleSystem* system);
+    void SetForceField(b2ForceField* ff1, b2ForceField* ff2){
+        m_hasForceField= true;
+        m_ff1=ff1;
+        m_ff2=ff2;
+    }
     inline void SetGate(b2Gate *g) { gate = g; };
 
     inline void SetThreshold(float pressure) {
         m_threshold = pressure;
     };
 
-    void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact> &contacts);
+    void Update();
 
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
 

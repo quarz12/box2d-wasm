@@ -3,8 +3,8 @@ TODOS:
 - [x] 1 pressure sensor
 - [x] find source of random friction on edge -> adhesion + damping
 - [x] 1 forcefield
-  - [ ] 1 gate forcefield
-  - [ ] 1 valve, braucht vllt gar kein forcefield, collisions mit edge könnte reichen
+- [x] 1 gate
+  - [x] 1 valve, forcefield
   - [ ] 2 inlets | pump
 - [ ] 1 all observers in one Solve() to only loop through sensorcontacts once to fill multiple maps
 - [ ] 1 pressure use apply force to allow air particles or just add to totalforcebuffer 
@@ -16,4 +16,3 @@ TODOS:
 
 attribute not changing:
 - inherit from shape -> clone override vergessen
-- 

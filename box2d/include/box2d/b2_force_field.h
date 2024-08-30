@@ -23,6 +23,7 @@ public:
     b2ForceField() {
         m_isObserver = true;
         isForceField = true;
+        m_isActive = true;
     }
 
     void Configure(b2Vec2& force, bool isTimed, float duration, b2ParticleSystem* system) {
@@ -37,11 +38,30 @@ public:
         m_remainingDuration = m_totalDuration;
     }
 
+    inline void SetTime(float duration) {
+        m_remainingDuration = duration;
+    }
+
     void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
-    b2ForceField* AsForceField() override {return (b2ForceField*) this;};
+    b2ForceField* AsForceField() override { return (b2ForceField*) this; };
 
     b2ForceField* Clone(b2BlockAllocator* allocator) const override;
+
+    inline void Activate() {
+        m_isActive = true;
+        m_remainingDuration = m_totalDuration;
+    };
+
+    inline void Deactivate() {
+        m_isActive = false;
+        m_remainingDuration = 0;
+    };
+
+    inline bool IsActive() const { return m_isActive; };
+
+private:
+    bool m_isActive;
 };
 
 

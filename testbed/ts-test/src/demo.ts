@@ -29,6 +29,7 @@ const {
     b2ForceField,
     b2ParticleSystem,
     b2Gate,
+    b2Valve,
     //enum values are part of the base Box2D object
 } = box2d;
 /** @type {HTMLCanvasElement} */
@@ -311,23 +312,28 @@ const particleSystem = world.CreateParticleSystem(partSysDef);
 const particleSystem2 = world2.CreateParticleSystem(partSysDef);
 const systems: Box2D.b2ParticleSystem[] = [];
 systems.push(particleSystem, particleSystem2);
-let sensor;
-{
-    let s = new b2Sensor();
-    s.Configure(true, true, particleSystem, 60);
-// sensor.SetTwoSided(new b2Vec2(23,5), new b2Vec2(25,5));
-    s.SetTwoSided(new b2Vec2(10, 0), new b2Vec2(10, 2));
-    sensor = ground.CreateFixture(s, 0);
-}
-let ff = new b2ForceField();
-ff.SetAsBox(0.1,1,new b2Vec2(10,1),0);
-ff.Configure(new b2Vec2(-50,0),true,3,particleSystem);
-let f=ground.CreateFixture(ff, 0);
+// let sensor;
+// {
+//     let s = new b2Sensor();
+//     s.Configure(true, true, particleSystem, 60);
+// // sensor.SetTwoSided(new b2Vec2(23,5), new b2Vec2(25,5));
+//     s.SetTwoSided(new b2Vec2(10, 0), new b2Vec2(10, 2));
+//     sensor = ground.CreateFixture(s, 0);
+// }
+// let ff = new b2ForceField();
+// ff.SetAsBox(0.1,1,new b2Vec2(10,1),0);
+// ff.Configure(new b2Vec2(-50,0),true,3,particleSystem);
+// let f=ground.CreateFixture(ff, 0);
 
 let gate=new b2Gate();
 gate.SetTwoSided(new b2Vec2(9,0),new b2Vec2(9,2));
 let fg=ground.CreateFixture(gate,0);
-
+let v=new b2Valve;
+gate=fg.GetShape().AsGate();
+v.Configure(particleSystem,60,gate,4);
+v.SetTwoSided(new b2Vec2(15,0),new b2Vec2(15,2));
+v.SetForceField(100,false, ground, particleSystem);
+let valve=ground.CreateFixture(v,0);
 let filter = new b2MicrofluidicsContactFilter();
 filter.SetParticleSystem(particleSystem);
 world.SetContactFilter(filter);
@@ -454,11 +460,13 @@ Object.assign(window, {
     ctx,
     world,
     systems,
-    sensor,
+    // sensor,
     temp,
     edge4,
     a,
-    f,
-    fg,
+    gate,
+    valve,
+    // f,
+    // fg,
 })
 

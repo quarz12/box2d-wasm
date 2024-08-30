@@ -768,8 +768,8 @@ b2MouseJointDef implements b2JointDef;
 interface b2PolygonShape {
   void b2PolygonShape();
   void Set(b2Vec2 vertices, long vertexCount);
-  void SetAsBox(float halfx, float halfy);
-  void SetAsBox(float halfx, float halfy, [Ref] b2Vec2 center, float angle);
+  void SetAsBox(float halfWidth, float halfHeight);
+  void SetAsBox(float halfWidth, float halfHeight, [Ref] b2Vec2 center, float angle);
   [Value] attribute b2Vec2 m_centroid;
   // length 8
   [Value,BoundsChecked] attribute b2Vec2[] m_vertices;
@@ -1468,6 +1468,10 @@ interface b2ForceField {
     void Configure([Ref]b2Vec2 force, boolean isTimed, float durationSeconds, b2ParticleSystem system);
     attribute float m_remainingDuration;
     void ResetTimer();
+    void SetTime(float duration);
+    boolean IsActive();
+    void Activate();
+    void Deactivate();
 };
 b2ForceField implements b2PolygonShape;
 
@@ -1481,8 +1485,12 @@ b2Gate implements b2EdgeShape;
 
 interface b2Valve {
     void b2Valve();
-    void Configure(boolean pressure, b2ParticleSystem system, long intervalSteps, b2Gate connectedGate, float threshold);
+    void Configure(b2ParticleSystem system, long intervalSteps, b2Gate connectedGate, float threshold);
+    void SetForceField(b2ForceField ff1, b2ForceField ff2);
+    void SetForceField(float forceStrength, boolean isTimed, b2Body body, b2ParticleSystem ffSystem);
     void SetGate(b2Gate g);
     void SetThreshold(float threshold);
+    attribute b2Gate gate;
+    attribute float m_threshold;
 };
 b2Valve implements b2Sensor;
