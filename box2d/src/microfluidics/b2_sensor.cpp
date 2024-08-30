@@ -175,9 +175,10 @@ void b2Valve::SetForceField(float forceStrength, bool isTimed, b2Body* body, b2P
     b2Vec2 invertedForce = -orthogonal * forceStrength;
     b2Vec2 force = orthogonal * forceStrength;
     distanceToGate = radius;
+    float angle= b2Atan2(orthogonal.y,orthogonal.x);
     { //ff1
         b2Vec2 ff1Center = gateCenter + orthogonal * (distanceToGate + width);
-        ff1.SetAsBox(width / 2, height / 2, ff1Center, 0);
+        ff1.SetAsBox(width / 2, height / 2, ff1Center, angle);
         if (isTimed)
             ff1.Configure(force, true, 0.2, system);
         else
@@ -188,7 +189,7 @@ void b2Valve::SetForceField(float forceStrength, bool isTimed, b2Body* body, b2P
     }
     { //ff2
         b2Vec2 ff2Center = gateCenter - orthogonal * (distanceToGate + width);
-        ff2.SetAsBox(width / 2, height / 2, ff2Center, 0);
+        ff2.SetAsBox(width / 2, height / 2, ff2Center, angle);
         if (isTimed)
             ff2.Configure(invertedForce, true, 0.2, system);
         else
