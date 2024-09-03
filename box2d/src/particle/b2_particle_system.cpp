@@ -32,6 +32,7 @@
 #include "box2d/debug.h"
 #include "box2d/b2_sensor.h"
 #include "box2d/b2_force_field.h"
+#include "box2d/b2_inlet.h"
 #include <map>
 #include <list>
 
@@ -624,6 +625,92 @@ int32 b2ParticleSystem::CreateParticle(const b2ParticleDef &def) {
     if (m_world->IsLocked()) {
         return 0;
     }
+
+    if (m_count >= m_internalAllocatedCapacity) {
+        // Double the particle capacity.
+        int32 capacity =
+                m_count ? 2 * m_count : b2_minParticleSystemBufferCapacity;
+        ReallocateInternalAllocatedBuffers(capacity);
+    }
+    if (m_count >= m_internalAllocatedCapacity) {
+        // If the oldest particle should be destroyed...
+        if (m_def.destroyByAge) {
+            DestroyOldestParticle(0, false);
+            // Need to destroy this particle *now* so that it's possible to
+            // create a new particle.
+            SolveZombie();
+        } else {
+            return b2_invalidParticleIndex;
+        }
+    }
+    int32 index = m_count++;
+    m_flagsBuffer.data[index] = 0;
+    if (m_lastBodyContactStepBuffer.data) {
+        m_lastBodyContactStepBuffer.data[index] = 0;
+    }
+    if (m_bodyContactCountBuffer.data) {
+        m_bodyContactCountBuffer.data[index] = 0;
+    }
+    if (m_consecutiveContactStepsBuffer.data) {
+        m_consecutiveContactStepsBuffer.data[index] = 0;
+    }
+    m_positionBuffer.data[index] = def.position;
+    m_velocityBuffer.data[index] = def.velocity;
+    m_weightBuffer[index] = 0;
+    m_forceBuffer[index] = b2Vec2_zero;
+    if (m_staticPressureBuffer) {
+        m_staticPressureBuffer[index] = 0;
+    }
+    if (m_depthBuffer) {
+        m_depthBuffer[index] = 0;
+    }
+    if (m_colorBuffer.data || !def.color.IsZero()) {
+        m_colorBuffer.data = RequestBuffer(m_colorBuffer.data);
+        m_colorBuffer.data[index] = def.color;
+    }
+    if (m_userDataBuffer.data || def.userData) {
+        m_userDataBuffer.data = RequestBuffer(m_userDataBuffer.data);
+        m_userDataBuffer.data[index] = def.userData;
+    }
+    if (m_handleIndexBuffer.data) {
+        m_handleIndexBuffer.data[index] = nullptr;
+    }
+    Proxy &proxy = m_proxyBuffer.Append();
+
+    // If particle lifetimes are enabled or the lifetime is set in the particle
+    // definition, initialize the lifetime.
+    const bool finiteLifetime = def.lifetime > 0;
+    if (m_expirationTimeBuffer.data || finiteLifetime) {
+        SetParticleLifetime(index, finiteLifetime ? def.lifetime :
+                                   ExpirationTimeToLifetime(
+                                           -GetQuantizedTimeElapsed()));
+        // Add a reference to the newly added particle to the end of the
+        // queue.
+        m_indexByExpirationTimeBuffer.data[index] = index;
+    }
+
+    proxy.index = index;
+    b2ParticleGroup *group = def.group;
+    m_groupBuffer[index] = group;
+    if (group) {
+        if (group->m_firstIndex < group->m_lastIndex) {
+            // Move particles in the group just before the new particle.
+            RotateBuffer(group->m_firstIndex, group->m_lastIndex, index);
+            b2Assert(group->m_lastIndex == index);
+            // Update the index range of the group to contain the new particle.
+            group->m_lastIndex = index + 1;
+        } else {
+            // If the group is empty, reset the index range to contain only the
+            // new particle.
+            group->m_firstIndex = index;
+            group->m_lastIndex = index + 1;
+        }
+    }
+    SetParticleFlags(index, def.flags);
+    return index;
+}
+
+int32 b2ParticleSystem::CreateParticleUnlocked(const b2ParticleDef &def) {
 
     if (m_count >= m_internalAllocatedCapacity) {
         // Double the particle capacity.
@@ -2755,7 +2842,7 @@ void b2ParticleSystem::SolveBarrier(const b2TimeStep &step) {
 
 //run one step for all particles of this system
 void b2ParticleSystem::Solve(const b2TimeStep &step) {
-    if (m_count == 0) {
+    if (m_count == 0 && inlets.empty()) {
         return;
     }
     // If particle lifetimes are enabled, destroy particles that are too old.
@@ -2796,6 +2883,7 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
         if (m_hasForce) {
             SolveForce(subStep);
         }
+        SolveInlet();
 //        print("0 -> velocity:"+m_velocityBuffer.data[0].ToString());
 //        print("0 -> force:"+m_forceBuffer[0].ToString());
         if (m_allParticleFlags & b2_viscousParticle) {
@@ -2865,8 +2953,9 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
             SolveWall();
         }
         SolveForceField(subStep);
+        // creates new particles, must be last moving step
         //sensors must be updated at the end of the step to account for all forces
-        SolveSensor(subStep);
+        SolveObserver(subStep);
 //        print("4 -> velocity:"+m_velocityBuffer.data[0].ToString());
 //        print("4 -> force:"+m_forceBuffer[0].ToString());
         // The particle positions can be updated only at the end of substep.
@@ -2874,7 +2963,7 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
 //            m_velocityBuffer.data[i].y=0;//for debugging, eliminates y movement
             m_positionBuffer.data[i] += subStep.dt * m_velocityBuffer.data[i]; //change particle position
         }
-        print("end step");
+        // print("end step");
     }
 }
 
@@ -3486,7 +3575,7 @@ void b2ParticleSystem::SolveAdhesion(const b2TimeStep &step) {
     }//TODO constant force?
 }
 
-void b2ParticleSystem::SolveSensor(b2TimeStep &step) {
+void b2ParticleSystem::SolveObserver(b2TimeStep &step) {
     //must be last step to correctly find speed
     std::map<b2Fixture *, std::list<b2ParticleBodyContact>> map;
     for (int i = 0; i < m_ObserverContactBuffer.GetCount(); ++i) {
@@ -3495,10 +3584,10 @@ void b2ParticleSystem::SolveSensor(b2TimeStep &step) {
             map[contact.fixture].push_back(contact);
     }
     for (std::pair<b2Fixture *, std::list<b2ParticleBodyContact>> KVPair: map) {
-        b2Sensor *sensor = (b2Sensor *) KVPair.first->GetShape();
+        b2Sensor *sensor = KVPair.first->GetShape()->AsSensor();
         sensor->Solve(step, KVPair.second);
         if (sensor->isValve){
-            b2Valve* valve=(b2Valve*) sensor;
+            b2Valve* valve = sensor->AsValve();
             valve->Update();
         }
     }
@@ -3512,12 +3601,22 @@ void b2ParticleSystem::SolveForceField(b2TimeStep& step){
             map[contact.fixture].push_back(contact);
     }
     for (std::pair<b2Fixture *, std::list<b2ParticleBodyContact>> KVPair: map) {
-        b2ForceField* ff = (b2ForceField *) KVPair.first->GetShape();
+        b2ForceField* ff = KVPair.first->GetShape()->AsForceField();
         ff->Solve(step, KVPair.second);
     }
 }
 
-
+void b2ParticleSystem::SolveInlet() {
+    std::map<b2Inlet *, std::list<b2ParticleBodyContact>> map;
+    for (int i = 0; i < m_ObserverContactBuffer.GetCount(); ++i) {
+        b2ParticleBodyContact contact = m_ObserverContactBuffer[i];
+        if (contact.fixture->GetShape()->isInlet)
+            map[contact.fixture->GetShape()->AsInlet()].push_back(contact);
+    }
+    for (auto inlet: inlets) {
+        inlet->Solve(map[inlet]);
+    }
+}
 void b2ParticleSystem::SolveColorMixing() {
     // mixes color between contacting particles
     b2Assert(m_colorBuffer.data);

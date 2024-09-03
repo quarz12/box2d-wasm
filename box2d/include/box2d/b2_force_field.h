@@ -44,7 +44,7 @@ public:
 
     void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
-    b2ForceField* AsForceField() override { return (b2ForceField*) this; };
+    b2ForceField* AsForceField() override { return this; };
 
     b2ForceField* Clone(b2BlockAllocator* allocator) const override;
 

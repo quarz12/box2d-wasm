@@ -14,58 +14,60 @@ class b2ParticleSystem;
 class b2Valve;
 class b2ForceField;
 class b2Body;
+
 class b2Sensor : public b2EdgeShape {
 public:
-    bool pressureSensor= false;
-    bool speedSensor= false;
-    float avg_pressure=0;
-    float avg_speed=0;
-    std::list<float> pressureSamples{}, speedSamples{};
+    bool pressureSensor = false;
+    bool speedSensor = false;
+    float avg_pressure = 0;
+    float avg_speed = 0;
+    std::list <float> pressureSamples{}, speedSamples{};
     int32 intervalTimeSteps;
-    b2ParticleSystem *m_system;
-    bool isValve= false;
+    b2ParticleSystem* m_system;
+    bool isValve = false;
+
     b2Sensor() {
         isSensor = true;
-        m_isObserver=true;
+        m_isObserver = true;
         m_radius = 0.0f;
     };
 
-    inline void Configure(bool speed, bool pressure, b2ParticleSystem* system, int32 intervalSteps){
-        speedSensor=speed;
-        pressureSensor=pressure;
-        intervalTimeSteps=intervalSteps;
-        m_system=system;
-        if(m_system== nullptr){
+    inline void Configure(bool speed, bool pressure, b2ParticleSystem* system, int32 intervalSteps) {
+        speedSensor = speed;
+        pressureSensor = pressure;
+        intervalTimeSteps = intervalSteps;
+        m_system = system;
+        if (m_system == nullptr) {
             print("system is nullptr");
         };
     }
 
-    void SensePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
+    void SensePressure(b2TimeStep& step, std::list <b2ParticleBodyContact>& contacts);
 
-    void SenseSpeed(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
+    void SenseSpeed(b2TimeStep& step, std::list <b2ParticleBodyContact>& contacts);
 
     float GetAvgPressure() const;
 
     float GetAvgSpeed() const;
 
-    float CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const;
+    float CalculateTheoreticalAvgPressure(b2TimeStep step, std::list <b2ParticleBodyContact>& observations) const;
 
-    void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact> &contacts);
+    void Solve(b2TimeStep& step, std::list <b2ParticleBodyContact>& contacts);
 
-    bool IsPressureSensor() const{ return pressureSensor;};
-    bool IsSpeedSensor() const { return speedSensor;};
+    bool IsPressureSensor() const { return pressureSensor; };
+    bool IsSpeedSensor() const { return speedSensor; };
 
 
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
 
-    inline b2Sensor* GetNext(){return m_next;}
-    inline void SetNext(b2Sensor* next){m_next=next;}
+    inline b2Sensor* GetNext() { return m_next; }
+    inline void SetNext(b2Sensor* next) { m_next = next; }
 
-    b2Sensor* AsSensor() override {return (b2Sensor*) this;};
+    b2Sensor* AsSensor() override { return (b2Sensor*) this; };
 
-    inline int32 GetSampleSize() const {return pressureSamples.size();};
+    inline int32 GetSampleSize() const { return pressureSamples.size(); };
 
-    virtual inline b2Valve* AsValve(){return nullptr;};
+    virtual inline b2Valve* AsValve() { return nullptr; };
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
     /// Set this as an isolated edge, with direct floats.
@@ -73,15 +75,15 @@ public:
 #endif // LIQUIDFUN_EXTERNAL_LANGUAGE_API
 
 private:
-    b2Sensor* m_next= nullptr;
+    b2Sensor* m_next = nullptr;
 };
 
 class b2Gate : public b2EdgeShape {
 public:
-    b2Gate(){
-        isGate= true;
-        isClosed= false;
-        m_hasCollision= false;
+    b2Gate() {
+        isGate = true;
+        isClosed = false;
+        m_hasCollision = false;
     };
     inline bool IsOpen() const { return !isClosed; }
 
@@ -90,7 +92,8 @@ public:
     void Close();
 
     b2Gate* Clone(b2BlockAllocator* allocator) const override;
-    inline b2Gate* AsGate() override {return this;};
+
+    inline b2Gate* AsGate() override { return this; };
 
 private:
     bool isClosed;
@@ -98,24 +101,27 @@ private:
 
 class b2Valve : public b2Sensor {
 public:
-    b2Valve(){
-        isValve= true;
+    b2Valve() {
+        isValve = true;
     }
+
     void Configure(b2ParticleSystem* system, int32 intervalSteps, b2Gate* connectedGate, float threshold);
 
-    b2Gate *gate;
+    b2Gate* gate;
     float m_threshold = 0;
-    bool m_hasForceField= false;
+    bool m_hasForceField = false;
     b2ForceField* m_ff1;
     b2ForceField* m_ff2;
 
     void SetForceField(float forceStrength, bool isTimed, b2Body* body, b2ParticleSystem* system);
-    void SetForceField(b2ForceField* ff1, b2ForceField* ff2){
-        m_hasForceField= true;
-        m_ff1=ff1;
-        m_ff2=ff2;
+
+    void SetForceField(b2ForceField* ff1, b2ForceField* ff2) {
+        m_hasForceField = true;
+        m_ff1 = ff1;
+        m_ff2 = ff2;
     }
-    inline void SetGate(b2Gate *g) { gate = g; };
+
+    inline void SetGate(b2Gate* g) { gate = g; };
 
     inline void SetThreshold(float pressure) {
         m_threshold = pressure;
@@ -125,7 +131,7 @@ public:
 
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
 
-    inline b2Valve* AsValve() override {return this;}
+    inline b2Valve* AsValve() override { return this; }
 };
 
 #endif //BOX2D_B2SENSOR_H

@@ -30,6 +30,7 @@ const {
     b2ParticleSystem,
     b2Gate,
     b2Valve,
+    b2Inlet,
     //enum values are part of the base Box2D object
 } = box2d;
 /** @type {HTMLCanvasElement} */
@@ -97,7 +98,7 @@ pauseBtn?.addEventListener("click", () => {
     });
 }
 const gravity = new b2Vec2(0, 0);
-const world = new b2World(gravity, 0.5);
+const world = new b2World(gravity, 0.1);
 const world2 = new b2World(new b2Vec2(0, 0), 0.5);
 const bd_ground = new b2BodyDef();
 const ground = world.CreateBody(bd_ground);
@@ -297,7 +298,7 @@ let temp;
 const partSysDef = new b2ParticleSystemDef();
 partSysDef.radius = 0.2;
 partSysDef.dampingStrength = 0;//.5;
-partSysDef.pressureStrength = 0.1; //prevents laminar flow
+partSysDef.pressureStrength = 0.5; //prevents laminar flow
 partSysDef.staticPressureStrength = 0.1;
 partSysDef.surfaceTensionNormalStrength = 0.05;
 partSysDef.surfaceTensionPressureStrength = 0.05;
@@ -325,15 +326,15 @@ systems.push(particleSystem, particleSystem2);
 // ff.Configure(new b2Vec2(-50,0),true,3,particleSystem);
 // let f=ground.CreateFixture(ff, 0);
 
-let gate=new b2Gate();
-gate.SetTwoSided(new b2Vec2(9,0),new b2Vec2(9,2));
-let fg=ground.CreateFixture(gate,0);
-let v=new b2Valve;
-gate=fg.GetShape().AsGate();
-v.Configure(particleSystem,60,gate,4);
-v.SetTwoSided(new b2Vec2(15,0),new b2Vec2(15,2));
-v.SetForceField(100,true, ground, particleSystem);
-let valve=ground.CreateFixture(v,0);
+// let gate=new b2Gate();
+// gate.SetTwoSided(new b2Vec2(9,0),new b2Vec2(9,2));
+// let fg=ground.CreateFixture(gate,0);
+// let v=new b2Valve;
+// gate=fg.GetShape().AsGate();
+// v.Configure(particleSystem,60,gate,4);
+// v.SetTwoSided(new b2Vec2(15,0),new b2Vec2(15,2));
+// v.SetForceField(100,true, ground, particleSystem);
+// let valve=ground.CreateFixture(v,0);
 let filter = new b2MicrofluidicsContactFilter();
 filter.SetParticleSystem(particleSystem);
 world.SetContactFilter(filter);
@@ -351,6 +352,15 @@ world.SetContactFilter(filter);
     let fixture2 = ground2.CreateFixture(fixtureDef);
 }
 
+let infix=new b2Inlet();
+let def = new b2ParticleDef();
+def.flags=b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle | b2_fixtureContactFilterParticle | b2_adhesiveParticle;
+def.set_color(new b2ParticleColor(0, 100, 255, 255));
+infix.Configure(particleSystem,def,new b2Vec2(10,0),new b2Vec2(1,0), new b2Vec2(1,2));
+infix.SetAsBox(partSysDef.radius,1,new b2Vec2(1,1),0);
+let inlet=ground.CreateFixture(infix,0).GetShape().AsInlet();
+particleSystem.RegisterInlet(inlet);
+inlet.Activate();
 function summonParticles() {
     const pt = new b2ParticleGroupDef();
     pt.flags = b2_tensileParticle;
@@ -464,8 +474,10 @@ Object.assign(window, {
     temp,
     edge4,
     a,
-    gate,
-    valve,
+    // gate,
+    // valve,
+    inlet,
+    b2Vec2,
     // f,
     // fg,
 })

@@ -23,7 +23,6 @@
 #include "b2_growable_buffer.h"
 #include "b2_particle.h"
 #include "b2_time_step.h"
-#include <list>
 #include <map>
 #ifdef LIQUIDFUN_UNIT_TESTS
 #include <gtest/gtest.h>
@@ -51,6 +50,7 @@ struct b2Vec2;
 struct b2AABB;
 struct FindContactInput;
 struct FindContactCheck;
+class b2Inlet;
 
 struct B2_API b2ParticleContact
 {
@@ -295,6 +295,7 @@ struct B2_API b2ParticleSystemDef
 
 class B2_API b2ParticleSystem
 {
+#pragma region public
 public:
 	/// Create a particle whose properties have been defined.
 	/// No reference to the definition is retained.
@@ -304,6 +305,8 @@ public:
 	/// @warning This function is locked during callbacks.
 	/// @return the index of the particle.
 	int32 CreateParticle(const b2ParticleDef& def);
+
+	int32 CreateParticleUnlocked(const b2ParticleDef& def);
 
 	/// Retrieve a handle to the particle at the specified index.
 	/// Please see #b2ParticleHandle for why you might want a handle.
@@ -715,6 +718,18 @@ public:
     int MoveParticleToSystem(int particleIndex, b2ParticleSystem* newSystem);
 
     b2ParticleSystemDef GetDef();
+
+	inline void RegisterInlet(b2Inlet* inlet) {
+		print("register");
+		inlets.push_back(inlet);
+	};
+
+	inline b2Inlet* GetInlets() {
+		if (inlets.empty())
+			return nullptr;
+		return inlets.front();
+	}
+
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
 public:
 	enum b2ExceptionType
@@ -764,7 +779,12 @@ private:
     float GetParticleInvMass() const;
     inline const b2ParticleBodyContact* GetClosestFixtureContactBuffer() const {return m_closestFixtureContactBuffer.Data();}
     inline const float* GetStaticPressureBuffer() const {return m_staticPressureBuffer;};
+
+	b2World* m_world;
+
+#pragma endregion public
 private:
+#pragma region
 	friend class b2World;
 	friend class b2ParticleGroup;
 	friend class b2ParticleBodyContactRemovePredicate;
@@ -996,7 +1016,7 @@ private:
 		FixtureParticleSet* fixtureSet) const;
 	void NotifyBodyContactListenerPostContact(FixtureParticleSet& fixtureSet);
 	void UpdateBodyContacts();
-
+#pragma endregion
 	void Solve(const b2TimeStep& step);
     /// particles in collision with a layer changing fixture get moved to its new ParticleSystem
     void SolveLayerChange();
@@ -1025,11 +1045,13 @@ private:
 	void SolveColorMixing();
 	void SolveZombie();
     void SolveFriction(const b2TimeStep& step);
-    void SolveSensor(b2TimeStep& step);
+    void SolveObserver(b2TimeStep& step);
     void SolveForceField(b2TimeStep& step);
+	void SolveInlet();
 	/// Destroy all particles which have outlived their lifetimes set by
 	/// SetParticleLifetime().
 	void SolveLifetimes(const b2TimeStep& step);
+#pragma region
 	void RotateBuffer(int32 start, int32 mid, int32 end);
 
 	float GetCriticalVelocity(const b2TimeStep& step) const;
@@ -1095,7 +1117,7 @@ private:
 		float invMass, float invInertia, float tangentDistance,
 		bool isRigidGroup, b2ParticleGroup* group, int32 particleIndex,
 		float impulse, const b2Vec2& normal);
-
+#pragma endregion
 	bool m_paused;
 	int32 m_timestamp;
 	int32 m_allParticleFlags;
@@ -1180,9 +1202,10 @@ private:
 
 	b2ParticleSystemDef m_def;
 
-	b2World* m_world;
 	b2ParticleSystem* m_prev;
 	b2ParticleSystem* m_next;
+
+	std::list<b2Inlet*> inlets;
 
 };
 

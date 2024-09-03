@@ -133,9 +133,11 @@ interface b2Shape {
   attribute boolean m_isObserver;
   attribute boolean isForceField;
   attribute boolean isGate;
+  attribute boolean isInlet;
   b2Sensor AsSensor();
   b2ForceField AsForceField();
   b2Gate AsGate();
+  b2Inlet AsInlet();
 };
 
 interface b2FixtureUserData {
@@ -1393,6 +1395,9 @@ interface b2ParticleSystem {
   void ComputeAABB(b2AABB aabb);
   long MoveParticleToSystem(long particleIndex, b2ParticleSystem newSystem);
   [Const] b2ParticleBodyContact GetClosestFixtureContactBuffer();
+  void RegisterInlet(b2Inlet newInlet);
+  b2Inlet GetInlets();
+  attribute b2World m_world;
 };
 
 // interface b2IntrusiveListNode {
@@ -1494,3 +1499,13 @@ interface b2Valve {
     attribute float m_threshold;
 };
 b2Valve implements b2Sensor;
+
+interface b2Inlet {
+    void b2Inlet();
+    void Configure(b2ParticleSystem system, b2ParticleDef partDef, [Ref]b2Vec2 directedPressure, [Ref]b2Vec2 point1, [Ref]b2Vec2 point2);
+    boolean IsActive();
+    void SetPressure([Ref]b2Vec2 pressure);
+    void Activate();
+    void Deactivate();
+};
+b2Inlet implements b2PolygonShape;
