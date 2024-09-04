@@ -4,6 +4,7 @@ const Box2DFactory_: typeof import('box2d-wasm') = Box2DFactory;
 import {makeDebugDraw, vecArrToPointer, arrToVecArr} from './debugDraw';
 import {link} from "./helpers"
 
+// @ts-ignore
 let box2d = await Box2DFactory_();
 const {
     b2BodyDef,
@@ -120,7 +121,7 @@ let edge4;
     let fix3 = ground.CreateFixture(edge3, 0);
 
     edge4 = new b2EdgeShape();
-    edge4.SetTwoSided(new b2Vec2(21,0), corners[0]);
+    edge4.SetTwoSided(new b2Vec2(21, 0), corners[0]);
 }
 {
     let corners = [new b2Vec2(0, 21), new b2Vec2(0, 0), new b2Vec2(25, 0), new b2Vec2(25, 21)];
@@ -135,7 +136,7 @@ let edge4;
 }
 //world1
 let temp;
-    let a;
+let a;
 {
     {//2nd line
         const line = new b2EdgeShape();
@@ -152,7 +153,7 @@ let temp;
         {//make top arc
             const arc = new b2ArcShape();
             arc.SetTwoSided(new b2Vec2(21, 4), new b2Vec2(21, 0), new b2Vec2(25, 4));
-            link(edge4,arc);
+            link(edge4, arc);
             temp = ground.CreateFixture(edge4, 0);
             const arc2 = new b2ArcShape();
             arc2.SetTwoSided(new b2Vec2(21, 4), new b2Vec2(21, 2), new b2Vec2(23, 4));
@@ -162,7 +163,7 @@ let temp;
             // circle.m_p=new b2Vec2(21,4);
             // circle.m_radius=4;
             // temp=ground.CreateFixture(circle,0);
-            a=ground.CreateFixture(arc, 0);
+            a = ground.CreateFixture(arc, 0);
             link(temp.GetShape(), a.GetShape());
             ground.CreateFixture(arc2, 0);
         }
@@ -307,8 +308,8 @@ partSysDef.viscousStrength = 1.0;
 partSysDef.maxAirPressure = 30;
 //1 results in equal force to pressure
 partSysDef.adhesiveStrength = 0.5;
-partSysDef.adhesionRadius=1;
-partSysDef.staticPressureIterations=10;
+partSysDef.adhesionRadius = 1;
+partSysDef.staticPressureIterations = 10;
 const particleSystem = world.CreateParticleSystem(partSysDef);
 const particleSystem2 = world2.CreateParticleSystem(partSysDef);
 const systems: Box2D.b2ParticleSystem[] = [];
@@ -352,15 +353,16 @@ world.SetContactFilter(filter);
     let fixture2 = ground2.CreateFixture(fixtureDef);
 }
 
-let infix=new b2Inlet();
+let infix = new b2Inlet();
 let def = new b2ParticleDef();
-def.flags=b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle | b2_fixtureContactFilterParticle | b2_adhesiveParticle;
+def.flags = b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle | b2_fixtureContactFilterParticle | b2_adhesiveParticle;
 def.set_color(new b2ParticleColor(0, 100, 255, 255));
-infix.Configure(particleSystem,def,new b2Vec2(10,0),new b2Vec2(1,0), new b2Vec2(1,2));
-infix.SetAsBox(partSysDef.radius,1,new b2Vec2(1,1),0);
-let inlet=ground.CreateFixture(infix,0).GetShape().AsInlet();
+infix.Configure(particleSystem, def, new b2Vec2(10, 0), new b2Vec2(1, 0), new b2Vec2(1, 2));
+infix.SetAsBox(partSysDef.radius, 1, new b2Vec2(1, 1), 0);
+let inlet = ground.CreateFixture(infix, 0).GetShape().AsInlet();
 particleSystem.RegisterInlet(inlet);
 inlet.Activate();
+
 function summonParticles() {
     const pt = new b2ParticleGroupDef();
     pt.flags = b2_tensileParticle;
@@ -452,18 +454,15 @@ const drawCanvas = (ctx: CanvasRenderingContext2D, world: Box2D.b2World) => {
     world.DebugDraw();
     ctx.restore();
 };
-
-(function loop(prevMs) {//TODO allow only 1 frame every deltaMs
-    const nowMs = window.performance.now();
-    requestAnimationFrame(loop.bind(null, nowMs));
-    let deltaMs = nowMs - prevMs;
-    deltaMs = 1000/60;
+let deltaMs = 1000 / 60;
+(function loop() {
+    requestAnimationFrame(loop);
     if (!isPaused) {
         step(deltaMs);
         drawCanvas(ctx, world);
         drawCanvas(ctx2, world2);
     }
-}(window.performance.now()));
+}());
 
 Object.assign(window, {
     particleSystem,
