@@ -19,7 +19,8 @@ void b2Inlet::Solve(std::list<b2ParticleBodyContact>& contacts) {
     if (IsActive()) {
         //apply force
         for (b2ParticleBodyContact contact : contacts) {
-            m_system->GetVelocityBuffer()[contact.index]+= force;// msystem->particleapplyforce?
+            m_system->ParticleApplyForce(contact.index, force);
+            // m_system->GetVelocityBuffer()[contact.index]+= force;// msystem->particleapplyforce?
         }
         //summon new particles
         b2Vec2 normal = summoningLine2 - summoningLine1;

@@ -781,7 +781,9 @@ private:
     inline const float* GetStaticPressureBuffer() const {return m_staticPressureBuffer;};
 
 	b2World* m_world;
-
+	/// assumes update frequency of 60steps/sec
+	b2Vec2 ForceToVelocity(b2Vec2& force, b2TimeStep& step);
+	b2Vec2 VelocityToForce(b2Vec2& velocity, b2TimeStep& step);
 #pragma endregion public
 private:
 #pragma region

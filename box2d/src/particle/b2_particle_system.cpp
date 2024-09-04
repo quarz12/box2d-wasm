@@ -3552,6 +3552,7 @@ void b2ParticleSystem::SolveSolid(const b2TimeStep &step) {
 }
 
 void b2ParticleSystem::SolveForce(const b2TimeStep &step) {
+    //force only exists for one timestep, gets translated to velocity
     float velocityPerForce = step.dt * GetParticleInvMass();
     for (int32 i = 0; i < m_count; i++) {
         m_velocityBuffer.data[i] += velocityPerForce * m_forceBuffer[i];
@@ -4435,12 +4436,21 @@ int b2ParticleSystem::MoveParticleToSystem(int particleIndex, b2ParticleSystem *
 //    EM_ASM(console.log($0+","+$1);,newSystem->m_velocityBuffer.data[newIndex].x,newSystem->m_velocityBuffer.data[newIndex].y);
     DestroyParticle(particleIndex);
     return newIndex;
+}
+
+b2Vec2 b2ParticleSystem::ForceToVelocity(b2Vec2& force, b2TimeStep& step) {
+    float velocityPerForce = step.dt * GetParticleInvMass();
+     return velocityPerForce * force;
+}
+b2Vec2 b2ParticleSystem::VelocityToForce(b2Vec2& velocity, b2TimeStep& step) {
+    float velocityPerForce = step.dt * GetParticleInvMass();
+    return velocity/velocityPerForce;
 };
 
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
 
-                                                                                                                        b2ParticleSystem::b2ExceptionType b2ParticleSystem::IsBufCopyValid(
+b2ParticleSystem::b2ExceptionType b2ParticleSystem::IsBufCopyValid(
 	int startIndex, int numParticles, int copySize, int bufSize) const
 {
 	const int maxNumParticles = GetParticleCount();

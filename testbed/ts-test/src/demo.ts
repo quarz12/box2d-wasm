@@ -68,9 +68,13 @@ pauseBtn?.addEventListener("click", () => {
     summonPartBtn?.addEventListener("click", () => {
         summonParticles();
     })
-    const fricBtn1 = document.getElementById("fricBtn1");
+    const fricBtn1 = document.getElementById("btn1");
     fricBtn1?.addEventListener("click", () => {
-        summonfricParticles1();
+        if (inlet.IsActive())
+            inlet.Deactivate();
+        else{
+            inlet.Activate();
+        }
     })
     const fricBtn2 = document.getElementById("fricBtn2");
     fricBtn2?.addEventListener("click", () => {
@@ -307,7 +311,7 @@ partSysDef.frictionRate = 0.0; // irrelevant?
 partSysDef.viscousStrength = 1.0;
 partSysDef.maxAirPressure = 30;
 //1 results in equal force to pressure
-partSysDef.adhesiveStrength = 0.5;
+partSysDef.adhesiveStrength = 0.1;
 partSysDef.adhesionRadius = 1;
 partSysDef.staticPressureIterations = 10;
 const particleSystem = world.CreateParticleSystem(partSysDef);
@@ -357,11 +361,10 @@ let infix = new b2Inlet();
 let def = new b2ParticleDef();
 def.flags = b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle | b2_fixtureContactFilterParticle | b2_adhesiveParticle;
 def.set_color(new b2ParticleColor(0, 100, 255, 255));
-infix.Configure(particleSystem, def, new b2Vec2(10, 0), new b2Vec2(1, 0), new b2Vec2(1, 2));
-infix.SetAsBox(partSysDef.radius, 1, new b2Vec2(1, 1), 0);
+infix.Configure(particleSystem, def, new b2Vec2(40, 0), new b2Vec2(1, 0), new b2Vec2(1, 2));
+infix.SetAsBox(partSysDef.radius*3, 1, new b2Vec2(1, 1), 0);
 let inlet = ground.CreateFixture(infix, 0).GetShape().AsInlet();
 particleSystem.RegisterInlet(inlet);
-inlet.Activate();
 
 function summonParticles() {
     const pt = new b2ParticleGroupDef();
