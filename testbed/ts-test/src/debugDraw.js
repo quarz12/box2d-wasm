@@ -306,7 +306,7 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
         const color=colors[i];
         setCtxColor(getRgbaStr(color,"b2ParticleColor"));
         let tmp=ctx.lineWidth;
-        ctx.lineWidth=0.01;
+        ctx.lineWidth*=0.5;
         drawCircle(center, radius, dummy0Vec, false);
         ctx.lineWidth=tmp;
       }
