@@ -64,53 +64,6 @@ bool b2Inlet::TestParticlePoint(b2Vec2& point, std::list<b2ParticleBodyContact>&
     // return true;
 }
 
-// bool b2Inlet::TestParticlePoint(b2Vec2& point, std::list<b2ParticleBodyContact>& contacts) {
-//     std::list<b2ParticleContact> contacts;
-//     auto allContacts = m_system->GetContacts();
-//     for (int32 particleIndex : particles) {
-//         for (int i = 0; i < m_system->GetContactCount(); ++i) {
-//             b2ParticleContact contact = allContacts[i];
-//             if (contact.GetIndexA() == particleIndex || contact.GetIndexB() == particleIndex) {
-//                 contacts.push_back(contact);
-//             }
-//         }
-//     }
-//     if (contacts.empty())
-//         return 0;
-//     //remove duplicates
-//     contacts.sort([](const b2ParticleContact& a, b2ParticleContact& b) -> bool {
-//         if (a.GetIndexA() == b.GetIndexA()) {
-//             return a.GetIndexB() < b.GetIndexB();
-//         }
-//         return a.GetIndexA() < b.GetIndexA();
-//     });
-//     contacts.unique();
-//     std::map<int32, float> accBuffer;
-//     std::map<int32, float> pressureBuffer;
-//     auto staticPressureBuffer = m_system->GetStaticPressureBuffer();
-//     for (int i = 0; i < m_system->GetParticleCount(); ++i) {
-//         if (contains(particles, i))
-//             accBuffer[i] = staticPressureBuffer[i];
-//     }
-//     float velocityPerPressure = step.dt / (m_system->GetDef().density * m_system->m_particleDiameter);
-//     for (auto contact : contacts) {
-//         int32 a = contact.GetIndexA();
-//         int32 b = contact.GetIndexB();
-//         float w = contact.GetWeight();
-//         b2Vec2 n = contact.GetNormal();
-//         float h = accBuffer[a] + accBuffer[b];
-//         b2Vec2 f = velocityPerPressure * w * h * n;
-//         if (contains(particles, a))
-//             pressureBuffer[a] += f.Length();
-//         if (contains(particles, b))
-//             pressureBuffer[b] += f.Length();
-//     }
-//     float pressure = 0;
-//     for (auto KVPair : pressureBuffer) {
-//         pressure += KVPair.second;
-//     }
-// }
-
 float b2Inlet::weightToDistance(float weight) const {
     return -weight*m_system->m_particleDiameter+m_system->m_particleDiameter;
 }
