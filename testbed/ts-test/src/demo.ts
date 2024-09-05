@@ -76,14 +76,6 @@ pauseBtn?.addEventListener("click", () => {
             inlet.Activate();
         }
     })
-    const fricBtn2 = document.getElementById("fricBtn2");
-    fricBtn2?.addEventListener("click", () => {
-        summonfricParticles2();
-    })
-    const linebtn = document.getElementById("linebtn");
-    linebtn?.addEventListener("click", () => {
-        summonLine();
-    })
     const test1btn = document.getElementById("test1");
     test1btn?.addEventListener("click", () => {
         console.log(particleSystem.GetParticleCount());
@@ -301,7 +293,7 @@ let a;
 }
 // make particles
 const partSysDef = new b2ParticleSystemDef();
-partSysDef.radius = 0.2;
+partSysDef.radius = 0.3;
 partSysDef.dampingStrength = 0;//.5;
 partSysDef.pressureStrength = 0.5; //prevents laminar flow
 partSysDef.staticPressureStrength = 0.1;
@@ -361,7 +353,7 @@ let infix = new b2Inlet();
 let def = new b2ParticleDef();
 def.flags = b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle | b2_fixtureContactFilterParticle | b2_adhesiveParticle;
 def.set_color(new b2ParticleColor(0, 100, 255, 255));
-infix.Configure(particleSystem, def, new b2Vec2(10, 0), new b2Vec2(1, 0), new b2Vec2(1, 2));
+infix.Configure(particleSystem, def, new b2Vec2(40, 0), new b2Vec2(1, 0), new b2Vec2(1, 2));
 infix.SetAsBox(partSysDef.radius*3, 1, new b2Vec2(1, 1), 0);
 let inlet = ground.CreateFixture(infix, 0).GetShape().AsInlet();
 particleSystem.RegisterInlet(inlet);
@@ -397,43 +389,6 @@ function summonParticlexy(x: number, y: number) {
     pt.set_position(new b2Vec2(x, y));
     // pt.velocity=new b2Vec2(10,0);
     particleSystem.CreateParticle(pt);
-}
-
-function summonfricParticles1() {
-    const pt = new b2ParticleDef();
-    pt.flags = b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle;
-    // pt.flags=b2_tensileParticle;
-    //alpha is divided by 255 to get value between 0-1
-    pt.set_color(new b2ParticleColor(0, 100, 255, 255));
-    pt.set_position(new b2Vec2(1, 7.001));
-    pt.velocity = new b2Vec2(2, 0);
-    particleSystem.CreateParticle(pt);
-}
-
-function summonfricParticles2() {
-    const pt2 = new b2ParticleDef();
-    pt2.flags = b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle;
-    // pt.flags=b2_tensileParticle;
-    //alpha is divided by 255 to get value between 0-1
-    pt2.set_color(new b2ParticleColor(0, 100, 255, 255));
-    pt2.set_position(new b2Vec2(15, 4.2));
-    pt2.velocity = new b2Vec2(-2, 0);
-    particleSystem.CreateParticle(pt2);
-}
-
-function summonLine() {
-    const pt = new b2ParticleGroupDef();
-    pt.stride = 0.2;    //density of particle spawns, for ideal fit radius*2
-    pt.flags = b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle;
-    // pt.flags=b2_staticPressureParticle&b2_viscousParticle;
-    let shape = new b2PolygonShape();
-    shape.SetAsBox(3, 1, new b2Vec2(5, 14), 0);  //particle spawn area| len/2,height/2, center, angle
-    pt.shape = shape;   //13.1, 15
-    pt.stride = 0.19;
-    //alpha is divided by 255 to get value between 0-1
-    pt.set_color(new b2ParticleColor(0, 100, 255, 255));
-    pt.linearVelocity = new b2Vec2(2, 0);
-    particleSystem.CreateParticleGroup(pt);
 }
 
 function applyForce(x: number, y: number) {

@@ -40,6 +40,8 @@ public:
     /// true if particle can be summoned at point, false if too much overlap
     bool TestParticlePoint(b2Vec2& point, std::list<b2ParticleBodyContact>& contacts);
 
+    float weightToDistance(float weight) const;
+
     void Solve(std::list<b2ParticleBodyContact>& contacts);
 
     inline void Activate() { active = true; }
