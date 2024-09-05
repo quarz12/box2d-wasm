@@ -20,15 +20,10 @@ void b2Sensor::SensePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>&
 
 void b2Sensor::SenseSpeed(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts) {
     b2Vec2 velocity;
-//    print("-----------------------------------------------");
     for (b2ParticleBodyContact contact : contacts) {
-//        print(m_system->GetVelocityBuffer()[contact.index].ToString());
-//        print((m_system->GetVelocityBuffer()[contact.index]*step.dt).ToString());
         velocity += m_system->GetVelocityBuffer()[contact.index];
     }
-//    print("-----------------------------------------------");
     float sample = !contacts.empty() ? velocity.Length() / contacts.size() : 0;
-//    print("speed: "+ str(sample));
     speedSamples.push_back(sample);
     avg_speed += sample / intervalTimeSteps;
     if (speedSamples.size() > intervalTimeSteps && intervalTimeSteps > 0) {
@@ -49,18 +44,17 @@ void b2Sensor::Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contact
 float b2Sensor::GetAvgPressure() const {
     if (pressureSamples.size() == intervalTimeSteps)
         return avg_pressure;
-    else return 0;
+    return 0;
 }
 
 float b2Sensor::GetAvgSpeed() const {
     if (speedSamples.size() == intervalTimeSteps)
         return avg_speed;
-    else return 0;
+    return 0;
 }
 
 float b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const {
-    unsigned long length = observations.size();
-    if (length == 0)
+    if (observations.empty())
         return 0;
     std::list<int32> particles;
     for (b2ParticleBodyContact observation : observations) {
@@ -76,6 +70,8 @@ float b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2Par
             }
         }
     }
+    if (contacts.empty())
+        return 0;
     //remove duplicates
     contacts.sort([](const b2ParticleContact& a, b2ParticleContact& b) -> bool {
         if (a.GetIndexA() == b.GetIndexA()) {
@@ -84,9 +80,6 @@ float b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2Par
         return a.GetIndexA() < b.GetIndexA();
     });
     contacts.unique();
-//    for (auto c:contacts) {
-//        print("found "+str(c.GetIndexA())+" "+str(c.GetIndexB()));
-//    }
     std::map<int32, float> accBuffer;
     std::map<int32, float> pressureBuffer;
     auto staticPressureBuffer = m_system->GetStaticPressureBuffer();
