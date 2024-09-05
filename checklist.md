@@ -5,7 +5,7 @@ TODOS:
 - [x] 1 forcefield
 - [x] 1 gate
   - [x] 1 valve, forcefield
-  - [ ] 2 inlets | pump
+  - [x] 2 inlets | pump
 - [ ] 1 all observers in one Solve() to only loop through sensorcontacts once to fill multiple maps
 - [ ] 1 pressure use apply force to allow air particles or just add to totalforcebuffer 
 - [ ] 2 layerchange revision
@@ -16,3 +16,6 @@ TODOS:
 
 attribute not changing:
 - inherit from shape -> clone override vergessen
+
+
+vec.length=force in newton

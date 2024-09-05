@@ -361,11 +361,19 @@ let infix = new b2Inlet();
 let def = new b2ParticleDef();
 def.flags = b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle | b2_fixtureContactFilterParticle | b2_adhesiveParticle;
 def.set_color(new b2ParticleColor(0, 100, 255, 255));
-infix.Configure(particleSystem, def, new b2Vec2(40, 0), new b2Vec2(1, 0), new b2Vec2(1, 2));
+infix.Configure(particleSystem, def, new b2Vec2(10, 0), new b2Vec2(1, 0), new b2Vec2(1, 2));
 infix.SetAsBox(partSysDef.radius*3, 1, new b2Vec2(1, 1), 0);
 let inlet = ground.CreateFixture(infix, 0).GetShape().AsInlet();
 particleSystem.RegisterInlet(inlet);
+let tmp=new b2EdgeShape();
+tmp.SetTwoSided(new b2Vec2(1,0), new b2Vec2(1,2));
+tmp.set_m_hasCollision(false);
+ground.CreateFixture(tmp,0);
 
+let s=new b2Sensor()
+s.SetTwoSided(new b2Vec2(5,0),new b2Vec2(5,2));
+s.Configure(true,true,particleSystem,60);
+s=ground.CreateFixture(s,0).GetShape().AsSensor();
 function summonParticles() {
     const pt = new b2ParticleGroupDef();
     pt.flags = b2_tensileParticle;
@@ -482,5 +490,6 @@ Object.assign(window, {
     b2Vec2,
     // f,
     // fg,
+    s,
 })
 

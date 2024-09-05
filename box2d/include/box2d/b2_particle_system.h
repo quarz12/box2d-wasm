@@ -720,7 +720,6 @@ public:
     b2ParticleSystemDef GetDef();
 
 	inline void RegisterInlet(b2Inlet* inlet) {
-		print("register");
 		inlets.push_back(inlet);
 	};
 

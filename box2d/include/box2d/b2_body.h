@@ -224,7 +224,7 @@ public:
 	/// Apply an impulse at a point. This immediately modifies the velocity.
 	/// It also modifies the angular velocity if the point of application
 	/// is not at the center of mass. This wakes up the body.
-	/// @param impulse the world impulse vector, usually in N-seconds or kg-m/s.
+	/// @param impulse the world impulse vector, usually in Newton-seconds or kg*m/s -> Newton/second.
 	/// @param point the world position of the point of application.
 	/// @param wake also wake up the body
 	void ApplyLinearImpulse(const b2Vec2& impulse, const b2Vec2& point, bool wake);
