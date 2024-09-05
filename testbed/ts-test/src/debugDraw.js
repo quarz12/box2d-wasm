@@ -52,7 +52,7 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
       const red = (color.get_r() * 255) | 0;
       const green = (color.get_g() * 255) | 0;
       const blue = (color.get_b() * 255) | 0;
-      let alpha = 0.5;
+      let alpha = (color.get_a()) | 0;
       return `${red},${green},${blue},${alpha}`;
     }
     else if (type==="b2ParticleColor"){

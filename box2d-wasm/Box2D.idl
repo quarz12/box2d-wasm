@@ -506,6 +506,7 @@ interface b2Color {
   attribute float r;
   attribute float g;
   attribute float b;
+  attribute float a;
 };
 
 interface b2ContactEdge {

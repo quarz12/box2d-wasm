@@ -323,15 +323,15 @@ systems.push(particleSystem, particleSystem2);
 // ff.Configure(new b2Vec2(-50,0),true,3,particleSystem);
 // let f=ground.CreateFixture(ff, 0);
 
-// let gate=new b2Gate();
-// gate.SetTwoSided(new b2Vec2(9,0),new b2Vec2(9,2));
-// let fg=ground.CreateFixture(gate,0);
-// let v=new b2Valve;
-// gate=fg.GetShape().AsGate();
-// v.Configure(particleSystem,60,gate,4);
-// v.SetTwoSided(new b2Vec2(15,0),new b2Vec2(15,2));
-// v.SetForceField(100,true, ground, particleSystem);
-// let valve=ground.CreateFixture(v,0);
+let gate=new b2Gate();
+gate.SetTwoSided(new b2Vec2(9,0),new b2Vec2(9,2));
+let fg=ground.CreateFixture(gate,0);
+let v=new b2Valve;
+gate=fg.GetShape().AsGate();
+v.Configure(particleSystem,60,gate,4);
+v.SetTwoSided(new b2Vec2(15,0),new b2Vec2(15,2));
+v.SetForceField(100,true, ground, particleSystem);
+let valve=ground.CreateFixture(v,0);
 let filter = new b2MicrofluidicsContactFilter();
 filter.SetParticleSystem(particleSystem);
 world.SetContactFilter(filter);
@@ -352,7 +352,7 @@ world.SetContactFilter(filter);
 let infix = new b2Inlet();
 let def = new b2ParticleDef();
 def.flags = b2_staticPressureParticle | b2_viscousParticle | b2_frictionParticle | b2_fixtureContactFilterParticle | b2_adhesiveParticle;
-def.set_color(new b2ParticleColor(0, 100, 255, 255));
+def.set_color(new b2ParticleColor(0, 100, 255, 100));
 infix.Configure(particleSystem, def, new b2Vec2(40, 0), new b2Vec2(1, 0), new b2Vec2(1, 2));
 infix.SetAsBox(partSysDef.radius*3, 1, new b2Vec2(1, 1), 0);
 let inlet = ground.CreateFixture(infix, 0).GetShape().AsInlet();
@@ -375,7 +375,7 @@ function summonParticles() {
     pt.shape = shape;
     pt.set_linearVelocity(new b2Vec2(1, 0));
     //alpha is divided by 255 to get value between 0-1
-    pt.set_color(new b2ParticleColor(0, 100, 255, 255));
+    pt.set_color(new b2ParticleColor(0, 100, 255, 100));
     // pt.linearVelocity=new b2Vec2(5,0);
     particleSystem.CreateParticleGroup(pt);
 }
@@ -431,6 +431,7 @@ let deltaMs = 1000 / 60;
 }());
 
 Object.assign(window, {
+    box2d,
     particleSystem,
     ctx,
     world,
