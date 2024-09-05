@@ -58,7 +58,7 @@ bool b2Inlet::TestParticlePoint(b2Vec2& point, std::list<b2ParticleBodyContact>&
     // float minDistance = m_system->GetDef().radius;
     // for (b2ParticleBodyContact contact : contacts) {
     //     b2Vec2 posA= m_system->GetPositionBuffer()[contact.index];
-    //     if ((point-posA).Length() < minDistance)//todo if potential force is greater than m_force.Length
+    //     if ((point-posA).Length() < minDistance)//
     //         return false;
     // }
     // return true;
