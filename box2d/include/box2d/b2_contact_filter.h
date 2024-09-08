@@ -3,17 +3,6 @@
 //
 #pragma once
 #include "b2_world_callbacks.h"
-#include "box2d/b2_world_callbacks.h"
-#include "box2d/b2_fixture.h"
-#include "box2d/b2_particle_system.h"
-#include "box2d/b2_arc_shape.h"
-#include "box2d/b2_edge_shape.h"
-#include "box2d/b2_contact_filter.h"
-
-#ifndef BOX2D_B2_CONTACT_FILTER_H
-#define BOX2D_B2_CONTACT_FILTER_H
-
-#endif //BOX2D_B2_CONTACT_FILTER_H
 
 class b2MicrofluidicsContactFilter: public b2ContactFilter{
 public:
@@ -28,5 +17,5 @@ public:
     }
 
 private:
-    b2ParticleSystem* m_system;
+    b2ParticleSystem* m_system = nullptr;
 };

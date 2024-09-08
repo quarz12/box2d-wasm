@@ -8,11 +8,11 @@ export const helpers = (box2d: typeof Box2D & EmscriptenModule) => {
 
     return {test};
 }
-export const createLayerChange = (shape1: Box2D.b2Shape, shape2: Box2D.b2Shape, sys1: Box2D.b2ParticleSystem, sys2: Box2D.b2ParticleSystem,
-                                  normal1: Box2D.b2Vec2, normal2: Box2D.b2Vec2, ground1: Box2D.b2Body, ground2: Box2D.b2Body): void => {
-
-
-}
 export const link = (a: Box2D.b2Shape, b: Box2D.b2Shape): boolean => {
     return a.AddConnection(b) && b.AddConnection(a);
+}
+
+export const linkLayerChange= (a: Box2D.b2LayerChange, b: Box2D.b2LayerChange)=>{
+    a.Link(b);
+    b.Link(a);
 }

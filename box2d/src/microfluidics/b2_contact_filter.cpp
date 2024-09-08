@@ -3,6 +3,11 @@
 //
 
 #include "box2d/b2_contact_filter.h"
+#include "box2d/b2_arc_shape.h"
+#include "box2d/b2_edge_shape.h"
+#include "box2d/b2_fixture.h"
+#include "box2d/b2_particle_system.h"
+#include "box2d/b2_shape.h"
 
 
 bool b2MicrofluidicsContactFilter::ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB) {

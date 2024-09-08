@@ -9,8 +9,6 @@
 #include "b2_polygon_shape.h"
 #include <list>
 
-#include "b2_particle_system.h"
-
 struct b2ParticleBodyContact;
 class b2ParticleSystem;
 struct b2ParticleDef;

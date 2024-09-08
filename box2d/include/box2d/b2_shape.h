@@ -29,6 +29,7 @@
 #include "b2_collision.h"
 #include <stdexcept>
 
+class b2LayerChange;
 class b2Sensor; //forward declaration
 class b2ForceField;
 class b2BlockAllocator;
@@ -133,10 +134,12 @@ public:
     bool isForceField = false;
     bool isGate = false;
     bool isInlet = false;
+    bool isLayerChange=false;
     inline virtual b2Sensor* AsSensor() { return nullptr; };
     inline virtual b2ForceField* AsForceField() { return nullptr; };
     inline virtual b2Gate* AsGate() { return nullptr; };
     inline virtual b2Inlet* AsInlet() { return nullptr; };
+    inline virtual b2LayerChange* AsLayerChange() { return nullptr; };
 };
 
 inline b2Shape::Type b2Shape::GetType() const {

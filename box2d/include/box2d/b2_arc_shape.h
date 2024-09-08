@@ -6,7 +6,6 @@
 #define BOX2D_B2_ARC_SHAPE_H
 
 #include "b2_shape.h"
-#include "b2_api.h"
 
 class B2_API b2ArcShape: public b2Shape
 {

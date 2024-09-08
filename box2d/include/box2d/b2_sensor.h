@@ -4,11 +4,9 @@
 
 #ifndef BOX2D_B2SENSOR_H
 #define BOX2D_B2SENSOR_H
-#pragma once
 #include "b2_edge_shape.h"
 #include "b2_time_step.h"
 #include <list>
-#include <numeric>
 struct b2ParticleBodyContact;
 class b2ParticleSystem;
 class b2Valve;
