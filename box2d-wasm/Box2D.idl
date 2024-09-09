@@ -154,7 +154,6 @@ interface b2FixtureDef {
   attribute float density;
   attribute boolean isSensor;
   [Value] attribute b2Filter filter;
-  attribute boolean hasLayerChange;
   attribute b2ParticleSystem newParticleSystem;
 };
 
@@ -182,9 +181,6 @@ interface b2Fixture {
   void SetRestitutionThreshold(float threshold);
   [Const, Ref] b2AABB GetAABB(long childIndex);
   void Dump(long bodyIndex);
-  void SetLayerChange(b2ParticleSystem newSystem);
-  boolean IsLayerChange();
-  void RemoveLayerChange();
   boolean HasCollision();
   b2ParticleSystem GetNewParticleSystem();
   attribute boolean isFluidSensor;
@@ -1394,7 +1390,7 @@ interface b2ParticleSystem {
   void QueryShapeAABB(b2QueryCallback callback, [Const, Ref] b2Shape shape, [Const, Ref] b2Transform xf);
   void RayCast(b2RayCastCallback callback, [Const, Ref] b2Vec2 point1, [Const, Ref] b2Vec2 point2);
   void ComputeAABB(b2AABB aabb);
-  long MoveParticleToSystem(long particleIndex, b2ParticleSystem newSystem);
+  long MoveParticleToSystem(long particleIndex, b2ParticleSystem newSystem, b2Vec2 position);
   [Const] b2ParticleBodyContact GetClosestFixtureContactBuffer();
   void RegisterInlet(b2Inlet newInlet);
   b2Inlet GetInlets();
@@ -1510,3 +1506,16 @@ interface b2Inlet {
     void Deactivate();
 };
 b2Inlet implements b2PolygonShape;
+
+interface b2LayerChange {
+    void b2LayerChange();
+    attribute b2LayerChange m_linked;
+    attribute b2ParticleSystem m_system;
+    void Configure(b2ParticleSystem system);
+    void Link(b2LayerChange target);
+    b2LayerChange AsLayerChange();
+    void AddChannel(b2Sensor sensor);
+    float GetLayerShiftProbability();
+};
+
+b2LayerChange implements b2CircleShape;

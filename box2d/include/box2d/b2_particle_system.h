@@ -715,7 +715,7 @@ public:
 	void ComputeAABB(b2AABB* const aabb) const;
 
     /// move particle to a different particlesystem, returns index of particle in new system
-    int MoveParticleToSystem(int particleIndex, b2ParticleSystem* newSystem);
+    int MoveParticleToSystem(int particleIndex, b2ParticleSystem* newSystem, b2Vec2* position);
 
     b2ParticleSystemDef GetDef();
 

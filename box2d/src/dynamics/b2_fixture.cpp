@@ -39,7 +39,6 @@ b2Fixture::b2Fixture()
 	m_proxyCount = 0;
 	m_shape = nullptr;
 	m_density = 0.0f;
-    m_hasLayerChange= false;
     m_newParticleSystem = nullptr;
 }
 
@@ -60,7 +59,6 @@ void b2Fixture::Create(b2BlockAllocator* allocator, b2Body* body, const b2Fixtur
 
 	m_shape = def->shape->Clone(allocator);
 
-    m_hasLayerChange=def->hasLayerChange;
     m_newParticleSystem=def->newParticleSystem;
 	// Reserve proxy space
 	int32 childCount = m_shape->GetChildCount();

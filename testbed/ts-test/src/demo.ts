@@ -2,7 +2,7 @@ import Box2DFactory from 'box2d-wasm';
 
 const Box2DFactory_: typeof import('box2d-wasm') = Box2DFactory;
 import {makeDebugDraw, vecArrToPointer, arrToVecArr} from './debugDraw';
-import {link} from "./helpers"
+import {link, linkLayerChange} from "./helpers"
 
 // @ts-ignore
 let box2d = await Box2DFactory_();
@@ -32,6 +32,7 @@ const {
     b2Gate,
     b2Valve,
     b2Inlet,
+    b2LayerChange,
     //enum values are part of the base Box2D object
 } = box2d;
 /** @type {HTMLCanvasElement} */
@@ -335,19 +336,6 @@ let valve=ground.CreateFixture(v,0);
 let filter = new b2MicrofluidicsContactFilter();
 filter.SetParticleSystem(particleSystem);
 world.SetContactFilter(filter);
-{   //layer change line
-    const fixtureDef = new b2FixtureDef();
-    const line = new b2EdgeShape();
-    line.SetTwoSided(new b2Vec2(23, 10), new b2Vec2(25, 10));
-    fixtureDef.shape = line;
-    let fixture = ground.CreateFixture(fixtureDef);
-    fixture.SetLayerChange(particleSystem2);
-    const fixtureDef2 = new b2FixtureDef();
-    const line2 = new b2EdgeShape();
-    line.SetTwoSided(new b2Vec2(23, 9), new b2Vec2(25, 9));
-    fixtureDef2.shape = line2;
-    let fixture2 = ground2.CreateFixture(fixtureDef);
-}
 
 let infix = new b2Inlet();
 let def = new b2ParticleDef();

@@ -70,7 +70,6 @@ struct B2_API b2FixtureDef
 		restitutionThreshold = 1.0f * b2_lengthUnitsPerMeter;
 		density = 0.0f;
 		isSensor = false;
-        hasLayerChange= false;
         newParticleSystem= nullptr;
 	}
 
@@ -101,8 +100,6 @@ struct B2_API b2FixtureDef
 	/// Contact filtering data.
 	b2Filter filter;
 
-    /// if true, particles in contact get moved to m_newParticleSystem
-    bool hasLayerChange;
     b2ParticleSystem* newParticleSystem;
     bool hasCollision;
 };
@@ -141,11 +138,6 @@ public:
 	/// @return the true if the shape is a sensor.
 	bool IsSensor() const;
 
-    /// set m_newParticleSystem to newSystem and hasCollision to false
-    void SetLayerChange(b2ParticleSystem* newSystem);
-    void RemoveLayerChange();
-    /// do particles move to m_newParticleSystem on contact?
-    bool IsLayerChange() const;
     b2ParticleSystem* GetNewParticleSystem() const;
     bool HasCollision() const;
     void SetCollision(bool hasCollision);
@@ -274,8 +266,6 @@ protected:
 	b2Filter m_filter;
 
 	bool m_isSensor;
-    /// if true, particles in contact get moved to m_newParticleSystem
-    bool m_hasLayerChange;
     b2ParticleSystem* m_newParticleSystem;
 
 	b2FixtureUserData m_userData;
@@ -301,12 +291,6 @@ inline bool b2Fixture::IsSensor() const
 	return m_isSensor;
 }
 
-inline void b2Fixture::SetLayerChange(b2ParticleSystem* newSystem)
-{
-    m_hasLayerChange= true;
-    GetShape()->m_hasCollision= false;
-    m_newParticleSystem=newSystem;
-}
 
 inline const b2Filter& b2Fixture::GetFilterData() const
 {
@@ -403,14 +387,6 @@ inline const b2AABB& b2Fixture::GetAABB(int32 childIndex) const
 {
 	b2Assert(0 <= childIndex && childIndex < m_proxyCount);
 	return m_proxies[childIndex].aabb;
-}
-
-inline bool b2Fixture::IsLayerChange() const {
-    return m_hasLayerChange;
-}
-
-inline void b2Fixture::RemoveLayerChange() {
-    m_hasLayerChange= false;
 }
 
 inline b2ParticleSystem* b2Fixture::GetNewParticleSystem() const {

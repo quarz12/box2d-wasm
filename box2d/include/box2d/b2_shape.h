@@ -134,7 +134,7 @@ public:
     bool isForceField = false;
     bool isGate = false;
     bool isInlet = false;
-    bool isLayerChange=false;
+    bool isLayerChange = false;
     inline virtual b2Sensor* AsSensor() { return nullptr; };
     inline virtual b2ForceField* AsForceField() { return nullptr; };
     inline virtual b2Gate* AsGate() { return nullptr; };

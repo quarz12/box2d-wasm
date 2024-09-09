@@ -16,6 +16,6 @@ TODOS:
 
 attribute not changing:
 - inherit from shape -> clone override vergessen
-
+- incomplete type -> add to box2d.h
 
 vec.length=force in newton

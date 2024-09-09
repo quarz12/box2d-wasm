@@ -24,12 +24,14 @@ public:
     void Configure(b2ParticleSystem* system);
 
     inline void Link(b2LayerChange* target) { m_linked = target; };
-    inline b2LayerChange* asLayerChange() { return this; };
+    inline b2LayerChange* AsLayerChange() override { return this; };
     inline void AddChannel(b2Sensor* sensor) { connectedChannels.push_back(sensor); };
 
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
 
     void Solve(const std::list<b2ParticleBodyContact>& contacts);
+
+    float GetLayerShiftProbability();
 };
 
 

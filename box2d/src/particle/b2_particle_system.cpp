@@ -36,6 +36,8 @@
 #include <map>
 #include <list>
 
+#include "box2d/b2_layerchange.h"
+
 #define DEBUG
 #ifdef DEBUG
 #else   //turn off EM_ASM
@@ -2968,11 +2970,15 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
 }
 
 void b2ParticleSystem::SolveLayerChange() {
-    for (int32 j = 0; j < m_bodyContactBuffer.GetCount(); j++) {
-        b2ParticleBodyContact contact = m_bodyContactBuffer[j];
-        if (contact.fixture->IsLayerChange()) {
-            MoveParticleToSystem(contact.index, contact.fixture->GetNewParticleSystem());
-        }
+    std::map<b2Fixture *, std::list<b2ParticleBodyContact>> map;
+    for (int i = 0; i < m_ObserverContactBuffer.GetCount(); ++i) {
+        b2ParticleBodyContact contact = m_ObserverContactBuffer[i];
+        if (contact.fixture->GetShape()->isLayerChange)
+            map[contact.fixture].push_back(contact);
+    }
+    for (std::pair<b2Fixture *, std::list<b2ParticleBodyContact>> KVPair: map) {
+        b2LayerChange* lc = KVPair.first->GetShape()->AsLayerChange();
+        lc->Solve(KVPair.second);
     }
 }
 
@@ -4424,9 +4430,9 @@ void b2ParticleSystem::SetStuckThreshold(int32 steps) {
 }
 
 ///only makes sense if newSystem is in another world
-int b2ParticleSystem::MoveParticleToSystem(int particleIndex, b2ParticleSystem *newSystem) {
+int b2ParticleSystem::MoveParticleToSystem(int particleIndex, b2ParticleSystem *newSystem, b2Vec2* position=nullptr) {
     b2ParticleDef partDef;
-    partDef.position = m_positionBuffer.data[particleIndex];
+    partDef.position = position == nullptr ? m_positionBuffer.data[particleIndex] : *position;
     partDef.color = m_colorBuffer.data[particleIndex];
     partDef.flags = m_flagsBuffer.data[particleIndex];
     partDef.velocity = m_velocityBuffer.data[particleIndex];

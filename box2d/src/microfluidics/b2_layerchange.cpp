@@ -6,11 +6,11 @@
 #include <random>
 
 #include "box2d/b2_particle_system.h"
+std::knuth_b engine;
 
 b2Vec2 RandomPointInCircle(float radius, b2Vec2 center);
 void b2LayerChange::Configure(b2ParticleSystem* system) {
     m_system = system;
-//todo
 }
 
 b2Shape* b2LayerChange::Clone(b2BlockAllocator* allocator) const {
@@ -21,8 +21,15 @@ b2Shape* b2LayerChange::Clone(b2BlockAllocator* allocator) const {
 }
 
 void b2LayerChange::Solve(const std::list<b2ParticleBodyContact>& contacts) {
-//todo
-    //m_system->MoveParticleToSystem()
+    float chance=GetLayerShiftProbability();
+    std::bernoulli_distribution d(chance);
+    for (auto contact:contacts) {
+        bool changeLayer=d(engine);
+        if (changeLayer) {
+            b2Vec2 position=RandomPointInCircle(m_linked->m_radius,m_linked->m_p);
+            m_system->MoveParticleToSystem(contact.index,m_linked->m_system, &position);
+        }
+    }
 }
 
 b2Vec2 RandomPointInCircle(float radius, b2Vec2 center) {
@@ -36,4 +43,8 @@ b2Vec2 RandomPointInCircle(float radius, b2Vec2 center) {
 
     // Translate the point to the circle's center
     return b2Vec2(x, y) + center;
+}
+
+float b2LayerChange::GetLayerShiftProbability() {
+    return 0.1f;
 }
