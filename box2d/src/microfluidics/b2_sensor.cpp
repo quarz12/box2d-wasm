@@ -87,7 +87,7 @@ float b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2Par
         if (contains(particles, i))
             accBuffer[i] = staticPressureBuffer[i];
     }
-    float velocityPerPressure = step.dt / (m_system->GetDef().density * m_system->m_particleDiameter);
+    float velocityPerPressure = step.dt / (m_system->GetDef()->density * m_system->m_particleDiameter);
     for (auto contact : contacts) {
         int32 a = contact.GetIndexA();
         int32 b = contact.GetIndexB();
@@ -154,7 +154,7 @@ void b2Valve::Configure(b2ParticleSystem* system, int32 intervalSteps, b2Gate* c
 
 void b2Valve::SetForceField(float forceStrength, bool isTimed, b2Body* body, b2ParticleSystem* system) {
     m_hasForceField = true;
-    float radius = m_system->GetDef().radius;
+    float radius = m_system->GetDef()->radius;
     b2ForceField ff1, ff2;
     b2Vec2 surfaceTangent = gate->m_vertex1 - gate->m_vertex2;
     b2Vec2 orthogonal;

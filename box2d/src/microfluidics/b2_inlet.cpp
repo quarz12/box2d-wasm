@@ -26,11 +26,11 @@ void b2Inlet::Solve(std::list<b2ParticleBodyContact>& contacts) {
         b2Vec2 normal = summoningLine2 - summoningLine1;
         normal.Normalize();
         float lineLength = (summoningLine1 - summoningLine2).Length();
-        int32 particleCount = ceil(lineLength / (m_system->GetDef().radius * 2));
+        int32 particleCount = ceil(lineLength / (m_system->GetDef()->radius * 2));
         float distanceBetweenParticles = lineLength / particleCount;
         std::list<b2Vec2> points;
         for (int i = 0; i < particleCount; ++i) {
-            points.push_back(summoningLine1 + normal * (m_system->GetDef().radius + i * distanceBetweenParticles));
+            points.push_back(summoningLine1 + normal * (m_system->GetDef()->radius + i * distanceBetweenParticles));
         }
         for (b2Vec2 point : points) {
             if (TestParticlePoint(point,contacts)) {
@@ -49,7 +49,7 @@ bool b2Inlet::TestParticlePoint(b2Vec2& point, std::list<b2ParticleBodyContact>&
         float distanceSquared = (point - posA ).LengthSquared();
 
         // Check if the distance is less than or equal to 4 * radius^2 (since both circles have the same radius)
-        if (distanceSquared <= 4 * m_system->GetDef().radius * m_system->GetDef().radius) {
+        if (distanceSquared <= 4 * m_system->GetDef()->radius * m_system->GetDef()->radius) {
             return false;  // Overlap detected
         }
     }

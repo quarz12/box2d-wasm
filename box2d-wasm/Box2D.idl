@@ -138,6 +138,7 @@ interface b2Shape {
   b2ForceField AsForceField();
   b2Gate AsGate();
   b2Inlet AsInlet();
+  b2LayerChange AsLayerChange();
 };
 
 interface b2FixtureUserData {
@@ -1395,6 +1396,7 @@ interface b2ParticleSystem {
   void RegisterInlet(b2Inlet newInlet);
   b2Inlet GetInlets();
   attribute b2World m_world;
+  b2ParticleSystemDef GetDef();
 };
 
 // interface b2IntrusiveListNode {
@@ -1516,6 +1518,7 @@ interface b2LayerChange {
     b2LayerChange AsLayerChange();
     void AddChannel(b2Sensor sensor);
     float GetLayerShiftProbability();
+    float GetAvgPressure();
 };
 
 b2LayerChange implements b2CircleShape;

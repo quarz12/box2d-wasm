@@ -6,9 +6,11 @@
 #include <random>
 
 #include "box2d/b2_particle_system.h"
+#include "box2d/b2_sensor.h"
 std::knuth_b engine;
 
 b2Vec2 RandomPointInCircle(float radius, b2Vec2 center);
+
 void b2LayerChange::Configure(b2ParticleSystem* system) {
     m_system = system;
 }
@@ -21,13 +23,13 @@ b2Shape* b2LayerChange::Clone(b2BlockAllocator* allocator) const {
 }
 
 void b2LayerChange::Solve(const std::list<b2ParticleBodyContact>& contacts) {
-    float chance=GetLayerShiftProbability();
+    float chance = GetLayerShiftProbability();
     std::bernoulli_distribution d(chance);
-    for (auto contact:contacts) {
-        bool changeLayer=d(engine);
+    for (auto contact : contacts) {
+        bool changeLayer = d(engine);
         if (changeLayer) {
-            b2Vec2 position=RandomPointInCircle(m_linked->m_radius,m_linked->m_p);
-            m_system->MoveParticleToSystem(contact.index,m_linked->m_system, &position);
+            b2Vec2 position = RandomPointInCircle(m_linked->m_radius, m_linked->m_p);
+            m_system->MoveParticleToSystem(contact.index, m_linked->m_system, &position);
         }
     }
 }
@@ -45,6 +47,22 @@ b2Vec2 RandomPointInCircle(float radius, b2Vec2 center) {
     return b2Vec2(x, y) + center;
 }
 
-float b2LayerChange::GetLayerShiftProbability() {
-    return 0.1f;
+constexpr float MOVEPARTICLEGUARANTEED=1;
+float b2LayerChange::GetLayerShiftProbability() const {
+    float pThis = GetAvgPressure();
+    float pLinked = m_linked->GetAvgPressure();//todo use directed force
+    if (pThis <= pLinked)
+        return 0;
+    float diff = pThis - pLinked;
+    return 1/MOVEPARTICLEGUARANTEED*diff;
+}
+
+float b2LayerChange::GetAvgPressure() const {
+    if (connectedChannels.empty())
+        return 0;
+    float avgPressure = 0;
+    for (const b2Sensor* sensor : connectedChannels) {
+        avgPressure += sensor->GetAvgPressure();
+    }
+    return avgPressure / connectedChannels.size();
 }

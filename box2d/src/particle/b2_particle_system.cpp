@@ -440,6 +440,7 @@ b2ParticleSystem::~b2ParticleSystem() {
     FreeUserOverridableBuffer(&m_consecutiveContactStepsBuffer);
     FreeUserOverridableBuffer(&m_positionBuffer);
     FreeUserOverridableBuffer(&m_velocityBuffer);
+    FreeUserOverridableBuffer(&m_layerchangeDelayBuffer);
     FreeUserOverridableBuffer(&m_colorBuffer);
     FreeUserOverridableBuffer(&m_userDataBuffer);
     FreeUserOverridableBuffer(&m_expirationTimeBuffer);
@@ -562,6 +563,7 @@ void b2ParticleSystem::ReallocateInternalAllocatedBuffers(int32 capacity) {
     capacity = LimitCapacity(capacity, m_flagsBuffer.userSuppliedCapacity);
     capacity = LimitCapacity(capacity, m_positionBuffer.userSuppliedCapacity);
     capacity = LimitCapacity(capacity, m_velocityBuffer.userSuppliedCapacity);
+    capacity = LimitCapacity(capacity, m_layerchangeDelayBuffer.userSuppliedCapacity);
     capacity = LimitCapacity(capacity, m_colorBuffer.userSuppliedCapacity);
     capacity = LimitCapacity(capacity, m_userDataBuffer.userSuppliedCapacity);
     if (m_internalAllocatedCapacity < capacity) {
@@ -585,6 +587,9 @@ void b2ParticleSystem::ReallocateInternalAllocatedBuffers(int32 capacity) {
                 &m_positionBuffer, m_internalAllocatedCapacity, capacity, false);
         m_velocityBuffer.data = ReallocateBuffer(
                 &m_velocityBuffer, m_internalAllocatedCapacity, capacity, false);
+        m_layerchangeDelayBuffer.data = ReallocateBuffer(
+        &m_layerchangeDelayBuffer, m_internalAllocatedCapacity, capacity, false);
+
         m_forceBuffer = ReallocateBuffer(
                 m_forceBuffer, 0, m_internalAllocatedCapacity, capacity, false);
         m_weightBuffer = ReallocateBuffer(
@@ -658,6 +663,8 @@ int32 b2ParticleSystem::CreateParticle(const b2ParticleDef &def) {
     }
     m_positionBuffer.data[index] = def.position;
     m_velocityBuffer.data[index] = def.velocity;
+    m_layerchangeDelayBuffer.data[index] = def.layerchangeDelay;
+
     m_weightBuffer[index] = 0;
     m_forceBuffer[index] = b2Vec2_zero;
     if (m_staticPressureBuffer) {
@@ -744,6 +751,7 @@ int32 b2ParticleSystem::CreateParticleUnlocked(const b2ParticleDef &def) {
     }
     m_positionBuffer.data[index] = def.position;
     m_velocityBuffer.data[index] = def.velocity;
+    m_layerchangeDelayBuffer.data[index]=def.layerchangeDelay;
     m_weightBuffer[index] = 0;
     m_forceBuffer[index] = b2Vec2_zero;
     if (m_staticPressureBuffer) {
@@ -1066,7 +1074,7 @@ b2ParticleGroup *b2ParticleSystem::CreateParticleGroup(
         const b2ParticleGroupDef &groupDef) {
     b2Assert(m_world->IsLocked() == false);
     if (m_world->IsLocked()) {
-        return 0;
+        return nullptr;
     }
 
     b2Transform transform;
@@ -1356,6 +1364,7 @@ int32 b2ParticleSystem::CloneParticle(int32 oldIndex, b2ParticleGroup *group) {
     def.flags = m_flagsBuffer.data[oldIndex];
     def.position = m_positionBuffer.data[oldIndex];
     def.velocity = m_velocityBuffer.data[oldIndex];
+    def.layerchangeDelay=m_layerchangeDelayBuffer.data[oldIndex];
     if (m_colorBuffer.data) {
         def.color = m_colorBuffer.data[oldIndex];
     }
@@ -3695,6 +3704,7 @@ void b2ParticleSystem::SolveZombie() {
                 }
                 m_positionBuffer.data[newCount] = m_positionBuffer.data[i];
                 m_velocityBuffer.data[newCount] = m_velocityBuffer.data[i];
+                m_layerchangeDelayBuffer.data[newCount] = m_layerchangeDelayBuffer.data[i];
                 m_groupBuffer[newCount] = m_groupBuffer[i];
                 if (m_hasForce) {
                     m_forceBuffer[newCount] = m_forceBuffer[i];
@@ -3847,12 +3857,14 @@ void b2ParticleSystem::SolveZombie() {
 }
 
 void b2ParticleSystem::SolveFriction(const b2TimeStep &step) {
-    //particle - particle TODO only if particle has correct flag
+    //particle - particle
     for (int i = 0; i < m_count; ++i) {
         m_frictionAccumulationBuffer[i] = m_velocityBuffer.data[i];
     }
     for (int32 i = 0; i < m_contactBuffer.GetCount(); i++) {
         b2ParticleContact contact = m_contactBuffer[i];
+        if (!(m_flagsBuffer.data[contact.GetIndexA()] & b2_frictionParticle) || !(m_flagsBuffer.data[contact.GetIndexB()] & b2_frictionParticle))
+            continue;
         int32 a, b;
         a = contact.GetIndexA();
         b = contact.GetIndexB();
@@ -3887,6 +3899,8 @@ void b2ParticleSystem::SolveFriction(const b2TimeStep &step) {
     //particle - body
     for (int32 j = 0; j < m_bodyContactBuffer.GetCount(); j++) { //for body, particle in contact
         b2ParticleBodyContact &contact = m_bodyContactBuffer[j];
+        if (!(m_flagsBuffer.data[contact.index] & b2_frictionParticle))
+            continue;
         int32 i = contact.index;
         b2Vec2 vel = m_velocityBuffer.data[i];
         b2Vec2 pos = m_positionBuffer.data[i];
@@ -4001,6 +4015,8 @@ void b2ParticleSystem::RotateBuffer(int32 start, int32 mid, int32 end) {
                 m_positionBuffer.data + end);
     std::rotate(m_velocityBuffer.data + start, m_velocityBuffer.data + mid,
                 m_velocityBuffer.data + end);
+    std::rotate(m_layerchangeDelayBuffer.data + start, m_layerchangeDelayBuffer.data + mid,
+                m_layerchangeDelayBuffer.data + end);
     std::rotate(m_groupBuffer + start, m_groupBuffer + mid,
                 m_groupBuffer + end);
     if (m_hasForce) {
@@ -4429,17 +4445,15 @@ void b2ParticleSystem::SetStuckThreshold(int32 steps) {
     }
 }
 
-///only makes sense if newSystem is in another world
-int b2ParticleSystem::MoveParticleToSystem(int particleIndex, b2ParticleSystem *newSystem, b2Vec2* position=nullptr) {
+///only works if newSystem is in another world that is not mid-step
+int b2ParticleSystem::MoveParticleToSystem(int particleIndex, b2ParticleSystem *newSystem, b2Vec2* position = nullptr) {
     b2ParticleDef partDef;
     partDef.position = position == nullptr ? m_positionBuffer.data[particleIndex] : *position;
     partDef.color = m_colorBuffer.data[particleIndex];
     partDef.flags = m_flagsBuffer.data[particleIndex];
-    partDef.velocity = m_velocityBuffer.data[particleIndex];
-//    EM_ASM(console.log($0+","+$1);,partDef.velocity.x,partDef.velocity.y);
-//    partDef.group;
+    partDef.layerchangeDelay=0.2;
+    // partDef.velocity = m_velocityBuffer.data[particleIndex];
     int32 newIndex = newSystem->CreateParticle(partDef);
-//    EM_ASM(console.log($0+","+$1);,newSystem->m_velocityBuffer.data[newIndex].x,newSystem->m_velocityBuffer.data[newIndex].y);
     DestroyParticle(particleIndex);
     return newIndex;
 }

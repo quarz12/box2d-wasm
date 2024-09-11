@@ -717,7 +717,7 @@ public:
     /// move particle to a different particlesystem, returns index of particle in new system
     int MoveParticleToSystem(int particleIndex, b2ParticleSystem* newSystem, b2Vec2* position);
 
-    b2ParticleSystemDef GetDef();
+    b2ParticleSystemDef* GetDef();
 
 	inline void RegisterInlet(b2Inlet* inlet) {
 		inlets.push_back(inlet);
@@ -1140,6 +1140,7 @@ private:
 	UserOverridableBuffer<uint32> m_flagsBuffer;
 	UserOverridableBuffer<b2Vec2> m_positionBuffer;
 	UserOverridableBuffer<b2Vec2> m_velocityBuffer;
+	UserOverridableBuffer<float> m_layerchangeDelayBuffer;
 	b2Vec2* m_forceBuffer;
 	/// m_weightBuffer is populated in ComputeWeight and used in
 	/// ComputeDepth(), SolveStaticPressure() and SolvePressure().
@@ -1210,8 +1211,8 @@ private:
 
 };
 
-inline b2ParticleSystemDef b2ParticleSystem::GetDef(){
-    return m_def;
+inline b2ParticleSystemDef* b2ParticleSystem::GetDef(){
+    return &m_def;
 }
 inline void b2ParticleContact::SetIndices(int32 a, int32 b)
 {

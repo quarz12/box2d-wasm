@@ -21,7 +21,6 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
     b2Vec2,
     JSDraw,
     wrapPointer,
-
       b2ParticleColor
   } = box2D;
 

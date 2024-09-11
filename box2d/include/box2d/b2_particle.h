@@ -287,6 +287,7 @@ struct B2_API b2ParticleDef
 		lifetime = 0.0f;
 		userData = nullptr;
 		group = nullptr;
+		layerchangeDelay = 0;
 	}
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
@@ -322,6 +323,8 @@ struct B2_API b2ParticleDef
 
 	/// An existing particle group to which the particle will be added.
 	b2ParticleGroup* group;
+	/// amount of time before particle can change layers
+	float layerchangeDelay;
 
 };
 

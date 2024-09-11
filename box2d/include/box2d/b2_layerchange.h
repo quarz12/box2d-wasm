@@ -31,7 +31,9 @@ public:
 
     void Solve(const std::list<b2ParticleBodyContact>& contacts);
 
-    float GetLayerShiftProbability();
+    float GetLayerShiftProbability() const;
+
+    float GetAvgPressure() const;
 };
 
 
