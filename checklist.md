@@ -10,8 +10,9 @@ TODOS:
 - [ ] 1 pressure use apply force to allow air particles or just add to totalforcebuffer 
 - [ ] 3 layerchange revision
   - [x] buffer layerchangedelay
-  - [ ] use delay
+  - [x] use delay
   - [ ] use directed force
+- [ ] scale down to cm
 - [ ] 1 black particle in droplet
 - [ ] 3 building from xml
 - [ ] 4 renderer

@@ -17,9 +17,12 @@ class b2Sensor : public b2EdgeShape {
 public:
     bool pressureSensor = false;
     bool speedSensor = false;
+    bool directionalPressureSensor = false;
     float avg_pressure = 0;
     float avg_speed = 0;
-    std::list <float> pressureSamples{}, speedSamples{};
+    b2Vec2 avg_directionalPressure=b2Vec2_zero;
+    std::list<float> pressureSamples{}, speedSamples{};
+    std::list<b2Vec2> directionalPressureSamples{};
     int32 intervalTimeSteps;
     b2ParticleSystem* m_system;
     bool isValve = false;
@@ -30,27 +33,37 @@ public:
         m_radius = 0.0f;
     };
 
-    inline void Configure(bool speed, bool pressure, b2ParticleSystem* system, int32 intervalSteps) {
+    inline void Configure(bool speed, bool pressure, b2ParticleSystem* system, int32 intervalSteps,
+                          bool directionalPressure = false) {
         speedSensor = speed;
         pressureSensor = pressure;
         intervalTimeSteps = intervalSteps;
+        directionalPressureSensor = directionalPressure;
         m_system = system;
         if (m_system == nullptr) {
             print("system is nullptr");
         };
     }
 
-    void SensePressure(b2TimeStep& step, std::list <b2ParticleBodyContact>& contacts);
+    void SensePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
-    void SenseSpeed(b2TimeStep& step, std::list <b2ParticleBodyContact>& contacts);
+    void SenseSpeed(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
     float GetAvgPressure() const;
 
     float GetAvgSpeed() const;
 
-    float CalculateTheoreticalAvgPressure(b2TimeStep step, std::list <b2ParticleBodyContact>& observations) const;
+    const b2Vec2* GetAvgDirectionalPressure() const;
 
-    void Solve(b2TimeStep& step, std::list <b2ParticleBodyContact>& contacts);
+    float CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const;
+
+    bool IsDirectionalPressureSensor() const { return directionalPressureSensor; };
+
+    b2Vec2 CalculateTheoreticalAvgDirectionalPressure(const b2TimeStep& step, const std::list<b2ParticleBodyContact>& observations);
+
+    void SenseDirectionalPressure(const b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
+
+    void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
     bool IsPressureSensor() const { return pressureSensor; };
     bool IsSpeedSensor() const { return speedSensor; };

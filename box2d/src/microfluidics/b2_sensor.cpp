@@ -32,12 +32,80 @@ void b2Sensor::SenseSpeed(b2TimeStep& step, std::list<b2ParticleBodyContact>& co
     }
 }
 
+b2Vec2 b2Sensor::CalculateTheoreticalAvgDirectionalPressure(const b2TimeStep& step,
+    const std::list<b2ParticleBodyContact>& observations) {
+    if (observations.empty())
+        return b2Vec2_zero;
+    std::list<int32> particles;
+    for (b2ParticleBodyContact observation : observations) {
+        particles.push_back(observation.index);
+    }
+    std::list<b2ParticleContact> contacts;
+    auto allContacts = m_system->GetContacts();
+    for (int32 particleIndex : particles) {
+        for (int i = 0; i < m_system->GetContactCount(); ++i) {
+            b2ParticleContact contact = allContacts[i];
+            if (contact.GetIndexA() == particleIndex || contact.GetIndexB() == particleIndex) {
+                contacts.push_back(contact);
+            }
+        }
+    }
+    if (contacts.empty())
+        return b2Vec2_zero;
+    //remove duplicates
+    contacts.sort([](const b2ParticleContact& a, b2ParticleContact& b) -> bool {
+        if (a.GetIndexA() == b.GetIndexA()) {
+            return a.GetIndexB() < b.GetIndexB();
+        }
+        return a.GetIndexA() < b.GetIndexA();
+    });
+    contacts.unique();
+    std::map<int32, float> accBuffer;
+    std::map<int32, b2Vec2> pressureBuffer;
+    auto staticPressureBuffer = m_system->GetStaticPressureBuffer();
+    for (int i = 0; i < m_system->GetParticleCount(); ++i) {
+        if (contains(particles, i))
+            accBuffer[i] = staticPressureBuffer[i];
+    }
+    float velocityPerPressure = step.dt / (m_system->GetDef()->density * m_system->m_particleDiameter);
+    for (auto contact : contacts) {
+        int32 a = contact.GetIndexA();
+        int32 b = contact.GetIndexB();
+        float w = contact.GetWeight();
+        b2Vec2 n = contact.GetNormal();
+        float h = accBuffer[a] + accBuffer[b];
+        b2Vec2 f = velocityPerPressure * w * h * n;
+        if (contains(particles, a))
+            pressureBuffer[a] += f;
+        if (contains(particles, b))
+            pressureBuffer[b] += f;
+    }
+    b2Vec2 pressure = b2Vec2_zero;
+    for (auto KVPair : pressureBuffer) {
+        pressure += KVPair.second;
+    }
+    return pressure / pressureBuffer.size();
+}
+
+void b2Sensor::SenseDirectionalPressure(const b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts) {
+    b2Vec2 sample = CalculateTheoreticalAvgDirectionalPressure(step, contacts);
+    directionalPressureSamples.push_back(sample);
+    avg_directionalPressure += sample / intervalTimeSteps;
+    if (directionalPressureSamples.size() > intervalTimeSteps && intervalTimeSteps > 0) {
+        avg_directionalPressure -= directionalPressureSamples.front() / intervalTimeSteps;
+        directionalPressureSamples.pop_front();
+    }
+}
+
 void b2Sensor::Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts) {
     if (IsPressureSensor()) {
         SensePressure(step, contacts);
     }
     if (IsSpeedSensor()) {
         SenseSpeed(step, contacts);
+    }
+    if (IsDirectionalPressureSensor()) {
+        SenseDirectionalPressure(step, contacts);
     }
 }
 
@@ -51,6 +119,12 @@ float b2Sensor::GetAvgSpeed() const {
     if (speedSamples.size() == intervalTimeSteps)
         return avg_speed;
     return 0;
+}
+
+const b2Vec2* b2Sensor::GetAvgDirectionalPressure() const {
+    if (directionalPressureSamples.size() == intervalTimeSteps)
+        return &avg_directionalPressure;
+    return &b2Vec2_zero;
 }
 
 float b2Sensor::CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const {

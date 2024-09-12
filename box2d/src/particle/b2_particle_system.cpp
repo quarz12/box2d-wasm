@@ -2973,6 +2973,10 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
         for (int32 i = 0; i < m_count; i++) {
 //            m_velocityBuffer.data[i].y=0;//for debugging, eliminates y movement
             m_positionBuffer.data[i] += subStep.dt * m_velocityBuffer.data[i]; //change particle position
+            m_layerchangeDelayBuffer.data[i]-=subStep.dt;
+            if (m_layerchangeDelayBuffer.data[i] < 0) {
+                m_layerchangeDelayBuffer.data[i] = 0;
+            }
         }
         // print("end step");
     }

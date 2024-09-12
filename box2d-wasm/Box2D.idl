@@ -1448,8 +1448,10 @@ b2MicrofluidicsContactFilter implements b2ContactFilter;
 interface b2Sensor {
   void b2Sensor();
   void Configure(boolean speed, boolean pressure, b2ParticleSystem system, long intervalSteps);
+  void Configure(boolean speed, boolean pressure, b2ParticleSystem system, long intervalSteps, boolean directionalPressure);
   attribute boolean pressureSensor;
   attribute boolean speedSensor;
+  attribute boolean directionalPressureSensor;
  // attribute sequence<float> pressureSamples;
  // attribute sequence<float> speedSamples;
   attribute long intervalTimeSteps;
@@ -1458,8 +1460,10 @@ interface b2Sensor {
   //void SenseSpeed(sequence<b2ParticleBodyContact> contacts);
   float GetAvgPressure();
   float GetAvgSpeed();
+  [Const] b2Vec2 GetAvgDirectionalPressure();
   boolean IsPressureSensor();
   boolean IsSpeedSensor();
+  boolean IsDirectionalPressureSensor();
   b2Sensor GetNext();
   long GetSampleSize();
   b2Valve AsValve();
@@ -1519,6 +1523,8 @@ interface b2LayerChange {
     void AddChannel(b2Sensor sensor);
     float GetLayerShiftProbability();
     float GetAvgPressure();
+    b2Sensor GetChannel(long index);
+    long GetChannelCount();
 };
 
 b2LayerChange implements b2CircleShape;

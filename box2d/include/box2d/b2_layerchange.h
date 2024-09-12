@@ -5,7 +5,9 @@
 #ifndef B2_LAYERCHANGE_H
 #define B2_LAYERCHANGE_H
 #include "b2_circle_shape.h"
+#include <vector>
 
+#include "b2_sensor.h"
 
 struct b2ParticleBodyContact;
 class b2ParticleSystem;
@@ -13,7 +15,7 @@ class b2ParticleSystem;
 class b2LayerChange : public b2CircleShape {
 public:
     b2LayerChange* m_linked = nullptr;
-    std::list<b2Sensor*> connectedChannels;
+    std::vector<b2Sensor*> connectedChannels;
     b2ParticleSystem* m_system = nullptr;
 
     b2LayerChange() {
@@ -25,7 +27,12 @@ public:
 
     inline void Link(b2LayerChange* target) { m_linked = target; };
     inline b2LayerChange* AsLayerChange() override { return this; };
-    inline void AddChannel(b2Sensor* sensor) { connectedChannels.push_back(sensor); };
+    inline void AddChannel(b2Sensor* sensor) {
+        sensor->directionalPressureSensor=true;
+        connectedChannels.push_back(sensor);
+    };
+    inline b2Sensor* GetChannel(int32 index) const { return connectedChannels[index]; };
+    inline int32 GetChannelCount() const { return connectedChannels.size(); };
 
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
 

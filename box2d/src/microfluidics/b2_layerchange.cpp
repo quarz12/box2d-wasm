@@ -47,22 +47,49 @@ b2Vec2 RandomPointInCircle(float radius, b2Vec2 center) {
     return b2Vec2(x, y) + center;
 }
 
-constexpr float MOVEPARTICLEGUARANTEED=1;
+constexpr float MOVEPARTICLEGUARANTEED = 1;
+
 float b2LayerChange::GetLayerShiftProbability() const {
     float pThis = GetAvgPressure();
-    float pLinked = m_linked->GetAvgPressure();//todo use directed force
+    float pLinked = m_linked->GetAvgPressure(); //todo use directed force
     if (pThis <= pLinked)
         return 0;
     float diff = pThis - pLinked;
-    return 1/MOVEPARTICLEGUARANTEED*diff;
+    return 1 / MOVEPARTICLEGUARANTEED * diff;
 }
-
+bool IsMovingTowards(const b2Vec2& velocity, const b2Vec2& norm);
 float b2LayerChange::GetAvgPressure() const {
     if (connectedChannels.empty())
         return 0;
+    // float avgPressure = 0;
+    // for (const b2Sensor* sensor : connectedChannels) {
+    //     avgPressure += sensor->GetAvgPressure();
+    // }
+    // return avgPressure / connectedChannels.size();
     float avgPressure = 0;
     for (const b2Sensor* sensor : connectedChannels) {
-        avgPressure += sensor->GetAvgPressure();
+        b2Vec2 sensorCenter = sensor->m_vertex2 + (sensor->m_vertex1 - sensor->m_vertex2) / 2;
+        b2Vec2 normFromSensorToThis = sensorCenter - m_p;
+        b2Vec2 pressure=*sensor->GetAvgDirectionalPressure();
+        //project pressure onto norm
+        float dot=b2Dot(pressure,normFromSensorToThis);
+        float lensquared = b2Dot(normFromSensorToThis, normFromSensorToThis);
+        if (lensquared <= b2_epsilon) {
+            return 0;
+        }
+        float projectionScalar = dot/lensquared;
+        b2Vec2 projected=projectionScalar*normFromSensorToThis;
+        if (IsMovingTowards(projected, normFromSensorToThis)) {
+            avgPressure += projected.Length();
+        }
     }
     return avgPressure / connectedChannels.size();
+}
+bool IsMovingTowards(const b2Vec2& velocity, const b2Vec2& norm)
+{
+    // Calculate dot product between velocity and toTarget
+    float dotProduct = b2Dot(velocity, norm);
+
+    // If dot product is positive, it's moving towards the target, else away
+    return dotProduct > 0;
 }
