@@ -838,7 +838,7 @@ inline void lineFromPointAndVector(b2Vec2& p, b2Vec2& v, float& m, float& c) {
     }
 }
 template <typename T>
-inline bool contains(std::list<T> list,T item) {
+inline bool contains(std::list<T>& list,T item) {
     return std::find(list.begin(), list.end(), item) != list.end();
 };
 

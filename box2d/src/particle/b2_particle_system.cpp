@@ -4455,7 +4455,7 @@ int b2ParticleSystem::MoveParticleToSystem(int particleIndex, b2ParticleSystem *
     partDef.position = position == nullptr ? m_positionBuffer.data[particleIndex] : *position;
     partDef.color = m_colorBuffer.data[particleIndex];
     partDef.flags = m_flagsBuffer.data[particleIndex];
-    partDef.layerchangeDelay=0.2;
+    partDef.layerchangeDelay=1;
     // partDef.velocity = m_velocityBuffer.data[particleIndex];
     int32 newIndex = newSystem->CreateParticle(partDef);
     DestroyParticle(particleIndex);

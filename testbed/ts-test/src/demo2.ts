@@ -165,19 +165,23 @@ layerchangeB.m_radius=0.01;
 layerchangeB.Configure(particleSystem2);
 {//sensors B
     let s1=new b2Sensor();
-    s1.Configure(false,true,particleSystem, 60);
+    s1.Configure(false,true,particleSystem2, 60);
     s1.SetTwoSided(new b2Vec2(0.07,0.12),new b2Vec2(0.07,0.14));
+    // s1.debug=true;
     layerchangeB.AddChannel(ground2.CreateFixture(s1,0).GetShape().AsSensor());
     let s2=new b2Sensor();
-    s2.Configure(false,true,particleSystem, 60);
+    // s2.debug=true;
+    s2.Configure(false,true,particleSystem2, 60);
     s2.SetTwoSided(new b2Vec2(0.09,0.12),new b2Vec2(0.09,0.14));
     layerchangeB.AddChannel(ground2.CreateFixture(s2,0).GetShape().AsSensor());
     let s3=new b2Sensor();
-    s3.Configure(false,true,particleSystem, 60);
+    // s3.debug=true;
+    s3.Configure(false,true,particleSystem2, 60);
     s3.SetTwoSided(new b2Vec2(0.07,0.12),new b2Vec2(0.09,0.12));
     layerchangeB.AddChannel(ground2.CreateFixture(s3,0).GetShape().AsSensor());
     let s4=new b2Sensor();
-    s4.Configure(false,true,particleSystem, 60);
+    // s4.debug=true;
+    s4.Configure(false,true,particleSystem2, 60);
     s4.SetTwoSided(new b2Vec2(0.07,0.14),new b2Vec2(0.09,0.14));
     layerchangeB.AddChannel(ground2.CreateFixture(s4,0).GetShape().AsSensor());
 }
@@ -210,6 +214,21 @@ linkLayerChange(layerchangeA,layerchangeB);
     let e8=new b2EdgeShape();
     e8.SetTwoSided(new b2Vec2(0.09,0.14), new b2Vec2(0.09,0.2));
     ground2.CreateFixture(e8,0);
+    {
+        let e9=new b2EdgeShape();
+        e9.SetTwoSided(new b2Vec2(0.07,0), new b2Vec2(0.09,0));
+        let e10=new b2EdgeShape();
+        e10.SetTwoSided(new b2Vec2(0,0.12), new b2Vec2(0,0.14));
+        let e11=new b2EdgeShape();
+        e11.SetTwoSided(new b2Vec2(0.2,0.12), new b2Vec2(0.2,0.14));
+        let e12=new b2EdgeShape();
+        e12.SetTwoSided(new b2Vec2(0.07,0.2), new b2Vec2(0.09,0.2));
+        ground2.CreateFixture(e9,0);
+        ground2.CreateFixture(e10,0);
+        ground2.CreateFixture(e11,0);
+        ground2.CreateFixture(e12,0);
+
+    }
 }
 function summonParticles() {
     const pt = new b2ParticleGroupDef();
@@ -248,8 +267,8 @@ const maxTimeStepMs = 1 / 60 * 1000;
 /** @param {number} deltaMs */
 const step = (deltaMs: number) => {
     const clampedDeltaMs = Math.min(deltaMs, maxTimeStepMs);
-    world.Step(clampedDeltaMs / 1000, 3, 2, 1);
-    world2.Step(clampedDeltaMs/1000 , 3, 2, 1);
+    world.Step(clampedDeltaMs / 1000, 8, 3, 1);
+    world2.Step(clampedDeltaMs/1000 , 8, 3, 1);
 };
 const drawCanvas = (ctx: CanvasRenderingContext2D, world: Box2D.b2World) => {
     ctx.fillStyle = 'rgb(255,255,255)';  //set background color

@@ -427,6 +427,7 @@ public:
 	/// Particle density affects the mass of the particles, which in turn
 	/// affects how the particles interact with b2Bodies. Note that the density
 	/// does not affect how the particles interact with each other.
+	/// does affect how force translates to velocity
 	void SetDensity(float density);
 
 	/// Get the particle density.
@@ -721,6 +722,10 @@ public:
 
 	inline void RegisterInlet(b2Inlet* inlet) {
 		inlets.push_back(inlet);
+	}
+
+	inline float* GetLayerChangeDelayBuffer() const {
+		return m_layerchangeDelayBuffer.data;
 	};
 
 	inline b2Inlet* GetInlets() {
@@ -1418,6 +1423,7 @@ inline float b2ParticleSystem::GetCriticalPressure(const b2TimeStep& step) const
 
 inline float b2ParticleSystem::GetParticleStride() const
 {
+	//todo diameter /= 100
 	return b2_particleStride * m_particleDiameter;
 }
 
@@ -1431,6 +1437,8 @@ inline float b2ParticleSystem::GetParticleInvMass() const
 {
 	// mass = density * stride^2, so we take the inverse of this.
 	float inverseStride = m_inverseDiameter * (1.0f / b2_particleStride);
+	// todo for scale to cm -> imvdiam /= 100
+	// (density /=100) always 1 currently
 	return m_inverseDensity * inverseStride * inverseStride;
 }
 

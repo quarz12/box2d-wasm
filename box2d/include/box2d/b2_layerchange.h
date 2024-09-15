@@ -28,7 +28,7 @@ public:
     inline void Link(b2LayerChange* target) { m_linked = target; };
     inline b2LayerChange* AsLayerChange() override { return this; };
     inline void AddChannel(b2Sensor* sensor) {
-        sensor->directionalPressureSensor=true;
+        // sensor->forceSensor=true;
         connectedChannels.push_back(sensor);
     };
     inline b2Sensor* GetChannel(int32 index) const { return connectedChannels[index]; };
@@ -36,7 +36,7 @@ public:
 
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
 
-    void Solve(const std::list<b2ParticleBodyContact>& contacts);
+    void Solve(const std::list<b2ParticleBodyContact>& contacts) const;
 
     float GetLayerShiftProbability() const;
 

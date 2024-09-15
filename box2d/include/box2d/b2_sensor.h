@@ -17,12 +17,12 @@ class b2Sensor : public b2EdgeShape {
 public:
     bool pressureSensor = false;
     bool speedSensor = false;
-    bool directionalPressureSensor = false;
+    // bool forceSensor = false;
     float avg_pressure = 0;
     float avg_speed = 0;
-    b2Vec2 avg_directionalPressure=b2Vec2_zero;
+    b2Vec2 avg_force = b2Vec2_zero;
     std::list<float> pressureSamples{}, speedSamples{};
-    std::list<b2Vec2> directionalPressureSamples{};
+    // std::list<b2Vec2> forceSamples{};
     int32 intervalTimeSteps;
     b2ParticleSystem* m_system;
     bool isValve = false;
@@ -38,7 +38,7 @@ public:
         speedSensor = speed;
         pressureSensor = pressure;
         intervalTimeSteps = intervalSteps;
-        directionalPressureSensor = directionalPressure;
+        // forceSensor = directionalPressure;
         m_system = system;
         if (m_system == nullptr) {
             print("system is nullptr");
@@ -49,29 +49,30 @@ public:
 
     void SenseSpeed(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
+    ///in Pascal
     float GetAvgPressure() const;
 
     float GetAvgSpeed() const;
 
-    const b2Vec2* GetAvgDirectionalPressure() const;
+    // const b2Vec2* GetForce() const;
 
-    float CalculateTheoreticalAvgPressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const;
+    float CalculatePressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const;
 
-    bool IsDirectionalPressureSensor() const { return directionalPressureSensor; };
+    // bool IsForceSensor() const { return forceSensor; };
 
-    b2Vec2 CalculateTheoreticalAvgDirectionalPressure(const b2TimeStep& step, const std::list<b2ParticleBodyContact>& observations);
+    // b2Vec2 CalculateForce(const b2TimeStep& step, const std::list<b2ParticleBodyContact>& observations) const;
 
-    void SenseDirectionalPressure(const b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
+    // void SenseForce(const b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
     void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
     bool IsPressureSensor() const { return pressureSensor; };
     bool IsSpeedSensor() const { return speedSensor; };
-
+    inline float Length() const { return (m_vertex1 - m_vertex2).Length(); };
 
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
 
-    inline b2Sensor* GetNext() { return m_next; }
+    inline b2Sensor* GetNext() const { return m_next; }
     inline void SetNext(b2Sensor* next) { m_next = next; }
 
     b2Sensor* AsSensor() override { return (b2Sensor*) this; };
@@ -79,7 +80,7 @@ public:
     inline int32 GetSampleSize() const { return pressureSamples.size(); };
 
     virtual inline b2Valve* AsValve() { return nullptr; };
-
+    bool debug=false;
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
     /// Set this as an isolated edge, with direct floats.
 	void Set(float vx1, float vy1, float vx2, float vy2);
@@ -138,7 +139,7 @@ public:
         m_threshold = pressure;
     };
 
-    void Update();
+    void Update() const;
 
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
 

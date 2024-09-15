@@ -1451,7 +1451,7 @@ interface b2Sensor {
   void Configure(boolean speed, boolean pressure, b2ParticleSystem system, long intervalSteps, boolean directionalPressure);
   attribute boolean pressureSensor;
   attribute boolean speedSensor;
-  attribute boolean directionalPressureSensor;
+ // attribute boolean forceSensor;
  // attribute sequence<float> pressureSamples;
  // attribute sequence<float> speedSamples;
   attribute long intervalTimeSteps;
@@ -1460,14 +1460,15 @@ interface b2Sensor {
   //void SenseSpeed(sequence<b2ParticleBodyContact> contacts);
   float GetAvgPressure();
   float GetAvgSpeed();
-  [Const] b2Vec2 GetAvgDirectionalPressure();
+  // [Const] b2Vec2 GetForce();
   boolean IsPressureSensor();
   boolean IsSpeedSensor();
-  boolean IsDirectionalPressureSensor();
+  // boolean IsForceSensor();
   b2Sensor GetNext();
   long GetSampleSize();
   b2Valve AsValve();
   attribute boolean isValve;
+  attribute boolean debug;
 };
 b2Sensor implements b2EdgeShape;
 
