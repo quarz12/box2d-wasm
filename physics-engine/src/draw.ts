@@ -1,4 +1,4 @@
-import type { Helpers } from './helpers';
+import type {Helpers} from './helpers';
 
 /**
  * Forked from Box2D.js
@@ -119,7 +119,7 @@ export class CanvasDebugDraw {
 
     constructJSDraw = (): Box2D.JSDraw => {
         const { JSDraw, b2Vec2, getPointer } = this.box2D;
-        const debugDraw = Object.assign(new JSDraw(), {
+        return Object.assign(new JSDraw(), {
             DrawSegment: (vert1_p: number, vert2_p: number, color_p: number): void => {
                 this.setColorFromDebugDrawCallback(color_p);
                 this.drawSegment(vert1_p, vert2_p);
@@ -134,7 +134,7 @@ export class CanvasDebugDraw {
             },
             DrawCircle: (center_p: number, radius: number, color_p: number): void => {
                 this.setColorFromDebugDrawCallback(color_p);
-                const dummyAxis = new b2Vec2(0,0);
+                const dummyAxis = new b2Vec2(0, 0);
                 const dummyAxis_p = getPointer(dummyAxis);
                 this.drawCircle(center_p, radius, dummyAxis_p, false);
             },
@@ -149,6 +149,5 @@ export class CanvasDebugDraw {
                 this.drawPoint(vec_p, size, color_p);
             }
         });
-        return debugDraw;
     }
 }
