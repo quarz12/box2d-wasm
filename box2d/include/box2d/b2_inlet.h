@@ -25,7 +25,7 @@ public:
     }
 
     inline void Configure(b2ParticleSystem* system, b2ParticleDef* partDef, b2Vec2& directedPressure, b2Vec2& point1,
-                          b2Vec2& point2) {
+                          b2Vec2& point2) { //todo channge dircectedPressure to norm + pressure(float)
         m_system = system;
         m_particleDef = partDef;
         force = directedPressure;

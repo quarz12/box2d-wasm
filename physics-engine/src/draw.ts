@@ -32,26 +32,26 @@ export class CanvasDebugDraw {
     }
 
     setColorFromDebugDrawCallback = (color_p: number): void => {
-        const { wrapPointer, b2Color } = this.box2D;
+        const {wrapPointer, b2Color} = this.box2D;
         const col = wrapPointer(color_p, b2Color);
-        const red = (col.get_r() * 255)|0;
-        const green = (col.get_g() * 255)|0;
-        const blue = (col.get_b() * 255)|0;
+        const red = (col.get_r() * 255) | 0;
+        const green = (col.get_g() * 255) | 0;
+        const blue = (col.get_b() * 255) | 0;
         const colStr = `${red},${green},${blue}`;
         this.context.fillStyle = `rgba(${colStr},0.5)`;
         this.context.strokeStyle = `rgb(${colStr})`;
     }
 
     drawPoint = (vec_p: number, sizeMetres: number, color_p: number): void => {
-        const { wrapPointer, b2Vec2 } = this.box2D;
+        const {wrapPointer, b2Vec2} = this.box2D;
         const vert = wrapPointer(vec_p, b2Vec2);
         this.setColorFromDebugDrawCallback(color_p);
-        const sizePixels = sizeMetres/this.canvasScaleFactor;
-        this.context.fillRect(vert.get_x()-sizePixels/2, vert.get_y()-sizePixels/2, sizePixels, sizePixels);
+        const sizePixels = sizeMetres / this.canvasScaleFactor;
+        this.context.fillRect(vert.get_x() - sizePixels / 2, vert.get_y() - sizePixels / 2, sizePixels, sizePixels);
     }
 
     drawSegment = (vert1_p: number, vert2_p: number): void => {
-        const { wrapPointer, b2Vec2 } = this.box2D;
+        const {wrapPointer, b2Vec2} = this.box2D;
         const vert1V = wrapPointer(vert1_p, b2Vec2);
         const vert2V = wrapPointer(vert2_p, b2Vec2);
         this.context.beginPath();
@@ -61,10 +61,10 @@ export class CanvasDebugDraw {
     }
 
     drawPolygon = (vertices: number, vertexCount: number, fill: boolean): void => {
-        const { wrapPointer, b2Vec2 } = this.box2D;
+        const {wrapPointer, b2Vec2} = this.box2D;
         this.context.beginPath();
-        for(let tmpI=0; tmpI < vertexCount; tmpI++) {
-            const vert = wrapPointer(vertices+(tmpI*8), b2Vec2);
+        for (let tmpI = 0; tmpI < vertexCount; tmpI++) {
+            const vert = wrapPointer(vertices + (tmpI * 8), b2Vec2);
             if (tmpI === 0) {
                 this.context.moveTo(vert.get_x(), vert.get_y());
             } else {
@@ -79,13 +79,13 @@ export class CanvasDebugDraw {
     }
 
     drawCircle = (center_p: number, radius: number, axis_p: number, fill: boolean): void => {
-        const { wrapPointer, b2Vec2 } = this.box2D;
-        const { copyVec2, scaledVec2 } = this.helpers;
+        const {wrapPointer, b2Vec2} = this.box2D;
+        const {copyVec2, scaledVec2} = this.helpers;
         const centerV = wrapPointer(center_p, b2Vec2);
         const axisV = wrapPointer(axis_p, b2Vec2);
 
         this.context.beginPath();
-        this.context.arc(centerV.get_x(),centerV.get_y(), radius, 0, 2 * Math.PI, false);
+        this.context.arc(centerV.get_x(), centerV.get_y(), radius, 0, 2 * Math.PI, false);
         if (fill) {
             this.context.fill();
         }
@@ -94,23 +94,23 @@ export class CanvasDebugDraw {
         if (fill) {
             //render axis marker
             const vert2V = copyVec2(centerV);
-            vert2V.op_add( scaledVec2(axisV, radius) );
+            vert2V.op_add(scaledVec2(axisV, radius));
             this.context.beginPath();
-            this.context.moveTo(centerV.get_x(),centerV.get_y());
-            this.context.lineTo(vert2V.get_x(),vert2V.get_y());
+            this.context.moveTo(centerV.get_x(), centerV.get_y());
+            this.context.lineTo(vert2V.get_x(), vert2V.get_y());
             this.context.stroke();
         }
     }
 
     drawTransform = (transform_p: number): void => {
-        const { wrapPointer, b2Transform } = this.box2D;
+        const {wrapPointer, b2Transform} = this.box2D;
         const trans = wrapPointer(transform_p, b2Transform);
         const pos = trans.get_p();
         const rot = trans.get_q();
 
         this.context.save();
         this.context.translate(pos.get_x(), pos.get_y());
-        this.context.scale(0.5,0.5);
+        this.context.scale(0.5, 0.5);
         this.context.rotate(rot.GetAngle());
         this.context.lineWidth *= 2;
         CanvasDebugDraw.drawAxes(this.context);
@@ -118,7 +118,7 @@ export class CanvasDebugDraw {
     }
 
     constructJSDraw = (): Box2D.JSDraw => {
-        const { JSDraw, b2Vec2, getPointer } = this.box2D;
+        const {JSDraw, b2Vec2, getPointer} = this.box2D;
         return Object.assign(new JSDraw(), {
             DrawSegment: (vert1_p: number, vert2_p: number, color_p: number): void => {
                 this.setColorFromDebugDrawCallback(color_p);

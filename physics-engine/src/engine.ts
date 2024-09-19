@@ -5,16 +5,18 @@ import {LayerBuilder, Layer} from "./layerBuilder"
 import {Sensor, Inlet} from "./wrappers";
 // @ts-ignore
 let box2d = await Box2DFactory_();
-const {
-    b2Sensor,
-} = box2d;
 
-let layerBuilder = LayerBuilder(box2d);
 
 export class Engine {
+    constructor(xml:String) {
+        //todo
+        this.layerBuilder=new LayerBuilder();
+    }
+
     private sensors: Map<number, Sensor> = new Map<number, Sensor>();
     private inlets: Map<number, Inlet> = new Map<number, Inlet>();
     private layers: Map<number, Layer> = new Map<number, Layer>();
+    private layerBuilder:LayerBuilder;
 
     getSensor(id: number): Sensor | undefined {
         return this.sensors.get(id);
@@ -24,9 +26,6 @@ export class Engine {
         return this.inlets.get(id);
     }
 
-    configure(xml:String){
-        //TODO
-    }
     step(){
         for (const [id,layer] of this.layers) {
             layer.step();

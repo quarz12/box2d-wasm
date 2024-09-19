@@ -23,7 +23,7 @@ public:
         isLayerChange = true;
     }
 
-    void Configure(b2ParticleSystem* system);
+    void Configure(b2ParticleSystem* system); //todo also take circle params
 
     inline void Link(b2LayerChange* target) { m_linked = target; };
     inline b2LayerChange* AsLayerChange() override { return this; };
