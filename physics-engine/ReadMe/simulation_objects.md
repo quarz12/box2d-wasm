@@ -50,7 +50,8 @@
 - height (vec)
 - center (vec)
 - normalized direction in which fluid should flow (vec)
-- target pressure (float)
+- speed/pressure (bool)
+- target pressure/speed (float)
 - coordinates of the summoning line (2x vec) maybe not necessary
 
   <img src="inlet.png" width="200" height="100"/>  
