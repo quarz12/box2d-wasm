@@ -8,15 +8,24 @@ let box2d = await Box2DFactory_();
 
 
 export class Engine {
-    constructor(xml:String) {
+    constructor(xml: String) {
+        const {b2ParticleSystemDef} = box2d;
+        let systemDef = new b2ParticleSystemDef();
+        let gravitationalSlow = 0.1;
+        this.layerBuilder = new LayerBuilder(box2d, systemDef, gravitationalSlow, this.inlets, this.sensors);
         //todo
-        this.layerBuilder=new LayerBuilder();
     }
 
     private sensors: Map<number, Sensor> = new Map<number, Sensor>();
     private inlets: Map<number, Inlet> = new Map<number, Inlet>();
     private layers: Map<number, Layer> = new Map<number, Layer>();
-    private layerBuilder:LayerBuilder;
+    private layerBuilder: LayerBuilder;
+
+    private newLayer(xml: String) {
+        let id = 1;
+        let layer = this.layerBuilder.createLayer(xml);
+        this.layers.set(id, layer);
+    }
 
     getSensor(id: number): Sensor | undefined {
         return this.sensors.get(id);
@@ -26,8 +35,8 @@ export class Engine {
         return this.inlets.get(id);
     }
 
-    step(){
-        for (const [id,layer] of this.layers) {
+    step() {
+        for (const [id, layer] of this.layers) {
             layer.step();
         }
     }
