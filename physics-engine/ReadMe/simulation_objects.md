@@ -57,6 +57,7 @@
   <img src="inlet.png" width="200" height="100"/>  
   
   red line is where particles are spawned, yellow arrow is the direction the< are pushed
+- information about the inserted fluid
 
 **Valve**
 - extends line
