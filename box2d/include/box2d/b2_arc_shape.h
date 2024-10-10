@@ -15,6 +15,8 @@ public:
     /// Set this as an isolated edge. Collision is two-sided. arc direction is clockwise
     void SetTwoSided(const b2Vec2& start, const b2Vec2& end, const b2Vec2& center);
 
+    void SetTwoSided(const b2Vec2& center, const float startRadians, const float endRadians, float radius);
+
     /// Implement b2Shape.
     b2Shape* Clone(b2BlockAllocator* allocator) const override;
 
@@ -54,7 +56,7 @@ public:
     /// start/end/center of circle
     /// start/end must have equal distance to center
     b2Vec2 m_center;
-
+    float fromRadians, toRadians;
     bool CloserToPrev(b2Vec2& point, b2Transform& tf) const override;
     bool CloserToNext(b2Vec2& point, b2Transform& tf) const override;
 };

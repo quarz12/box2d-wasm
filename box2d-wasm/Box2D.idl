@@ -135,6 +135,7 @@ interface b2Shape {
   attribute boolean isGate;
   attribute boolean isInlet;
   b2Sensor AsSensor();
+  b2CircleSensor AsCircleSensor();
   b2ForceField AsForceField();
   b2Gate AsGate();
   b2Inlet AsInlet();
@@ -391,6 +392,9 @@ b2CircleShape implements b2Shape;
 interface b2ArcShape {
   void b2ArcShape();
   void SetTwoSided([Const,Ref] b2Vec2 center, [Const,Ref] b2Vec2 start, [Const,Ref] b2Vec2 end);
+  void SetTwoSided([Const,Ref] b2Vec2 center, [Const] float startRadians, [Const] float endRadians, [Const] float radius);
+  attribute float fromRadians;
+  attribute float toRadians;
   [Value] attribute b2Vec2 m_vertex1;
   [Value] attribute b2Vec2 m_vertex2;
   [Value] attribute b2Vec2 m_center;
@@ -624,7 +628,7 @@ interface JSDraw {
   void DrawPolygon([Const] b2Vec2 vertices, long vertexCount, [Const, Ref] b2Color color);
   void DrawSolidPolygon([Const] b2Vec2 vertices, long vertexCount, [Const, Ref] b2Color color);
   void DrawCircle([Const, Ref] b2Vec2 center, float radius, [Const, Ref] b2Color color);
-  void DrawArc([Const, Ref] b2Vec2 center, float radius, [Const, Ref] b2Vec2 start, [Const, Ref] b2Vec2 end, [Const, Ref] b2Color color);
+  void DrawArc([Const, Ref] b2Vec2 center, float radius, float startRadians, float endRadians, [Const, Ref] b2Color color);
   void DrawSolidCircle([Const, Ref] b2Vec2 center, float radius, [Const, Ref] b2Vec2 axis, [Const, Ref] b2Color color);
   void DrawParticles([Const] b2Vec2 centers, float radius, [Const] b2ParticleColor colors, long count);
   void DrawSegment([Const, Ref] b2Vec2 p1, [Const, Ref] b2Vec2 p2, [Const, Ref] b2Color color);
@@ -1448,7 +1452,6 @@ b2MicrofluidicsContactFilter implements b2ContactFilter;
 interface b2Sensor {
   void b2Sensor();
   void Configure(boolean speed, boolean pressure, b2ParticleSystem system, long intervalSteps);
-  void Configure(boolean speed, boolean pressure, b2ParticleSystem system, long intervalSteps, boolean directionalPressure);
   attribute boolean pressureSensor;
   attribute boolean speedSensor;
  // attribute boolean forceSensor;
@@ -1518,14 +1521,22 @@ interface b2LayerChange {
     void b2LayerChange();
     attribute b2LayerChange m_linked;
     attribute b2ParticleSystem m_system;
-    void Configure(b2ParticleSystem system);
+    attribute b2CircleSensor m_sensor;
+    void Configure(b2ParticleSystem system, b2CircleSensor sensor);
     void Link(b2LayerChange target);
     b2LayerChange AsLayerChange();
-    void AddChannel(b2Sensor sensor);
     float GetLayerShiftProbability();
-    float GetAvgPressure();
-    b2Sensor GetChannel(long index);
-    long GetChannelCount();
+    float GetPressure();
+    attribute boolean debug;
 };
 
 b2LayerChange implements b2CircleShape;
+
+interface b2CircleSensor {
+    void b2CircleSensor();
+    attribute float avg_pressure;
+    attribute b2ParticleSystem m_system;
+    void Configure(b2ParticleSystem system, [Ref]b2Vec2 center, float radius);
+};
+
+b2CircleSensor implements b2ArcShape;

@@ -125,15 +125,13 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
    * @param {Box2D.b2Vec2} center
    * @param {number} radius
    * @param {Box2D.b2Vec2} axis
-   * @param {Box2D.b2Vec2} start
-   * @param {Box2D.b2Vec2} end
+   * @param {number} startRadians
+   * @param {number} endRadians
    * @returns {void}
    */
-  const drawArc = (center, radius, axis, start, end ) => {
+  const drawArc = (center, radius, axis, startRadians, endRadians ) => {
       ctx.beginPath();
-      let startangle=Math.atan2(start.get_y()-center.get_y(),start.get_x()-center.get_x());
-      let endangle=Math.atan2(end.get_y()-center.get_y(),end.get_x()-center.get_x());
-      ctx.arc(center.get_x(), center.get_y(), radius, startangle, endangle, false);
+      ctx.arc(center.get_x(), center.get_y(), radius, startRadians, endRadians, false);
       ctx.stroke();
   };
 
@@ -313,15 +311,13 @@ export const makeDebugDraw = (ctx, pixelsPerMeter, box2D) => {
     /**
      * @param {number} center_p pointer to {@link Box2D.b2Vec2}
      * @param {number} radius
-     * @param {number} start_p to {@link Box2D.b2Vec2}
-     * @param {number} end_p to {@link Box2D.b2Vec2}
+     * @param {number} start
+     * @param {number} end
      * @param {number} color_p to {@link Box2D.b2Color}
      * @returns {void}
      */
-    DrawArc(center_p, radius, start_p, end_p, color_p){
+    DrawArc(center_p, radius, start, end, color_p){
       const color = wrapPointer(color_p, b2Color);
-      const start = wrapPointer(start_p, b2Vec2);
-      const end = wrapPointer(end_p, b2Vec2);
       setCtxColor(getRgbaStr(color,"b2Color"));
       setCtxColor("0,0,0,1");
       const center = wrapPointer(center_p, b2Vec2);

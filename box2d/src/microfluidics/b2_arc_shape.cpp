@@ -14,6 +14,19 @@ void b2ArcShape::SetTwoSided(const b2Vec2& center, const b2Vec2& start, const b2
     m_vertex2 = end;
     m_center=center;
     m_radius=(start-center).Length();
+    fromRadians=b2Atan2(start.y-center.y, start.x-center.x);
+    toRadians=b2Atan2(end.y-center.y, end.x-center.x);
+}
+
+void b2ArcShape::SetTwoSided(const b2Vec2& center, const float startRadians, const float endRadians, const float radius) {
+    m_vertex1.x = center.x +radius*cos(fromRadians);
+    m_vertex1.y = center.y +radius*sin(fromRadians);
+    m_vertex2.x = center.x +radius*cos(toRadians);
+    m_vertex2.y = center.y +radius*sin(toRadians);
+    m_center=center;
+    fromRadians=startRadians;
+    toRadians=endRadians;
+    m_radius=radius;
 }
 
 b2Shape* b2ArcShape::Clone(b2BlockAllocator* allocator) const
@@ -55,8 +68,8 @@ void b2ArcShape::ComputeDistance(const b2Transform& transform, const b2Vec2& poi
     toEnd.Normalize();
 
     double angleToPoint = b2Atan2(toPoint.y, toPoint.x);
-    double angleToStart = b2Atan2(toStart.y, toStart.x);
-    double angleToEnd = b2Atan2(toEnd.y, toEnd.x);
+    double angleToStart = fromRadians;
+    double angleToEnd = toRadians;
     angleToEnd=b2_pi-angleToEnd; //flip yaxis todo remove if renderer changes?
     angleToStart=b2_pi-angleToStart;
     angleToPoint=b2_pi-angleToPoint;
@@ -146,8 +159,8 @@ bool b2ArcShape::RayCast(b2RayCastOutput* output, const b2RayCastInput& input,
 
         // Calculate angles in radian
         double angleToIntersection = b2Atan2(toIntersection.y,toIntersection.x);
-        double angleToStart = b2Atan2(toStart.y, toStart.x);
-        double angleToEnd = b2Atan2(toEnd.y, toEnd.x);
+        double angleToStart = fromRadians;
+        double angleToEnd = toRadians;
         angleToEnd=b2_pi-angleToEnd; //flip yaxis todo remove if renderer changes?
         angleToStart=b2_pi-angleToStart;
         angleToIntersection=b2_pi-angleToIntersection;
