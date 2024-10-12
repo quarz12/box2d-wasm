@@ -2853,7 +2853,7 @@ void b2ParticleSystem::SolveBarrier(const b2TimeStep &step) {
 
 //run one step for all particles of this system
 void b2ParticleSystem::Solve(const b2TimeStep &step) {
-    if (m_count == 0 && inlets.empty()) {
+    if (m_count == 0 && inlets.empty() && sensors.empty()) {
         return;
     }
     // If particle lifetimes are enabled, destroy particles that are too old.
@@ -2882,7 +2882,7 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
         UpdateContacts(false);
         UpdateBodyContacts();
         ComputeWeight();
-        SolveLayerChange(); //TODO will this process a particle in the same step in the new system?
+        SolveLayerChange(); //TODO after sensor?
         if (m_allGroupFlags & b2_particleGroupNeedsUpdateDepth) {
             ComputeDepth();
         }
@@ -2966,7 +2966,7 @@ void b2ParticleSystem::Solve(const b2TimeStep &step) {
         SolveForceField(subStep);
         // creates new particles, must be last moving step
         //sensors must be updated at the end of the step to account for all forces
-        SolveObserver(subStep);
+        SolveSensor(subStep);
 //        print("4 -> velocity:"+m_velocityBuffer.data[0].ToString());
 //        print("4 -> force:"+m_forceBuffer[0].ToString());
         // The particle positions can be updated only at the end of substep.
@@ -3595,7 +3595,7 @@ void b2ParticleSystem::SolveAdhesion(const b2TimeStep &step) {
     }//TODO constant force?
 }
 
-void b2ParticleSystem::SolveObserver(b2TimeStep &step) {
+void b2ParticleSystem::SolveSensor(b2TimeStep &step) {
     //must be last step to correctly find speed
     std::map<b2Fixture *, std::list<b2ParticleBodyContact>> map;
     for (int i = 0; i < m_ObserverContactBuffer.GetCount(); ++i) {
@@ -3603,12 +3603,17 @@ void b2ParticleSystem::SolveObserver(b2TimeStep &step) {
         if (contact.fixture->GetShape()->isSensor)
             map[contact.fixture].push_back(contact);
     }
-    for (std::pair<b2Fixture *, std::list<b2ParticleBodyContact>> KVPair: map) {
-        b2Sensor *sensor = KVPair.first->GetShape()->AsSensor();
-        sensor->Solve(step, KVPair.second);
-        if (sensor->isValve){
-            b2Valve* valve = sensor->AsValve();
-            valve->Update();
+    for (b2Fixture* sensor : sensors) {
+        if (sensor->GetShape()->GetType() == b2Shape::Type::e_arc) {
+            b2CircleSensor* s = sensor->GetShape()->AsCircleSensor();
+            s->Solve(step,map[sensor]);
+        } else if (sensor->GetShape()->GetType() == b2Shape::Type::e_edge) {
+            b2Sensor* s = sensor->GetShape()->AsSensor();
+            s->Solve(step,map[sensor]);
+            if (s->isValve) {
+                b2Valve* valve = s->AsValve();
+                valve->Update();
+            }
         }
     }
 }
@@ -3971,6 +3976,28 @@ void b2ParticleSystem::SolveLifetimes(const b2TimeStep &step) {
         // Destroy this particle.
         DestroyParticle(particleIndex);
     }
+}
+
+std::list<int32> b2ParticleSystem::FindParticlesInAABB(b2AABB& area) {
+    std::list<int32> particleIndices;
+    class CollectParticles : public b2QueryCallback {
+        bool ReportParticle(const b2ParticleSystem* particleSystem, int32 index) override {
+            if (particleSystem == m_system)
+                particleIndices->push_back(index);
+            return true;
+        }
+        bool ReportFixture(b2Fixture* fixture) override{ return true; };
+        std::list<int32>* particleIndices;
+        b2ParticleSystem* m_system;
+    public:
+        CollectParticles(
+                b2ParticleSystem *system, std::list<int32>* particleIndices) {
+            this->particleIndices = particleIndices;
+            m_system = system;
+        }
+    } callback(this, &particleIndices);
+    m_world->QueryAABB(&callback, area);
+    return particleIndices;
 }
 
 void b2ParticleSystem::RotateBuffer(int32 start, int32 mid, int32 end) {

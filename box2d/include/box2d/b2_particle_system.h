@@ -24,6 +24,8 @@
 #include "b2_particle.h"
 #include "b2_time_step.h"
 #include <map>
+
+#include "b2_sensor.h"
 #ifdef LIQUIDFUN_UNIT_TESTS
 #include <gtest/gtest.h>
 #endif // LIQUIDFUN_UNIT_TESTS
@@ -726,12 +728,21 @@ public:
 
 	inline float* GetLayerChangeDelayBuffer() const {
 		return m_layerchangeDelayBuffer.data;
-	};
+	}
 
-	inline b2Inlet* GetInlets() {
+	inline b2Inlet* GetInlet() const {
 		if (inlets.empty())
 			return nullptr;
 		return inlets.front();
+	}
+
+	inline void RegisterSensor(b2Fixture* sensor) {
+		sensors.push_back(sensor);
+	}
+	inline b2Fixture* GetSensor() const {
+		if (sensors.empty())
+			return nullptr;
+		return sensors.front();
 	}
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
@@ -788,6 +799,8 @@ private:
 	/// assumes update frequency of 60steps/sec
 	b2Vec2 ForceToVelocity(b2Vec2& force, b2TimeStep& step);
 	b2Vec2 VelocityToForce(b2Vec2& velocity, b2TimeStep& step);
+	std::list<int32> FindParticlesInAABB(b2AABB& area);
+
 #pragma endregion public
 private:
 #pragma region
@@ -1051,12 +1064,13 @@ private:
 	void SolveColorMixing();
 	void SolveZombie();
     void SolveFriction(const b2TimeStep& step);
-    void SolveObserver(b2TimeStep& step);
+    void SolveSensor(b2TimeStep& step);
     void SolveForceField(b2TimeStep& step);
 	void SolveInlet();
 	/// Destroy all particles which have outlived their lifetimes set by
 	/// SetParticleLifetime().
 	void SolveLifetimes(const b2TimeStep& step);
+
 #pragma region
 	void RotateBuffer(int32 start, int32 mid, int32 end);
 
@@ -1213,6 +1227,7 @@ private:
 	b2ParticleSystem* m_next;
 
 	std::list<b2Inlet*> inlets;
+	std::list<b2Fixture*> sensors;
 
 };
 
@@ -1435,10 +1450,8 @@ inline float b2ParticleSystem::GetParticleMass() const
 
 inline float b2ParticleSystem::GetParticleInvMass() const
 {
-	// mass = density * stride^2, so we take the inverse of this.
 	float inverseStride = m_inverseDiameter * (1.0f / b2_particleStride);
-	// todo for scale to cm -> imvdiam /= 100
-	// (density /=100) always 1 currently
+	// mass = density * stride^2,
 	return m_inverseDensity * inverseStride * inverseStride;
 }
 
