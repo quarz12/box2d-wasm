@@ -1224,12 +1224,13 @@ void b2World::DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color
             b2Vec2 start = b2Mul(xf, arc->m_vertex1);
             b2Vec2 end = b2Mul(xf, arc->m_vertex2);
             b2Vec2 center = b2Mul(xf, arc->m_center);
-            m_debugDraw->DrawArc(center,arc->m_radius,start, end, color);
-
-            if (arc->previousSegment == nullptr)
-                m_debugDraw->DrawPoint(start, 4.0f, color);
-            if (arc->nextSegment == nullptr)
-                m_debugDraw->DrawPoint(end, 4.0f, color);
+            m_debugDraw->DrawArc(center,arc->m_radius,arc->fromRadians, arc->toRadians, color);
+			if(!((arc->m_vertex1-arc->m_vertex2).Length()<b2_epsilon)) {
+				if (arc->previousSegment == nullptr)
+					m_debugDraw->DrawPoint(start, 4.0f, color);
+				if (arc->nextSegment == nullptr)
+					m_debugDraw->DrawPoint(end, 4.0f, color);
+			}
         }
         break;
 	default:
