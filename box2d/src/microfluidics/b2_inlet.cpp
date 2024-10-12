@@ -14,35 +14,42 @@ b2Inlet* b2Inlet::Clone(b2BlockAllocator* allocator) const {
     return clone;
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
-void b2Inlet::Solve(std::list<b2ParticleBodyContact>& contacts) {
+void b2Inlet::Solve(std::list<b2ParticleBodyContact>& contacts) const {
     if (IsActive()) {
         //apply force
         for (b2ParticleBodyContact contact : contacts) {
-            m_system->ParticleApplyForce(contact.index, force);//input with fixed pressure
+            b2Vec2 awayFromCenter=m_system->GetPositionBuffer()[contact.index]-m_p;
+            awayFromCenter.Normalize();
+            // print((force*awayFromCenter).ToString());
+            // m_system->GetForceBuffer()[contact.index]= force*awayFromCenter;
+            m_system->ParticleApplyForce(contact.index, force*awayFromCenter);//input with fixed pressure
             // m_system->GetVelocityBuffer()[contact.index]= force;// input with fixed velocity
         }
         //summon new particles
-        b2Vec2 normal = summoningLine2 - summoningLine1;
-        normal.Normalize();
-        float lineLength = (summoningLine1 - summoningLine2).Length();
-        int32 particleCount = ceil(lineLength / (m_system->GetDef()->radius * 2));
-        float distanceBetweenParticles = lineLength / particleCount;
+        float summoningRadius= m_radius - m_system->GetDef()->radius*1.5;
+        float circumference= 2 * b2_pi * summoningRadius;
+        int32 numParticles = floor(circumference/m_system->m_particleDiameter);
+        float angle = 2 * b2_pi / numParticles;
         std::list<b2Vec2> points;
-        for (int i = 0; i < particleCount; ++i) {
-            points.push_back(summoningLine1 + normal * (m_system->GetDef()->radius + i * distanceBetweenParticles));
+        for (int i = 0; i < numParticles; ++i) {
+            b2Vec2 position;
+            position.x=m_p.x+summoningRadius*cos(i*angle);
+            position.y=m_p.y+summoningRadius*sin(i*angle);
+            points.push_back(position);
         }
         for (b2Vec2 point : points) {
             if (TestParticlePoint(point,contacts)) {
                 b2ParticleDef def = *m_particleDef;
                 def.position = point;
-                def.velocity=force;
-                m_system->CreateParticleUnlocked(def);
+                int32 index=m_system->CreateParticleUnlocked(def);
+                b2Vec2 awayFromCenter=m_system->GetPositionBuffer()[index]-m_p;
+                awayFromCenter.Normalize();
+                // m_system->ParticleApplyForce(index,awayFromCenter*force);
             }
         }
     }
 }
-bool b2Inlet::TestParticlePoint(b2Vec2& point, std::list<b2ParticleBodyContact>& contacts) {
+bool b2Inlet::TestParticlePoint(b2Vec2& point, std::list<b2ParticleBodyContact>& contacts) const {
     for (auto contact : contacts) {
         // Calculate the squared distance between the point and the contact
         b2Vec2 posA=m_system->GetPositionBuffer()[contact.index];

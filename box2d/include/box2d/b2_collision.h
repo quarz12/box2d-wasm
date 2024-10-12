@@ -215,7 +215,10 @@ struct B2_API b2AABB
 		result = result && aabb.upperBound.y <= upperBound.y;
 		return result;
 	}
-
+	std::string ToString() const {
+		return "upper:<" + std::to_string(upperBound.x) + ", " + std::to_string(upperBound.y)+">\n"+
+			"lower:<" + std::to_string(lowerBound.x) + ", " + std::to_string(lowerBound.y)+">";
+	}
 	bool RayCast(b2RayCastOutput* output, const b2RayCastInput& input) const;
 
 	b2Vec2 lowerBound;	///< the lower vertex

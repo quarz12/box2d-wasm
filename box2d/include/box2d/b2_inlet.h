@@ -6,16 +6,17 @@
 #define BOX2D_B2_INLET_H
 
 
-#include "b2_polygon_shape.h"
 #include <list>
+
+#include "b2_circle_shape.h"
 
 struct b2ParticleBodyContact;
 class b2ParticleSystem;
 struct b2ParticleDef;
 
-class b2Inlet : public b2PolygonShape {
+class b2Inlet : public b2CircleShape {
 public:
-    b2Vec2 force, summoningLine1, summoningLine2;
+    float force;
     b2ParticleSystem* m_system;
     b2ParticleDef* m_particleDef;
 
@@ -24,28 +25,25 @@ public:
         isInlet = true;
     }
 
-    inline void Configure(b2ParticleSystem* system, b2ParticleDef* partDef, b2Vec2& directedPressure, b2Vec2& point1,
-                          b2Vec2& point2) { //todo channge dircectedPressure to norm + pressure(float)
+    inline void Configure(b2ParticleSystem* system, b2ParticleDef* partDef, const float pressure) {
         m_system = system;
         m_particleDef = partDef;
-        force = directedPressure;
-        summoningLine1 = point1;
-        summoningLine2 = point2;
+        force = pressure;
     }
 
     b2Inlet* Clone(b2BlockAllocator* allocator) const override;
 
     /// true if particle can be summoned at point, false if too much overlap
-    bool TestParticlePoint(b2Vec2& point, std::list<b2ParticleBodyContact>& contacts);
+    bool TestParticlePoint(b2Vec2& point, std::list<b2ParticleBodyContact>& contacts) const;
 
     float weightToDistance(float weight) const;
 
-    void Solve(std::list<b2ParticleBodyContact>& contacts);
+    void Solve(std::list<b2ParticleBodyContact>& contacts) const;
 
     inline void Activate() { active = true; }
     inline void Deactivate() { active = false; }
     inline bool IsActive() const { return active; }
-    inline void SetPressure(b2Vec2& p) { force = p; }
+    inline void SetPressure(const float p) { force = p; }
 
     inline b2Inlet* AsInlet() override { return this; }
 
