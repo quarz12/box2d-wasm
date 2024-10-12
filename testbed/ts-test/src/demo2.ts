@@ -30,6 +30,7 @@ const {
     b2Gate,
     b2Valve,
     b2Inlet,
+    b2CircleSensor,
     b2ParticleSystemDef,
     b2LayerChange,
     //enum values are part of the base Box2D object
@@ -94,6 +95,9 @@ pauseBtn?.addEventListener("click", () => {
         applyForce(parseFloat(x.value), parseFloat(y.value));
     });
 }
+
+const display1=document.getElementById("display1") as HTMLFormElement;
+const display2=document.getElementById("display2") as HTMLFormElement;
 const gravity = new b2Vec2(0, 0);
 const world = new b2World(gravity, 0.1);
 const world2 = new b2World(gravity, 0.1);
@@ -103,7 +107,7 @@ const ground2 = world2.CreateBody(bd_ground);
 const partSysDef = new b2ParticleSystemDef();
 partSysDef.radius = 3/1000;//3mm  100cm=1m
 partSysDef.dampingStrength = 0;//.5;
-partSysDef.pressureStrength = 0.5; //prevents laminar flow
+partSysDef.pressureStrength = 1; //prevents laminar flow
 partSysDef.staticPressureStrength = 0.1;
 partSysDef.surfaceTensionNormalStrength = 0.05;
 partSysDef.surfaceTensionPressureStrength = 0.05;
@@ -121,20 +125,24 @@ const particleSystem2 = world2.CreateParticleSystem(partSysDef);
 let e1=new b2EdgeShape();
 e1.SetTwoSided(new b2Vec2(0,0),new b2Vec2(0.2,0));
 ground.CreateFixture(e1,0);
-let e2=new b2EdgeShape();
+let e2=new b2Gate();
 e2.SetTwoSided(new b2Vec2(0,0.02),new b2Vec2(0.2,0.02));
-ground.CreateFixture(e2,0);
-
+e2.Close();
+let gate = ground.CreateFixture(e2,0).GetShape().AsGate();
+let e3=new b2EdgeShape();
+e3.SetTwoSided(new b2Vec2(0,0),new b2Vec2(0,0.02));
+ground.CreateFixture(e3,0);
 let filter = new b2MicrofluidicsContactFilter();
 filter.SetParticleSystem(particleSystem);
 world.SetContactFilter(filter);
 
-let infix = new b2Inlet();
+let infix: Box2D.b2Inlet = new b2Inlet();
 let def = new b2ParticleDef();
 def.flags = particleFlags;
 def.set_color(new b2ParticleColor(0, 100, 255, 255));
-infix.Configure(particleSystem, def, new b2Vec2(0.0001, 0), new b2Vec2(0.01, 0), new b2Vec2(0.01, 0.02));
-infix.SetAsBox(partSysDef.radius*3, 0.01, new b2Vec2(0.01, 0.01), 0);
+infix.Configure(particleSystem, def, 0.0001);
+infix.m_p= new b2Vec2(0.01, 0.01);
+infix.m_radius=0.01;
 let inlet = ground.CreateFixture(infix, 0).GetShape().AsInlet();
 particleSystem.RegisterInlet(inlet);
 let tmp=new b2EdgeShape();
@@ -147,44 +155,24 @@ ground.CreateFixture(e,0);
 let layerchangeA=new b2LayerChange();
 layerchangeA.m_p=new b2Vec2(0.08,0.01);
 layerchangeA.m_radius=0.01;
-layerchangeA.Configure(particleSystem);
-{//sensors A
-    let s1:Box2D.b2Sensor=new b2Sensor();
-    s1.Configure(false,true,particleSystem, 60);
-    s1.SetTwoSided(new b2Vec2(0.07,0),new b2Vec2(0.07,0.02));
-    layerchangeA.AddChannel(ground.CreateFixture(s1,0).GetShape().AsSensor());
-    let s2=new b2Sensor();
-    s2.Configure(false,true,particleSystem, 60);
-    s2.SetTwoSided(new b2Vec2(0.09,0),new b2Vec2(0.09,0.02));
-    layerchangeA.AddChannel(ground.CreateFixture(s2,0).GetShape().AsSensor());
-}
+// layerchangeA.debug=true;
+let csensA=new b2CircleSensor();
+csensA.Configure(particleSystem,layerchangeA.m_p,layerchangeA.m_radius+2*partSysDef.radius);
+let csensAF=ground.CreateFixture(csensA,0);
+layerchangeA.Configure(particleSystem,csensAF.GetShape().AsCircleSensor());
 
 let layerchangeB=new b2LayerChange();
+// layerchangeB.debug=true;
 layerchangeB.m_p=new b2Vec2(0.08,0.13);
 layerchangeB.m_radius=0.01;
-layerchangeB.Configure(particleSystem2);
-{//sensors B
-    let s1=new b2Sensor();
-    s1.Configure(false,true,particleSystem2, 60);
-    s1.SetTwoSided(new b2Vec2(0.07,0.12),new b2Vec2(0.07,0.14));
-    // s1.debug=true;
-    layerchangeB.AddChannel(ground2.CreateFixture(s1,0).GetShape().AsSensor());
-    let s2=new b2Sensor();
-    // s2.debug=true;
-    s2.Configure(false,true,particleSystem2, 60);
-    s2.SetTwoSided(new b2Vec2(0.09,0.12),new b2Vec2(0.09,0.14));
-    layerchangeB.AddChannel(ground2.CreateFixture(s2,0).GetShape().AsSensor());
-    let s3=new b2Sensor();
-    // s3.debug=true;
-    s3.Configure(false,true,particleSystem2, 60);
-    s3.SetTwoSided(new b2Vec2(0.07,0.12),new b2Vec2(0.09,0.12));
-    layerchangeB.AddChannel(ground2.CreateFixture(s3,0).GetShape().AsSensor());
-    let s4=new b2Sensor();
-    // s4.debug=true;
-    s4.Configure(false,true,particleSystem2, 60);
-    s4.SetTwoSided(new b2Vec2(0.07,0.14),new b2Vec2(0.09,0.14));
-    layerchangeB.AddChannel(ground2.CreateFixture(s4,0).GetShape().AsSensor());
-}
+let csensB=new b2CircleSensor();
+csensB.Configure(particleSystem2,layerchangeB.m_p,layerchangeB.m_radius+2*partSysDef.radius);
+let csensBF=ground2.CreateFixture(csensB,0);
+
+particleSystem.RegisterSensor(csensAF);
+// csensAF.GetShape().AsCircleSensor().debug=true;
+particleSystem2.RegisterSensor(csensBF);
+layerchangeB.Configure(particleSystem2,csensBF.GetShape().AsCircleSensor());
 layerchangeA=ground.CreateFixture(layerchangeA,0).GetShape().AsLayerChange();
 layerchangeB=ground2.CreateFixture(layerchangeB,0).GetShape().AsLayerChange();
 linkLayerChange(layerchangeA,layerchangeB);
@@ -289,6 +277,8 @@ let deltaMs = 1000 / 60;
         step(deltaMs);
         drawCanvas(ctx, world);
         drawCanvas(ctx2,world2);
+        display1.innerText=csensAF.GetShape().AsCircleSensor().GetAvgPressure().toString();
+        display2.innerText=csensBF.GetShape().AsCircleSensor().GetAvgPressure().toString();
     }
 }());
 
@@ -301,5 +291,6 @@ Object.assign(window, {
     b2Vec2,
     layerchangeA,
     layerchangeB,
+    gate,
 })
 

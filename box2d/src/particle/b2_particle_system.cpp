@@ -3573,7 +3573,9 @@ void b2ParticleSystem::SolveSolid(const b2TimeStep &step) {
 void b2ParticleSystem::SolveForce(const b2TimeStep &step) {
     //force only exists for one timestep, gets translated to velocity
     float velocityPerForce = step.dt * GetParticleInvMass();
+    // print("vPerF: "+str(velocityPerForce));
     for (int32 i = 0; i < m_count; i++) {
+        // print("v:"+(velocityPerForce*m_forceBuffer[i]).ToString());
         m_velocityBuffer.data[i] += velocityPerForce * m_forceBuffer[i];
         if (m_flagsBuffer.data[i] & b2_airParticle) {
             if (m_totalForceBuffer[i] >= m_def.maxAirPressure) {

@@ -1398,7 +1398,9 @@ interface b2ParticleSystem {
   long MoveParticleToSystem(long particleIndex, b2ParticleSystem newSystem, b2Vec2 position);
   [Const] b2ParticleBodyContact GetClosestFixtureContactBuffer();
   void RegisterInlet(b2Inlet newInlet);
-  b2Inlet GetInlets();
+  b2Inlet GetInlet();
+  void RegisterSensor(b2Fixture newSensor);
+  b2Fixture GetSensor();
   attribute b2World m_world;
   b2ParticleSystemDef GetDef();
 };
@@ -1509,13 +1511,13 @@ b2Valve implements b2Sensor;
 
 interface b2Inlet {
     void b2Inlet();
-    void Configure(b2ParticleSystem system, b2ParticleDef partDef, [Ref]b2Vec2 directedPressure, [Ref]b2Vec2 point1, [Ref]b2Vec2 point2);
+    void Configure(b2ParticleSystem system, b2ParticleDef partDef, [Const] float pressure);
     boolean IsActive();
-    void SetPressure([Ref]b2Vec2 pressure);
+    void SetPressure([Const] float pressure);
     void Activate();
     void Deactivate();
 };
-b2Inlet implements b2PolygonShape;
+b2Inlet implements b2CircleShape;
 
 interface b2LayerChange {
     void b2LayerChange();
@@ -1534,9 +1536,11 @@ b2LayerChange implements b2CircleShape;
 
 interface b2CircleSensor {
     void b2CircleSensor();
+    attribute boolean debug;
     attribute float avg_pressure;
     attribute b2ParticleSystem m_system;
     void Configure(b2ParticleSystem system, [Ref]b2Vec2 center, float radius);
+    float GetAvgPressure();
 };
 
 b2CircleSensor implements b2ArcShape;

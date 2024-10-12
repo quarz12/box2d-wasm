@@ -9,11 +9,13 @@ TODOS:
 - [ ] 1 all observers in one Solve() to only loop through sensorcontacts once to fill multiple maps
 - [ ] 1 pressure use apply force to allow air particles or just add to totalforcebuffer 
 - [ ] 3 layerchange revision
+  - [ ] pressure calculation
 - [ ] scale down to cm
 - [ ] 1 black particle in droplet
 - [ ] 3 building from xml
 - [ ] 4 renderer
-- [ ] 1 arc use radians instead of start/endpoint
+- [x] 1 arc use radians instead of start/endpoint
+- [ ] Sensor must tick even without contacts
 
 
 attribute not changing:

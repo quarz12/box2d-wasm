@@ -32,8 +32,9 @@
   
 **Arc**
 - center of containing circle (vec)
-- starting position (vec)
-- ending position (vec)
+- starting position/starting angle in radians (vec/float)
+- ending position/ending angle in radians (vec/float)
+- radius when using angles (float)
 - arc goes clockwise from start to end  
 - lines or arcs directly connected IDs (int)
 

@@ -789,7 +789,11 @@ private:
 
     float GetCriticalPressure(const b2TimeStep& step) const;
 
-    float m_particleDiameter;
+	b2Vec2* GetForceBuffer() const {
+		return m_forceBuffer;
+	}
+
+	float m_particleDiameter;
 
     float GetParticleInvMass() const;
     inline const b2ParticleBodyContact* GetClosestFixtureContactBuffer() const {return m_closestFixtureContactBuffer.Data();}
