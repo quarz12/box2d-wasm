@@ -29,6 +29,7 @@
 #include "b2_collision.h"
 #include <stdexcept>
 
+class b2CircleSensor;
 class b2LayerChange;
 class b2Sensor; //forward declaration
 class b2ForceField;
@@ -136,6 +137,7 @@ public:
     bool isInlet = false;
     bool isLayerChange = false;
     inline virtual b2Sensor* AsSensor() { return nullptr; };
+    inline virtual b2CircleSensor* AsCircleSensor() { return nullptr; };
     inline virtual b2ForceField* AsForceField() { return nullptr; };
     inline virtual b2Gate* AsGate() { return nullptr; };
     inline virtual b2Inlet* AsInlet() { return nullptr; };

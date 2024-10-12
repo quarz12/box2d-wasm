@@ -7,6 +7,8 @@
 #include "b2_edge_shape.h"
 #include "b2_time_step.h"
 #include <list>
+
+#include "b2_arc_shape.h"
 struct b2ParticleBodyContact;
 class b2ParticleSystem;
 class b2Valve;
@@ -17,12 +19,10 @@ class b2Sensor : public b2EdgeShape {
 public:
     bool pressureSensor = false;
     bool speedSensor = false;
-    // bool forceSensor = false;
     float avg_pressure = 0;
     float avg_speed = 0;
     b2Vec2 avg_force = b2Vec2_zero;
     std::list<float> pressureSamples{}, speedSamples{};
-    // std::list<b2Vec2> forceSamples{};
     int32 intervalTimeSteps;
     b2ParticleSystem* m_system;
     bool isValve = false;
@@ -33,12 +33,10 @@ public:
         m_radius = 0.0f;
     };
 
-    inline void Configure(bool speed, bool pressure, b2ParticleSystem* system, int32 intervalSteps,
-                          bool directionalPressure = false) {
+    inline void Configure(bool speed, bool pressure, b2ParticleSystem* system, int32 intervalSteps) {
         speedSensor = speed;
         pressureSensor = pressure;
         intervalTimeSteps = intervalSteps;
-        // forceSensor = directionalPressure;
         m_system = system;
         if (m_system == nullptr) {
             print("system is nullptr");
@@ -54,15 +52,7 @@ public:
 
     float GetAvgSpeed() const;
 
-    // const b2Vec2* GetForce() const;
-
-    float CalculatePressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const;
-
-    // bool IsForceSensor() const { return forceSensor; };
-
-    // b2Vec2 CalculateForce(const b2TimeStep& step, const std::list<b2ParticleBodyContact>& observations) const;
-
-    // void SenseForce(const b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
+    float CalculatePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>& observations) const;
 
     void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
@@ -146,4 +136,26 @@ public:
     inline b2Valve* AsValve() override { return this; }
 };
 
+class b2CircleSensor : public b2ArcShape {
+public:
+    float avg_pressure = 0;
+    std::list<float> pressureSamples{};
+    int32 intervalTimeSteps;
+    b2ParticleSystem* m_system = nullptr;
+    bool debug = false;
+    b2CircleSensor() {
+        isSensor = true;
+        m_isObserver = true;
+    }
+    void Configure(b2ParticleSystem* system, b2Vec2& center, float radius,int32 intervalSteps=60) {
+        SetTwoSided(center,0,2*b2_pi,radius);
+        m_system = system;
+        intervalTimeSteps=intervalSteps;
+    }
+    b2CircleSensor* Clone(b2BlockAllocator* allocator) const override;
+    void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
+    float GetAvgPressure() const;
+    inline b2CircleSensor* AsCircleSensor() override{ return this; };
+    float CalculatePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>& observations) const;
+};
 #endif //BOX2D_B2SENSOR_H

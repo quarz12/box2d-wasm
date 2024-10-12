@@ -34,71 +34,6 @@ void b2Sensor::SenseSpeed(b2TimeStep& step, std::list<b2ParticleBodyContact>& co
     }
 }
 
-// b2Vec2 b2Sensor::CalculateForce(const b2TimeStep& step,
-//     const std::list<b2ParticleBodyContact>& observations) const {
-//     if (observations.empty())
-//         return b2Vec2_zero;
-//     std::list<int32> particles;
-//     for (b2ParticleBodyContact observation : observations) {
-//         particles.push_back(observation.index);
-//     }
-//     std::list<b2ParticleContact> contacts;
-//     auto allContacts = m_system->GetContacts();
-//     for (int32 particleIndex : particles) {
-//         for (int i = 0; i < m_system->GetContactCount(); ++i) {
-//             b2ParticleContact contact = allContacts[i];
-//             if (contact.GetIndexA() == particleIndex || contact.GetIndexB() == particleIndex) {
-//                 contacts.push_back(contact);
-//             }
-//         }
-//     }
-//     if (contacts.empty())
-//         return b2Vec2_zero;
-//     //remove duplicates
-//     contacts.sort([](const b2ParticleContact& a, b2ParticleContact& b) -> bool {
-//         if (a.GetIndexA() == b.GetIndexA()) {
-//             return a.GetIndexB() < b.GetIndexB();
-//         }
-//         return a.GetIndexA() < b.GetIndexA();
-//     });
-//     contacts.unique();
-//     std::map<int32, float> accBuffer;
-//     std::map<int32, b2Vec2> forceBuffer;
-//     auto staticPressureBuffer = m_system->GetStaticPressureBuffer();
-//     for (int i = 0; i < m_system->GetParticleCount(); ++i) {
-//         if (contains(particles, i))
-//             accBuffer[i] = staticPressureBuffer[i];
-//     }
-//     float velocityPerPressure = step.dt / (m_system->GetDef()->density * m_system->m_particleDiameter);
-//     for (auto contact : contacts) {
-//         int32 a = contact.GetIndexA();
-//         int32 b = contact.GetIndexB();
-//         float w = contact.GetWeight();
-//         b2Vec2 n = contact.GetNormal();
-//         float h = accBuffer[a] + accBuffer[b];
-//         b2Vec2 f = velocityPerPressure * w * h * n;
-//         if (contains(particles, a))
-//             forceBuffer[a] += f;
-//         if (contains(particles, b))
-//             forceBuffer[b] += f;
-//     }
-//     b2Vec2 force = b2Vec2_zero;
-//     for (auto KVPair : forceBuffer) {
-//         force += KVPair.second;
-//     }
-//     return force/(2*b2_pi*m_system->GetDef()->radius) / forceBuffer.size();
-// }
-
-// void b2Sensor::SenseForce(const b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts) {
-//     b2Vec2 sample = CalculateForce(step, contacts);
-//     forceSamples.push_back(sample);
-//     avg_force += sample / intervalTimeSteps;
-//     if (forceSamples.size() > intervalTimeSteps && intervalTimeSteps > 0) {
-//         avg_force -= forceSamples.front() / intervalTimeSteps;
-//         forceSamples.pop_front();
-//     }
-// }
-
 void b2Sensor::Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts) {
     if (IsPressureSensor()) {
         SensePressure(step, contacts);
@@ -106,9 +41,6 @@ void b2Sensor::Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contact
     if (IsSpeedSensor()) {
         SenseSpeed(step, contacts);
     }
-    // if (IsForceSensor()) {
-    //     SenseForce(step, contacts);
-    // }
 }
 
 float b2Sensor::GetAvgPressure() const {
@@ -123,14 +55,8 @@ float b2Sensor::GetAvgSpeed() const {
     return 0;
 }
 
-// const b2Vec2* b2Sensor::GetForce() const {
-//     if (forceSamples.size() == intervalTimeSteps)
-//         return &avg_force;
-//     return &b2Vec2_zero;
-// } todo remove leftovers
-
-float b2Sensor::CalculatePressure(b2TimeStep step, std::list<b2ParticleBodyContact>& observations) const {
-    //in Pascal
+float b2Sensor::CalculatePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>& observations) const {
+    //in Pascal todo use circlesensor formula
     if (observations.empty()) {
         if (debug)
             print("empty1");
@@ -291,5 +217,81 @@ b2Gate* b2Gate::Clone(b2BlockAllocator* allocator) const {
     b2Gate* clone = new(mem) b2Gate;
     *clone = *this;
     return clone;
+}
 
+b2CircleSensor* b2CircleSensor::Clone(b2BlockAllocator* allocator) const {
+    void* mem = allocator->Allocate(sizeof(b2CircleSensor));
+    b2CircleSensor* clone = new (mem) b2CircleSensor;
+    *clone = *this;
+    return clone;
+}
+
+void b2CircleSensor::Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts) {
+    if (debug) {
+        printf("b2CircleSensor::Solve()\n");
+    }
+    float sample = CalculatePressure(step, contacts);
+    pressureSamples.push_back(sample);
+    avg_pressure += sample / intervalTimeSteps;
+    if (pressureSamples.size() > intervalTimeSteps && intervalTimeSteps > 0) {
+        avg_pressure -= pressureSamples.front() / intervalTimeSteps;
+        pressureSamples.pop_front();
+    }
+}
+
+float b2CircleSensor::GetAvgPressure() const {
+    return avg_pressure;
+}
+float b2CircleSensor::CalculatePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>& observations) const {
+    //in Pascal
+    if (observations.empty()) {
+        return 0;
+    }
+    std::list<int32> particles;
+    for (b2ParticleBodyContact observation : observations) {
+        particles.push_back(observation.index);
+    }
+    std::list<b2ParticleContact> contacts;
+    auto allContacts = m_system->GetContacts();
+    for (int i = 0; i < m_system->GetContactCount(); ++i) {
+        b2ParticleContact contact = allContacts[i];
+        if (contains(particles, contact.GetIndexA()) || contains(particles, contact.GetIndexB())) {
+            contacts.push_back(contact);
+        }
+    }
+    if (contacts.empty()) {
+        return 0;
+    }
+    std::map<int32, float> accBuffer;
+    std::map<int32, b2Vec2> forceBuffer;
+    auto staticPressureBuffer = m_system->GetStaticPressureBuffer();
+    for (int i = 0; i < m_system->GetParticleCount(); ++i) {
+        if (contains(particles, i))
+            accBuffer[i] = staticPressureBuffer[i];
+    }
+    float velocityPerPressure = step.dt / (m_system->GetDef()->density * m_system->m_particleDiameter);
+    float forceacc=0;
+    for (auto contact : contacts) {
+        int32 a = contact.GetIndexA();
+        int32 b = contact.GetIndexB();
+        float w = contact.GetWeight();
+        b2Vec2 n = contact.GetNormal();
+        float h = accBuffer[a] + accBuffer[b];
+        b2Vec2 f = velocityPerPressure * w * h * n;
+        if (contains(particles, a))
+            forceacc+=f.Length();
+            // forceBuffer[a] -= f;
+        if (contains(particles, b))
+            forceacc+=f.Length();
+            // forceBuffer[b] += f;
+    }
+    return forceacc / particles.size();
+    float force = 0;
+    for (std::pair<int32,b2Vec2> KVPair : forceBuffer) {
+        print(str(KVPair.second.Length()));
+        force += KVPair.second.Length();
+    }
+    print(str(force/particles.size()));
+    print("----------------");
+    return force / particles.size();
 }
