@@ -263,14 +263,14 @@ float b2CircleSensor::CalculatePressure(b2TimeStep& step, std::list<b2ParticleBo
         return 0;
     }
     std::map<int32, float> accBuffer;
-    std::map<int32, b2Vec2> forceBuffer;
+    // std::map<int32, b2Vec2> forceBuffer;
     auto staticPressureBuffer = m_system->GetStaticPressureBuffer();
     for (int i = 0; i < m_system->GetParticleCount(); ++i) {
         if (contains(particles, i))
             accBuffer[i] = staticPressureBuffer[i];
     }
     float velocityPerPressure = step.dt / (m_system->GetDef()->density * m_system->m_particleDiameter);
-    float forceacc=0;
+    float forceAcc=0;
     for (auto contact : contacts) {
         int32 a = contact.GetIndexA();
         int32 b = contact.GetIndexB();
@@ -279,19 +279,20 @@ float b2CircleSensor::CalculatePressure(b2TimeStep& step, std::list<b2ParticleBo
         float h = accBuffer[a] + accBuffer[b];
         b2Vec2 f = velocityPerPressure * w * h * n;
         if (contains(particles, a))
-            forceacc+=f.Length();
+            forceAcc+=m_system->VelocityToForce(f,step).Length();
             // forceBuffer[a] -= f;
         if (contains(particles, b))
-            forceacc+=f.Length();
+            forceAcc+=m_system->VelocityToForce(f,step).Length();
             // forceBuffer[b] += f;
     }
-    return forceacc / particles.size();
-    float force = 0;
-    for (std::pair<int32,b2Vec2> KVPair : forceBuffer) {
-        print(str(KVPair.second.Length()));
-        force += KVPair.second.Length();
-    }
-    print(str(force/particles.size()));
-    print("----------------");
-    return force / particles.size();
+    return forceAcc / particles.size();
+
+    // float force = 0;
+    // for (std::pair<int32,b2Vec2> KVPair : forceBuffer) {
+    //     print(str(KVPair.second.Length()));
+    //     force += KVPair.second.Length();
+    // }
+    // print(str(force/particles.size()));
+    // print("----------------");
+    // return force / particles.size();
 }

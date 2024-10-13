@@ -3131,6 +3131,16 @@ void b2ParticleSystem::SolvePressure(const b2TimeStep &step) {
     }
 }
 
+b2Vec2 b2ParticleSystem::VelocityToForce(const b2Vec2& vel, const b2TimeStep& step) const {
+    float velocityPerForce = step.dt * GetParticleInvMass();
+    return vel/velocityPerForce;
+}
+
+b2Vec2 b2ParticleSystem::ForceToVelocity(const b2Vec2& force, const b2TimeStep& step) const {
+    float velocityPerForce = step.dt * GetParticleInvMass();
+    return force*velocityPerForce;
+}
+
 void b2ParticleSystem::SolveDamping(const b2TimeStep &step) {
     // reduces normal velocity of each contact
     float linearDamping = m_def.dampingStrength;

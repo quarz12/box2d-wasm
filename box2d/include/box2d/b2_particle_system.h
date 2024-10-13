@@ -804,6 +804,9 @@ private:
 	b2Vec2 ForceToVelocity(b2Vec2& force, b2TimeStep& step);
 	b2Vec2 VelocityToForce(b2Vec2& velocity, b2TimeStep& step);
 	std::list<int32> FindParticlesInAABB(b2AABB& area);
+	b2Vec2 VelocityToForce(const b2Vec2& vel, const b2TimeStep& step) const;
+
+	b2Vec2 ForceToVelocity(const b2Vec2& force, const b2TimeStep& step) const;
 
 #pragma endregion public
 private:

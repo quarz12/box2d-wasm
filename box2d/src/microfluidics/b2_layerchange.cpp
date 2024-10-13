@@ -67,7 +67,7 @@ void b2LayerChange::Solve(const std::list<b2ParticleBodyContact>& contacts) cons
         // move particles out of area
         for (auto particleContact : contacts) {
             // print("pushing away");
-            b2Vec2 force = ForceAway(m_system->GetPositionBuffer()[particleContact.index],m_linked->GetPressure()*0.00074);
+            b2Vec2 force = ForceAway(m_system->GetPositionBuffer()[particleContact.index],m_linked->GetPressure());
             // print("force "+force.ToString());
             m_system->ParticleApplyForce(particleContact.index, force);
         }
@@ -111,6 +111,6 @@ bool b2LayerChange::TestPointForShift(b2Vec2& pos, float radius, const std::list
         if ((particlePosition - pos).Length() < radius*2) {
             return false;
         }
-    }
+    }//todo too strong? pointtest inaccurate?
     return true;
 }
