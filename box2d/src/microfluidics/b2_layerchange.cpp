@@ -12,7 +12,7 @@ b2Vec2 RandomPointInCircle(float radius, b2Vec2 center);
 
 void b2LayerChange::Configure(b2ParticleSystem* system, b2CircleSensor* sensor) {
     m_system = system;
-    m_sensor=sensor;
+    m_sensor = sensor;
 }
 
 b2Shape* b2LayerChange::Clone(b2BlockAllocator* allocator) const {
@@ -28,15 +28,16 @@ void b2LayerChange::Solve(const std::list<b2ParticleBodyContact>& contacts) cons
     float chance = GetLayerShiftProbability();
     std::bernoulli_distribution randomizer(chance);
     if (debug) {
-        print("thispressure = "+str(GetPressure()));
-        print("linkedPressure = "+str(m_linked->GetPressure()));
+        print("thispressure = " + str(GetPressure()));
+        print("linkedPressure = " + str(m_linked->GetPressure()));
     }
-    if (GetPressure() > m_linked->GetPressure()) { //if pressure is higher than linked
+    if (GetPressure() > m_linked->GetPressure()) {
+        //if pressure is higher than linked
         b2AABB aabb;
         b2Transform transform;
         transform.SetIdentity();
-        m_linked->ComputeAABB(&aabb,transform,0);
-        std::list<int32> particlesInLinkedArea=m_linked->m_system->FindParticlesInAABB(aabb);
+        m_linked->ComputeAABB(&aabb, transform, 0);
+        std::list<int32> particlesInLinkedArea = m_linked->m_system->FindParticlesInAABB(aabb);
         std::list<b2Vec2> particlePositionsInLinkedArea;
         for (auto particleIndex : particlesInLinkedArea) {
             particlePositionsInLinkedArea.push_back(m_linked->m_system->GetPositionBuffer()[particleIndex]);
@@ -45,40 +46,52 @@ void b2LayerChange::Solve(const std::list<b2ParticleBodyContact>& contacts) cons
             if (m_system->GetLayerChangeDelayBuffer()[particleContact.index] <= 0) {
                 bool shouldChangeLayer = randomizer(engine);
                 if (shouldChangeLayer) {
-                    b2Vec2 position = RandomPointInCircle(m_linked->m_radius-m_system->m_particleDiameter/2*1.5, m_linked->m_p);
+                    b2Vec2 position = RandomPointInCircle(m_linked->m_radius - m_system->m_particleDiameter / 2 * 1.5,
+                                                          m_linked->m_p);
                     int32 repeats = 0;
-                    float radius=m_system->GetDef()->radius;
-                    bool positionIsCleared = m_linked->TestPointForShift(position, radius, particlePositionsInLinkedArea);
+                    float radius = m_system->GetDef()->radius;
+                    bool positionIsCleared = m_linked->TestPointForShift(
+                        position, radius, particlePositionsInLinkedArea);
                     while (!positionIsCleared && repeats < 5) {
                         repeats++;
-                        position = RandomPointInCircle(m_linked->m_radius-m_system->m_particleDiameter/2*1.5, m_linked->m_p);
-                        positionIsCleared = m_linked->TestPointForShift(position, radius, particlePositionsInLinkedArea);
+                        position = RandomPointInCircle(m_linked->m_radius - m_system->m_particleDiameter / 2 * 1.5,
+                                                       m_linked->m_p);
+                        positionIsCleared = m_linked->
+                                TestPointForShift(position, radius, particlePositionsInLinkedArea);
                     }
                     if (positionIsCleared) {
-                        int32 index=m_system->MoveParticleToSystem(particleContact.index, m_linked->m_system, &position);
-                        b2Vec2 force=m_linked->ForceAway(position,GetPressure());
-                        m_linked->m_system->ParticleApplyForce(index,force);
+                        int32 index = m_system->MoveParticleToSystem(particleContact.index, m_linked->m_system,
+                                                                     &position);
+                        b2Vec2 force = m_linked->ForceAway(position, GetPressure());
+                        m_linked->m_system->ParticleApplyForce(index, force);
                         particlePositionsInLinkedArea.push_back(position);
                     }
                 }
             }
         }
     } else {
+        float thisPressure = GetPressure();
+        float otherPressure = m_linked->GetPressure();
+        bool significantDiff = thisPressure * 1.1 < otherPressure; //other is more than 10% higher
         // move particles out of area
-        for (auto particleContact : contacts) {
-            // print("pushing away");
-            b2Vec2 force = ForceAway(m_system->GetPositionBuffer()[particleContact.index],m_linked->GetPressure());
-            // print("force "+force.ToString());
-            m_system->ParticleApplyForce(particleContact.index, force);
+        if (significantDiff) {
+            for (auto particleContact : contacts) {
+                // print("pushing away");
+                b2Vec2 force = ForceAway(m_system->GetPositionBuffer()[particleContact.index], m_linked->GetPressure());
+                // print("force "+force.ToString());
+                m_system->ParticleApplyForce(particleContact.index, force);
+            }
         }
     }
 }
+
 ///force to push particle on position away from the center
 b2Vec2 b2LayerChange::ForceAway(const b2Vec2& position, float force) const {
-    b2Vec2 directionAwayFromCenter = position-m_p;
+    b2Vec2 directionAwayFromCenter = position - m_p;
     directionAwayFromCenter.Normalize();
-    return directionAwayFromCenter*force;
+    return directionAwayFromCenter * force;
 }
+
 ///biased towards center
 b2Vec2 RandomPointInCircle(float radius, b2Vec2 center) {
     float theta = random() / (RAND_MAX / (2 * M_PI));
@@ -108,9 +121,9 @@ float b2LayerChange::GetLayerShiftProbability() const {
 
 bool b2LayerChange::TestPointForShift(b2Vec2& pos, float radius, const std::list<b2Vec2>& particlesInLinked) {
     for (b2Vec2 particlePosition : particlesInLinked) {
-        if ((particlePosition - pos).Length() < radius*2) {
+        if ((particlePosition - pos).Length() < radius * 2) {
             return false;
         }
-    }//todo too strong? pointtest inaccurate?
+    } //todo too strong? pointtest inaccurate?
     return true;
 }
