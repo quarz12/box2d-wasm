@@ -19,13 +19,13 @@ void b2ArcShape::SetTwoSided(const b2Vec2& center, const b2Vec2& start, const b2
 
 void b2ArcShape::SetTwoSided(const b2Vec2& center, const float startRadians, const float endRadians,
                              const float radius) {
+    fromRadians = startRadians;
+    toRadians = endRadians;
     m_vertex1.x = center.x + radius * cos(fromRadians);
     m_vertex1.y = center.y + radius * sin(fromRadians);
     m_vertex2.x = center.x + radius * cos(toRadians);
     m_vertex2.y = center.y + radius * sin(toRadians);
     m_center = center;
-    fromRadians = startRadians;
-    toRadians = endRadians;
     m_radius = radius;
 }
 
