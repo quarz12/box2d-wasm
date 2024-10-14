@@ -191,49 +191,32 @@ void b2EdgeShape::ComputeMass(b2MassData* massData, float density) const
 bool b2EdgeShape::CloserToNext(b2Vec2& point, b2Transform& tf) const {
     if(nextSegment== nullptr)
         return false;
+	if (!continuousInNext)
+		return false;
     float distanceThis, distanceNext;
     b2Vec2 normThis,normNext;
     b2Transform transform=tf;
     ComputeDistance(transform, point, &distanceThis, &normThis, 0);
     nextSegment->ComputeDistance(transform, point, &distanceNext, &normNext,0);
-//    print("point: "+point.ToString());
-//    print("distances next-this: "+floatToString(distanceNext)+(distanceNext<distanceThis?"<":">")+floatToString(distanceThis));
     if (distanceNext==distanceThis){
         return this < nextSegment;
     }
     return distanceNext<distanceThis;
-    //TODO check Angle might be enough to do edge-edge
 }
 
 bool b2EdgeShape::CloserToPrev(b2Vec2& point, b2Transform& tf) const {
     if(previousSegment== nullptr)
         return false;
+	if (!continuousInPrev)
+		return false;
     float distanceThis, distancePrev;
     b2Vec2 normThis,normNext;
     b2Transform transform=tf;
     ComputeDistance(transform, point, &distanceThis, &normThis, 0);
     previousSegment->ComputeDistance(transform, point, &distancePrev, &normNext,0);
-//    print("point: "+point.ToString());
-//    print("distances prev-this: "+floatToString(distancePrev)+(distancePrev<distanceThis?"<":">")+floatToString(distanceThis));
     if (distancePrev==distanceThis){
         return this > previousSegment;
     }
     return distancePrev<distanceThis;
-    //TODO
 }
 
-bool b2EdgeShape::AddConnection(b2Shape& next) {
-    if(next.m_vertex1==m_vertex1 || next.m_vertex2==m_vertex1) {
-        previousSegment = &next;
-        m_isLineSegment= true;
-        return true;
-    }
-    else if(next.m_vertex1==m_vertex2 || next.m_vertex2==m_vertex2){
-        nextSegment = &next;
-        m_isLineSegment= true;
-        return true;
-    }
-    else{
-        return false;
-    }
-}

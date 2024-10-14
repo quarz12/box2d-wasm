@@ -122,12 +122,14 @@ public:
 #pragma endregion
     b2Shape* previousSegment = nullptr;
     b2Shape* nextSegment = nullptr;
+    bool continuousInPrev = false;
+    bool continuousInNext = false;
     /// true if the point is closer to previousSegment than this
     inline virtual bool CloserToPrev(b2Vec2& point, b2Transform& tf) const { return false; } ;
     /// true if the point is closer to nextSegment than this
     inline virtual bool CloserToNext(b2Vec2& point, b2Transform& tf) const { return false; } ;
     /// false if shapes are not connected, overwrites previous shape if point is already connected
-    inline virtual bool AddConnection(b2Shape& next) { return false; };
+    bool AddConnection(b2Shape& newConnection);
     bool m_isLineSegment = false;
     /// precondition for isSensor and isForceField, observers have no collision and contacts are only processed in their class
     bool m_isObserver = false;
@@ -142,6 +144,10 @@ public:
     inline virtual b2Gate* AsGate() { return nullptr; };
     inline virtual b2Inlet* AsInlet() { return nullptr; };
     inline virtual b2LayerChange* AsLayerChange() { return nullptr; };
+    /// is this shape continuous with shape in this point
+    bool IsContinuous(const b2Shape* shape, const b2Vec2& connectionPoint);
+    /// get the shared point of this shape with another. only makes sense for edge/arc
+    b2Vec2 GetSharedPoint(const b2Shape* shape) const;
 };
 
 inline b2Shape::Type b2Shape::GetType() const {

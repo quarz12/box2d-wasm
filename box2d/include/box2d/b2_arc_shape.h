@@ -40,7 +40,6 @@ public:
 
     /// @see b2Shape::ComputeMass
     void ComputeMass(b2MassData* massData, float density) const override;
-    bool AddConnection(b2Shape& next) override;
 
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
     /// Set position with direct floats.

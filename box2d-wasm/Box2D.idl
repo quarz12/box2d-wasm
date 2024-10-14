@@ -140,6 +140,8 @@ interface b2Shape {
   b2Gate AsGate();
   b2Inlet AsInlet();
   b2LayerChange AsLayerChange();
+  attribute boolean continuousInPrev;
+  attribute boolean continuousInNext;
 };
 
 interface b2FixtureUserData {

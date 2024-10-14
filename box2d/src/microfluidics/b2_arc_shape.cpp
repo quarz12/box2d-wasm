@@ -194,6 +194,8 @@ void b2ArcShape::ComputeMass(b2MassData* massData, float density) const {
 bool b2ArcShape::CloserToNext(b2Vec2& point, b2Transform& tf) const {
     if (nextSegment == nullptr)
         return false;
+    if (!continuousInNext)
+        return false;
     float distanceThis, distanceNext;
     b2Vec2 normThis, normNext;
     b2Transform transform = tf;
@@ -203,11 +205,12 @@ bool b2ArcShape::CloserToNext(b2Vec2& point, b2Transform& tf) const {
         return this < nextSegment;
     }
     return distanceNext < distanceThis;
-    //TODO check Angle
 }
 
 bool b2ArcShape::CloserToPrev(b2Vec2& point, b2Transform& tf) const {
     if (previousSegment == nullptr)
+        return false;
+    if (!continuousInPrev)
         return false;
     float distanceThis, distancePrev;
     b2Vec2 normThis, normNext;
@@ -218,35 +221,4 @@ bool b2ArcShape::CloserToPrev(b2Vec2& point, b2Transform& tf) const {
         return this > previousSegment;
     }
     return distancePrev < distanceThis;
-    //TODO
-}
-
-bool b2ArcShape::AddConnection(b2Shape& next) {
-    if (next.GetType() == b2Shape::Type::e_edge) {
-        b2EdgeShape edge = (b2EdgeShape&) next;
-        if (edge.m_vertex1 == m_vertex1 || edge.m_vertex2 == m_vertex1) {
-            previousSegment = &next;
-            m_isLineSegment = true;
-            return true;
-        } else if (edge.m_vertex1 == m_vertex2 || edge.m_vertex2 == m_vertex2) {
-            nextSegment = &next;
-            m_isLineSegment = true;
-            return true;
-        } else {
-            return false;
-        }
-    } else if (next.GetType() == b2Shape::Type::e_arc) {
-        b2ArcShape arc = (b2ArcShape&) arc;
-        if (arc.m_vertex1 == m_vertex1 || arc.m_vertex2 == m_vertex1) {
-            previousSegment = &next;
-            m_isLineSegment = true;
-            return true;
-        } else if (arc.m_vertex1 == m_vertex2 || arc.m_vertex2 == m_vertex2) {
-            nextSegment = &next;
-            m_isLineSegment = true;
-            return true;
-        } else {
-            return false;
-        }
-    } else { return false; }
 }
