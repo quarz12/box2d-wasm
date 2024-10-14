@@ -42,10 +42,6 @@ b2Vec2 b2Shape::GetSharedPoint(const b2Shape* shape) const {
     return b2Vec2(0,0);
 }
 bool b2Shape::AddConnection(b2Shape& newConnection) {
-    // if (!((GetType() == e_arc || GetType() == e_edge)&&(newConnection.GetType() == e_arc || newConnection.GetType() == e_edge)))
-    //     return false;
-    print("v1:"+m_vertex1.ToString()+ " v2:"+m_vertex2.ToString());
-    print("nv1:"+newConnection.m_vertex1.ToString()+ " nv2:"+newConnection.m_vertex2.ToString());
     if(newConnection.m_vertex1==m_vertex1 || newConnection.m_vertex2==m_vertex1) {
         previousSegment = &newConnection;
         m_isLineSegment= true;

@@ -124,6 +124,13 @@ bool b2LayerChange::TestPointForShift(b2Vec2& pos, float radius, const std::list
         if ((particlePosition - pos).Length() < radius * 2) {
             return false;
         }
-    } //todo too strong? pointtest inaccurate?
+    }
     return true;
 }
+
+//
+// todo
+// make spawn circle solid? (out moving only?)
+// to prevent pulsing
+// would block particles going straight through
+//

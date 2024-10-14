@@ -1168,7 +1168,7 @@ void b2World::DrawShape(b2Fixture* fixture, const b2Transform& xf, const b2Color
 
 	case b2Shape::e_edge:
 		{
-		b2Color color2; //todo only temporary, do for all observers
+		b2Color color2; //todo only temporary, do for all observers also not working
 		if (fixture->GetShape()->m_isObserver) {
 			color2=b2Color(color.r,color.b,color.g,0.5);
 		}else color2=color;

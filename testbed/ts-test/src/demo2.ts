@@ -257,6 +257,8 @@ const step = (deltaMs: number) => {
     const clampedDeltaMs = Math.min(deltaMs, maxTimeStepMs);
     world.Step(clampedDeltaMs / 1000, 8, 3, 1);
     world2.Step(clampedDeltaMs/1000 , 8, 3, 1);
+    display1.innerText=csensAF.GetShape().AsCircleSensor().GetAvgPressure().toString();
+    display2.innerText=csensBF.GetShape().AsCircleSensor().GetAvgPressure().toString();
 };
 const drawCanvas = (ctx: CanvasRenderingContext2D, world: Box2D.b2World) => {
     ctx.fillStyle = 'rgb(255,255,255)';  //set background color
@@ -277,8 +279,6 @@ let deltaMs = 1000 / 60;
         step(deltaMs);
         drawCanvas(ctx, world);
         drawCanvas(ctx2,world2);
-        display1.innerText=csensAF.GetShape().AsCircleSensor().GetAvgPressure().toString();
-        display2.innerText=csensBF.GetShape().AsCircleSensor().GetAvgPressure().toString();
     }
 }());
 

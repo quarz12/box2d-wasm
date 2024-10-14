@@ -16,8 +16,8 @@ class b2LayerChange : public b2CircleShape {
 public:
     b2LayerChange* m_linked = nullptr;
     b2ParticleSystem* m_system = nullptr;
-    b2CircleSensor* m_sensor;
-    bool debug;
+    b2CircleSensor* m_sensor = nullptr;
+    bool debug = false;
     b2LayerChange() {
         m_isObserver = true;
         isLayerChange = true;

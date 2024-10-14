@@ -3878,6 +3878,7 @@ void b2ParticleSystem::SolveZombie() {
 }
 
 void b2ParticleSystem::SolveFriction(const b2TimeStep &step) {
+    //todo unused?
     //particle - particle
     for (int i = 0; i < m_count; ++i) {
         m_frictionAccumulationBuffer[i] = m_velocityBuffer.data[i];
