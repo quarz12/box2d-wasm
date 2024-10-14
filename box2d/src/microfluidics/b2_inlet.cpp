@@ -26,7 +26,7 @@ void b2Inlet::Solve(std::list<b2ParticleBodyContact>& contacts) const {
             // m_system->GetVelocityBuffer()[contact.index]= force;// input with fixed velocity
         }
         //summon new particles
-        float summoningRadius= m_radius - m_system->GetDef()->radius*1.5;
+        float summoningRadius= m_radius - m_system->GetDef()->radius;
         float circumference= 2 * b2_pi * summoningRadius;
         int32 numParticles = floor(circumference/m_system->m_particleDiameter);
         float angle = 2 * b2_pi / numParticles;
