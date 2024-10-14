@@ -52,7 +52,7 @@ public:
 
     float GetAvgSpeed() const;
 
-    float CalculatePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>& observations) const;
+    float CalculatePressure(b2TimeStep& step, const std::list<b2ParticleBodyContact>& observations) const;
 
     void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
 
@@ -156,6 +156,6 @@ public:
     void Solve(b2TimeStep& step, std::list<b2ParticleBodyContact>& contacts);
     float GetAvgPressure() const;
     inline b2CircleSensor* AsCircleSensor() override{ return this; };
-    float CalculatePressure(b2TimeStep& step, std::list<b2ParticleBodyContact>& observations) const;
+    float CalculatePressure(b2TimeStep& step, const std::list<b2ParticleBodyContact>& observations) const;
 };
 #endif //BOX2D_B2SENSOR_H
