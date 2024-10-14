@@ -66,7 +66,8 @@ set(BOX2D_SOURCE_FILES
 		microfluidics/b2_sensor.cpp
 		microfluidics/b2_force_field.cpp
 		microfluidics/b2_inlet.cpp
-		microfluidics/b2_layerchange.cpp)
+		microfluidics/b2_layerchange.cpp
+		microfluidics/b2_shape.cpp)
 
 set(BOX2D_HEADER_FILES
 	../include/box2d/b2_api.h
