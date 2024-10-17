@@ -17,14 +17,11 @@
 - containing objects (only lines and layerchanges)
 
 **Layerchange**
-- WIP
 - is a circle
 - center (vec)
 - radius (float)
 - connected Layerchange ID (int)
 
-
-  
 **Line**
 - starting position (vec)
 - ending position (vec)
@@ -46,32 +43,19 @@
 - sampling interval in amount of steps of multiples of 1/60 seconds (int)
   
 **Inlet**
-- is a rectangle
-- width (vec)
-- height (vec)
+- can have any shape
 - center (vec)
-- normalized direction in which fluid should flow (vec)
+- radius of needle (float)
 - speed/pressure (bool)
 - target pressure/speed (float)
-- coordinates of the summoning line (2x vec) maybe not necessary
-
-  <img src="inlet.png" width="200" height="100"/>  
-  
-  red line is where particles are spawned, yellow arrow is the direction the< are pushed
 - information about the inserted fluid
 
 **Valve**
-- extends line
-- connected gate ID (int)
+- is a rectangle
+- center (vec)
+- height (float)
+- width (float)
 - sampling interval in amount of steps of multiples of 1/60 seconds (int)
-- pressure threshold at which the gate closes
-- should the gate push particles aside? (bool) most likely always true
-
-**Gate**
-- extends line
-- can open/close
-- most likely on another layer
-
 
 ## Controlling the Simulation (WIP)
 - you will get an object that represents the engine

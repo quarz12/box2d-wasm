@@ -168,7 +168,9 @@ layerchangeB.m_radius=0.01;
 let csensB=new b2CircleSensor();
 csensB.Configure(particleSystem2,layerchangeB.m_p,layerchangeB.m_radius+2*partSysDef.radius);
 let csensBF=ground2.CreateFixture(csensB,0);
-
+// let x=new b2EdgeShape()
+// x.SetTwoSided(new b2Vec2(0.07,0.12),new b2Vec2(0.09,0.12));
+// ground2.CreateFixture(x,0);
 particleSystem.RegisterSensor(csensAF);
 // csensAF.GetShape().AsCircleSensor().debug=true;
 particleSystem2.RegisterSensor(csensBF);

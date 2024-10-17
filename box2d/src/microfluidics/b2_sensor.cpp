@@ -142,7 +142,7 @@ void b2Valve::Configure(b2ParticleSystem* system, int32 intervalSteps, b2Gate* c
     m_threshold = threshold;
 }
 
-void b2Valve::SetForceField(float forceStrength, bool isTimed, b2Body* body, b2ParticleSystem* system) {
+void SetForceField(float forceStrength, bool isTimed, b2Body* body, b2ParticleSystem* system) {
     m_hasForceField = true;
     float radius = m_system->GetDef()->radius;
     b2ForceField ff1, ff2;
@@ -183,22 +183,6 @@ void b2Valve::SetForceField(float forceStrength, bool isTimed, b2Body* body, b2P
     }
 }
 
-void b2Gate::Open() {
-    m_hasCollision = false;
-    isClosed = false;
-}
-
-void b2Gate::Close() {
-    m_hasCollision = true;
-    isClosed = true;
-}
-
-b2Gate* b2Gate::Clone(b2BlockAllocator* allocator) const {
-    void* mem = allocator->Allocate(sizeof(b2Gate));
-    b2Gate* clone = new(mem) b2Gate;
-    *clone = *this;
-    return clone;
-}
 
 b2CircleSensor* b2CircleSensor::Clone(b2BlockAllocator* allocator) const {
     void* mem = allocator->Allocate(sizeof(b2CircleSensor));

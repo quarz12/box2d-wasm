@@ -67,7 +67,8 @@ set(BOX2D_SOURCE_FILES
 		microfluidics/b2_force_field.cpp
 		microfluidics/b2_inlet.cpp
 		microfluidics/b2_layerchange.cpp
-		microfluidics/b2_shape.cpp)
+		microfluidics/b2_shape.cpp
+		microfluidics/b2_gate.cpp)
 
 set(BOX2D_HEADER_FILES
 	../include/box2d/b2_api.h
@@ -128,7 +129,8 @@ set(BOX2D_HEADER_FILES
 		../include/box2d/b2_sensor.h
 		../include/box2d/b2_force_field.h
 		../include/box2d/b2_inlet.h
-		../include/box2d/b2_layerchange.h)
+		../include/box2d/b2_layerchange.h
+		../include/box2d/b2_gate.h)
 
 add_library(box2d ${BOX2D_SOURCE_FILES} ${BOX2D_HEADER_FILES})
 target_include_directories(box2d

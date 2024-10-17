@@ -1501,12 +1501,9 @@ b2Gate implements b2EdgeShape;
 
 interface b2Valve {
     void b2Valve();
-    void Configure(b2ParticleSystem system, long intervalSteps, b2Gate connectedGate, float threshold);
-    void SetForceField(b2ForceField ff1, b2ForceField ff2);
-    void SetForceField(float forceStrength, boolean isTimed, b2Body body, b2ParticleSystem ffSystem);
-    void SetGate(b2Gate g);
+    void Configure(b2ParticleSystem system, long intervalSteps, float threshold);
+    void AddGate(b2Gate g);
     void SetThreshold(float threshold);
-    attribute b2Gate gate;
     attribute float m_threshold;
 };
 b2Valve implements b2Sensor;
